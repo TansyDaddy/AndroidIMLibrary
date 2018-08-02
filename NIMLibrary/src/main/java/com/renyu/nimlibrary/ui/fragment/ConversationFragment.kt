@@ -36,10 +36,13 @@ import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
+import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
+import com.renyu.nimlibrary.util.sticker.StickerItem
+import com.renyu.nimlibrary.util.sticker.StickerUtils
 import com.renyu.nimlibrary.viewmodel.ConversationViewModel
 import com.renyu.nimlibrary.viewmodel.ConversationViewModelFactory
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -195,7 +198,10 @@ class ConversationFragment : Fragment(), EventImpl {
                             val currentPosition = edit_conversation.selectionStart
                             edit_conversation.text.insert(currentPosition, it.data as SpannableString)
                         }
-
+                        // 收到Sticker
+                        if (it.type == ObserveResponseType.Sticker) {
+                            sendSticker(it.data as StickerItem)
+                        }
                     }
                     .subscribe()
 
@@ -284,6 +290,10 @@ class ConversationFragment : Fragment(), EventImpl {
 
         val vpFragments = ArrayList<Fragment>()
         vpFragments.add(EmojiFragment())
+        val count = StickerUtils.getCategories().size
+        for (i in 0 until count) {
+            vpFragments.add(StickerFragment.getInstance(StickerUtils.getCategories()[i]))
+        }
         val vpAdapter = VpAdapter(childFragmentManager, vpFragments)
         vp_panel_content.adapter = vpAdapter
 
@@ -388,6 +398,17 @@ class ConversationFragment : Fragment(), EventImpl {
     private fun sendAudio(file: File, duration: Long) {
         Handler().postDelayed({
             vm!!.sendIMMessage(MessageManager.sendAudioMessage(arguments?.getString("contactId")!!, file, duration))
+            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+        }, 500)
+    }
+
+    /**
+     * 发送贴图消息
+     */
+    private fun sendSticker(stickerItem: StickerItem) {
+        Handler().postDelayed({
+            val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
+            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("contactId")!!, "贴图消息", attachment))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }, 500)
     }

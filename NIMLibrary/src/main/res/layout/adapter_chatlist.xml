@@ -87,7 +87,8 @@
                             android:layout_height="25dip"
                             android:layout_weight="1"
                             android:textColor="#777777"
-                            app:emojiText="@{recentContact.getContent()}"/>
+                            app:emojiTextWithAttachment="@{recentContact.getContent()}"
+                            app:attachment="@{recentContact.getAttachment()}"/>
                         <TextView
                             android:layout_width="15dip"
                             android:layout_height="15dip"

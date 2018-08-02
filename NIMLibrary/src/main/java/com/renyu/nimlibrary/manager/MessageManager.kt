@@ -10,6 +10,7 @@ import com.netease.nimlib.sdk.RequestCallbackWrapper
 import com.netease.nimlib.sdk.msg.MessageBuilder
 import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.MsgServiceObserve
+import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomMessageConfig
@@ -18,11 +19,19 @@ import com.netease.nimlib.sdk.msg.model.QueryDirectionEnum
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.extension.CustomAttachParser
 import com.renyu.nimlibrary.util.RxBus
 import java.io.File
 
 
 object MessageManager {
+
+    /**
+     * 注册自定义消息类型解析
+     */
+    fun registerCustomAttachmentParser() {
+        NIMClient.getService(MsgService::class.java).registerCustomAttachmentParser(CustomAttachParser())
+    }
 
     /**
      * 监听新消息接收
@@ -320,6 +329,15 @@ object MessageManager {
         config.enableUnreadCount = false
         message.config = config
         NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(message, true, imMessage.time)
+    }
+
+    /**
+     * 发送自定义Message
+     */
+    fun createCustomMessage(account: String, content: String, attachment: MsgAttachment): IMMessage {
+        val message = MessageBuilder.createCustomMessage(account, SessionTypeEnum.P2P, content, attachment)
+        sendMessage(message, false)
+        return message
     }
 
     /**

@@ -19,11 +19,10 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.*
+import com.renyu.nimlibrary.extension.CustomAttachment
+import com.renyu.nimlibrary.extension.CustomAttachmentType
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
-import com.renyu.nimlibrary.ui.viewholder.AudioViewHolder
-import com.renyu.nimlibrary.ui.viewholder.ImageViewHolder
-import com.renyu.nimlibrary.ui.viewholder.TextViewHolder
-import com.renyu.nimlibrary.ui.viewholder.TipHolder
+import com.renyu.nimlibrary.ui.viewholder.*
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
 import java.io.File
@@ -67,8 +66,17 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_tip, parent,
                             false))
+            18 -> return ImageViewHolder(
+                    DataBindingUtil.inflate<AdapterReceiveStickerBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_receive_sticker, parent,
+                            false))
+            19 -> return StickerViewHolder(
+                    DataBindingUtil.inflate<AdapterSendStickerBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_send_sticker, parent,
+                            false))
         }
-
         throw Throwable("对指定viewType类型缺少判断")
     }
 
@@ -84,28 +92,14 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(getItemViewType(holder.layoutPosition)) {
-            0 -> {
+            0, 1 -> {
                 initViewDataBinding((holder as TextViewHolder).tvDataBinding, holder.layoutPosition)
             }
-            1 -> {
-                initViewDataBinding((holder as TextViewHolder).tvDataBinding, holder.layoutPosition)
-            }
-            2 -> {
+            2, 3 -> {
                 initViewDataBinding((holder as ImageViewHolder).ivDataBinding, holder.layoutPosition)
                 openBigImageViewActivity(holder.ivDataBinding.root)
             }
-            3 -> {
-                initViewDataBinding((holder as ImageViewHolder).ivDataBinding, holder.layoutPosition)
-                openBigImageViewActivity(holder.ivDataBinding.root)
-            }
-            4 -> {
-                initViewDataBinding((holder as AudioViewHolder).audioDataBinding, holder.layoutPosition)
-                calculateBubbleWidth((messages[holder.layoutPosition].attachment as AudioAttachment).duration, holder.audioDataBinding.root.findViewById<RelativeLayout>(R.id.bubble))
-                holder.imMessage = messages[holder.layoutPosition]
-                holder.audioControl = MessageAudioControl.getInstance()
-                holder.changeUI()
-            }
-            5 -> {
+            4, 5 -> {
                 initViewDataBinding((holder as AudioViewHolder).audioDataBinding, holder.layoutPosition)
                 calculateBubbleWidth((messages[holder.layoutPosition].attachment as AudioAttachment).duration, holder.audioDataBinding.root.findViewById<RelativeLayout>(R.id.bubble))
                 holder.imMessage = messages[holder.layoutPosition]
@@ -114,6 +108,13 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             }
             16, 17 -> {
                 (holder as TipHolder).tipDataBinding.setVariable(BR.iMMessage, messages[holder.layoutPosition])
+            }
+            18, 19 -> {
+                if (messages[holder.layoutPosition].attachment != null) {
+                    when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
+                        CustomAttachmentType.Sticker -> initViewDataBinding((holder as StickerViewHolder).ivDataBinding, holder.layoutPosition)
+                    }
+                }
             }
         }
     }
@@ -193,11 +194,19 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         }
         // 接收自定义消息
         if (messages[position].msgType == MsgTypeEnum.custom && messages[position].direct == MsgDirectionEnum.In) {
-
+            if (messages[position].attachment != null) {
+                when((messages[position].attachment as CustomAttachment).type) {
+                    CustomAttachmentType.Sticker -> return 18
+                }
+            }
         }
         // 发送自定义消息
         else if (messages[position].msgType == MsgTypeEnum.custom && messages[position].direct == MsgDirectionEnum.Out) {
-
+            if (messages[position].attachment != null) {
+                when((messages[position].attachment as CustomAttachment).type) {
+                    CustomAttachmentType.Sticker -> return 19
+                }
+            }
         }
         return super.getItemViewType(position)
     }

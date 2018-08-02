@@ -20,5 +20,7 @@ enum class ObserveResponseType {
     // 通知类消息
     CustomNotification,
     // emoji
-    Emoji
+    Emoji,
+    // sticker
+    Sticker
 }

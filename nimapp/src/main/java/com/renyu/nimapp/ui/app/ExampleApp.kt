@@ -9,7 +9,9 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.SDKOptions
 import com.netease.nimlib.sdk.auth.LoginInfo
+import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.util.NIMUtil
+import com.renyu.nimlibrary.extension.CustomAttachParser
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.StatueManager
 import com.renyu.nimlibrary.manager.UserManager
@@ -51,6 +53,8 @@ class ExampleApp : MultiDexApplication() {
             MessageManager.observeCustomNotification()
             // 监听用户资料变更
             UserManager.observeUserInfoUpdate()
+            // 注册自定义消息类型解析
+            MessageManager.registerCustomAttachmentParser()
         }
     }
 

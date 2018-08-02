@@ -87,4 +87,13 @@ public class OtherUtils {
                 BigDecimal.ROUND_HALF_UP).intValue();
     }
 
+    /**
+     * 判断文件是不是有后缀
+     * @param filename
+     * @return
+     */
+    public static boolean hasExtentsion(String filename) {
+        int dot = filename.lastIndexOf('.');
+        return (dot > -1) && (dot < (filename.length() - 1));
+    }
 }

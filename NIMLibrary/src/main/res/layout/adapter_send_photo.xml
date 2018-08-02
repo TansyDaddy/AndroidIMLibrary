@@ -37,9 +37,9 @@
                 fresco:actualImageResource="@drawable/default_grey_avatar"
                 fresco:actualImageScaleType="focusCrop"
                 fresco:placeholderImage="@drawable/default_grey_avatar"
-                fresco:placeholderImageScaleType="centerCrop"
+                fresco:placeholderImageScaleType="focusCrop"
                 fresco:failureImage="@drawable/default_grey_avatar"
-                fresco:failureImageScaleType="centerCrop"
+                fresco:failureImageScaleType="focusCrop"
                 fresco:roundAsCircle="true"/>
             <RelativeLayout
                 android:id="@+id/bubble"
@@ -55,9 +55,9 @@
                     fresco:actualImageResource="@drawable/default_grey_avatar"
                     fresco:actualImageScaleType="focusCrop"
                     fresco:placeholderImage="@drawable/default_grey_avatar"
-                    fresco:placeholderImageScaleType="centerCrop"
+                    fresco:placeholderImageScaleType="focusCrop"
                     fresco:failureImage="@drawable/default_grey_avatar"
-                    fresco:failureImageScaleType="centerCrop"
+                    fresco:failureImageScaleType="focusCrop"
                     fresco:roundedCornerRadius="15dp"
                     app:cvListImageUrl="@{iMMessage}"/>
             </RelativeLayout>

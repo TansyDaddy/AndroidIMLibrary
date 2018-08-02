@@ -18,13 +18,16 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
+import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.uinfo.UserService
+import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
+import com.renyu.nimlibrary.util.sticker.StickerUtils
 import java.io.File
 
 object BindingAdapters {
@@ -86,6 +89,17 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["emojiText"])
     fun loadEmojiText(textView: SimpleDraweeSpanTextView, text: String) {
+        EmojiUtils.replaceFaceMsgByFresco(textView, text)
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["emojiTextWithAttachment", "attachment"])
+    fun loadEmojiTextWithAttachment(textView: SimpleDraweeSpanTextView, text: String, attachment: MsgAttachment?) {
+        // 如果是自定义消息中的贴图消息
+        if (attachment != null && attachment is StickerAttachment) {
+            textView.text = "[贴图]"
+            return
+        }
         EmojiUtils.replaceFaceMsgByFresco(textView, text)
     }
 
@@ -178,6 +192,27 @@ object BindingAdapters {
                     .setImageRequest(request).setAutoPlayAnimations(true).build()
             simpleDraweeView.controller = draweeController
             simpleDraweeView.tag = imageUrl
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListSticker"])
+    fun loadChatListSticker(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
+        val path = StickerUtils.getStickerUri((imMessage.attachment as StickerAttachment).catalog,
+                (imMessage.attachment as StickerAttachment).chartlet)
+
+        if (simpleDraweeView.tag !=null &&
+                !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
+                simpleDraweeView.tag.toString() == path) {
+            // 什么都不做，防止Fresco闪烁
+        }
+        else {
+            val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(path))
+                    .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+            val draweeController = Fresco.newDraweeControllerBuilder()
+                    .setImageRequest(request).setAutoPlayAnimations(true).build()
+            simpleDraweeView.controller = draweeController
+            simpleDraweeView.tag = path
         }
     }
 }
