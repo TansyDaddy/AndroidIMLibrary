@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingLeft="15dp"
+    android:paddingRight="15dp"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:gravity="center"
+        android:id="@+id/refuse"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="拒绝"
+        android:textSize="17sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/avchat_refuse_bg_selector" />
+    <TextView
+        android:layout_marginStart="5dp"
+        android:gravity="center"
+        android:id="@+id/receive"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="开启"
+        android:textSize="17sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/avchat_receive_bg_selector" />
+</LinearLayout>
