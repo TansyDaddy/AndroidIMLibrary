@@ -16,6 +16,9 @@ import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.netease.nimlib.sdk.NIMClient
+import com.netease.nimlib.sdk.avchat.constant.AVChatRecordState
+import com.netease.nimlib.sdk.avchat.constant.AVChatType
+import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
@@ -25,7 +28,9 @@ import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.uinfo.UserService
+import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.extension.StickerAttachment
+import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
 import com.renyu.nimlibrary.util.sticker.StickerUtils
 import java.io.File
@@ -213,6 +218,32 @@ object BindingAdapters {
                     .setImageRequest(request).setAutoPlayAnimations(true).build()
             simpleDraweeView.controller = draweeController
             simpleDraweeView.tag = path
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListAvChatImage"])
+    fun loadChatListAvChatImage(imageView: ImageView, imMessage: IMMessage) {
+        if ((imMessage.attachment as AVChatAttachment).type == AVChatType.AUDIO) {
+            imageView.setImageResource(R.mipmap.avchat_left_type_audio)
+        }
+        else {
+            imageView.setImageResource(R.mipmap.avchat_left_type_video)
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListAvChatText"])
+    fun loadChatListAvChatImage(textView: TextView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as AVChatAttachment
+        textView.text = when (attachment.state) {
+            //成功接听
+            AVChatRecordState.Success -> OtherUtils.secToTime(attachment.duration)
+            //未接听
+            AVChatRecordState.Missed -> "未接听"
+            //主动拒绝
+            AVChatRecordState.Rejected -> "已挂断"
+            else -> ""
         }
     }
 }

@@ -61,12 +61,22 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_send_voice, parent,
                             false), this)
+            12 -> return AVChatViewHolder(
+                    DataBindingUtil.inflate<AdapterReceiveAvchatBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_receive_avchat, parent,
+                            false))
+            13 -> return AVChatViewHolder(
+                    DataBindingUtil.inflate<AdapterSendAvchatBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_send_avchat, parent,
+                            false))
             16, 17 -> return TipHolder(
                     DataBindingUtil.inflate<AdapterTipBinding>(
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_tip, parent,
                             false))
-            18 -> return ImageViewHolder(
+            18 -> return StickerViewHolder(
                     DataBindingUtil.inflate<AdapterReceiveStickerBinding>(
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_receive_sticker, parent,
@@ -105,6 +115,9 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 holder.imMessage = messages[holder.layoutPosition]
                 holder.audioControl = MessageAudioControl.getInstance()
                 holder.changeUI()
+            }
+            12, 13 -> {
+                initViewDataBinding((holder as AVChatViewHolder).avDataBinding, holder.layoutPosition)
             }
             16, 17 -> {
                 (holder as TipHolder).tipDataBinding.setVariable(BR.iMMessage, messages[holder.layoutPosition])
@@ -170,11 +183,11 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         }
         // 接收音视频消息
         if (messages[position].msgType == MsgTypeEnum.avchat && messages[position].direct == MsgDirectionEnum.In) {
-
+            return 12
         }
         // 发送音视频消息
         else if (messages[position].msgType == MsgTypeEnum.avchat && messages[position].direct == MsgDirectionEnum.Out) {
-
+            return 13
         }
         // 接收通知消息
         if (messages[position].msgType == MsgTypeEnum.notification && messages[position].direct == MsgDirectionEnum.In) {

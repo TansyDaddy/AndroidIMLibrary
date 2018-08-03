@@ -1,5 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.renyu.nimlibrary">
     <!-- 加入应用需要的权限 -->
     <!-- 网络相关 -->
@@ -21,13 +20,17 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- 如果需要实时音视频通话模块，下面的权限也是必须的。否则，可以不加 -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY"/>
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
     <!-- 手机状态 -->
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -42,6 +45,7 @@
     <uses-permission android:name="com.renyu.nimapp.permission.RECEIVE_MSG" />
 
     <application>
+        <!-- 我的key  e37ca5acf989a4b1c18a6036cb08df86 -->
         <meta-data
             android:name="com.netease.nim.appKey"
             android:value="e37ca5acf989a4b1c18a6036cb08df86" />
