@@ -39,6 +39,7 @@ object MessageManager {
     fun observeReceiveMessage() {
         NIMClient.getService(MsgServiceObserve::class.java)
                 .observeReceiveMessage({
+                    Log.d("NIM_APP", "发生observeReceiveMessage回调")
                     if (it != null) {
                         it.filter {
                             it.fromAccount != null
@@ -56,6 +57,7 @@ object MessageManager {
     fun observeRecentContact() {
         NIMClient.getService(MsgServiceObserve::class.java)
                 .observeRecentContact({
+                    Log.d("NIM_APP", "发生observeRecentContact回调")
                     if (it != null) {
                         it.filter {
                             it.fromAccount != null

@@ -45,10 +45,11 @@
     <uses-permission android:name="com.renyu.nimapp.permission.RECEIVE_MSG" />
 
     <application>
-        <!-- 我的key  e37ca5acf989a4b1c18a6036cb08df86 -->
+        <!-- 365测试1  e37ca5acf989a4b1c18a6036cb08df86 -->
+        <!-- 365测试   62dc70a4106624228d5bb0e1b7afccdb -->
         <meta-data
             android:name="com.netease.nim.appKey"
-            android:value="e37ca5acf989a4b1c18a6036cb08df86" />
+            android:value="62dc70a4106624228d5bb0e1b7afccdb" />
         <!-- 全面屏配置 -->
         <meta-data
             android:name="android.max_aspect"
