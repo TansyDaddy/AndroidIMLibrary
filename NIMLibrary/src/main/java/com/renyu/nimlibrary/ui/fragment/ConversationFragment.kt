@@ -51,6 +51,7 @@ import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.panel_emoji.*
 import org.json.JSONObject
 import java.io.File
+import java.util.*
 
 /**
  * Created by Administrator on 2018/7/30.
@@ -115,23 +116,44 @@ class ConversationFragment : Fragment(), EventImpl {
                     ConversationViewModelFactory(arguments!!.getString("contactId"),
                             if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P))
                     .get(ConversationViewModel::class.java)
-            vm!!.messageListResponseBefore?.observe(this, Observer {
+            vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
                     Status.SUCESS -> {
-                        val firstLoad = rv_conversation.adapter.itemCount == 0
                         vm!!.addOldIMMessages(it.data!!)
-                        if (firstLoad) {
-                            // 首次加载完成发送消息已读回执
-                            vm!!.sendMsgReceipt()
-                            // 首次加载完成滚动到最底部
-                            rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
+                        // 首次加载完成发送消息已读回执
+                        vm!!.sendMsgReceipt()
+                        // 首次加载完成滚动到最底部
+                        rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
+
+                        // 加载远程数据
+                        vm!!.loadMoreLocalMessage(true)
+                    }
+                    Status.FAIL -> {
+
+                    }
+                    Status.LOADING -> {
+
+                    }
+                    Status.Exception -> {
+
+                    }
+                }
+            })
+            vm!!.messageListResponseRemote?.observe(this, Observer {
+                when(it?.status) {
+                    Status.SUCESS -> {
+                        // 首次刷新数据
+                        if (it.message != null) {
+                            vm?.compareData(it.data!!)
                         }
-                        // 不是首次加载更新则显示最后加载的那一条
                         else {
+                            var temp = it.data!!
+                            Collections.reverse(temp)
+                            vm!!.addOldIMMessages(temp)
                             val linearManager = rv_conversation.layoutManager as LinearLayoutManager
                             val firstItemPosition = linearManager.findFirstVisibleItemPosition()
                             if (firstItemPosition == 0) {
-                                rv_conversation.scrollToPosition(it.data!!.size - 1)
+                                rv_conversation.scrollToPosition(it.data.size - 1)
                             }
                         }
                     }
@@ -281,7 +303,7 @@ class ConversationFragment : Fragment(), EventImpl {
                 // 上拉加载更多
                 val canScrollDown = rv_conversation.canScrollVertically(-1)
                 if (!canScrollDown) {
-                    vm!!.loadMoreLocalMessage()
+                    vm!!.loadMoreLocalMessage(false)
                 }
             }
         })

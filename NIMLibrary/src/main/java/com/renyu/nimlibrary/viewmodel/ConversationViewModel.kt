@@ -41,26 +41,34 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     }
 
     // 接口请求数据
-    private val messageListReqeuestBefore: MutableLiveData<IMMessage> = MutableLiveData()
-    var messageListResponseBefore: LiveData<Resource<List<IMMessage>>>? = null
+    private val messageListReqeuestLocal: MutableLiveData<IMMessage> = MutableLiveData()
+    var messageListResponseLocal: LiveData<Resource<List<IMMessage>>>? = null
+    private val messageListReqeuestRemote: MutableLiveData<IMMessage> = MutableLiveData()
+    var messageListResponseRemote: LiveData<Resource<List<IMMessage>>>? = null
 
     val adapter: ConversationAdapter by lazy {
         ConversationAdapter(messages, this)
     }
 
-    // 首次添加
-    private var firstLoad = false
-
     // "正在输入提示"指令发送时间间隔
     private var typingTime: Long = 0
 
     init {
-        messageListResponseBefore = Transformations.switchMap(messageListReqeuestBefore) {
+        messageListResponseLocal = Transformations.switchMap(messageListReqeuestLocal) {
             if (it == null) {
                 MutableLiveData<Resource<List<IMMessage>>>()
             }
             else {
-                Repos.queryMessageListExBefore(it)
+                Repos.queryMessageListExLocal(it)
+            }
+        }
+
+        messageListResponseRemote = Transformations.switchMap(messageListReqeuestRemote) {
+            if (it == null) {
+                MutableLiveData<Resource<List<IMMessage>>>()
+            }
+            else {
+                Repos.pullMessageHistory(it)
             }
         }
     }
@@ -73,15 +81,59 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         if (imMessage == null) {
             temp = MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
         }
-        messageListReqeuestBefore.value = temp
+        messageListReqeuestLocal.value = temp
     }
 
     /**
-     * 加载更多消息
+     * 加载更多消息或同步消息
      */
-    fun loadMoreLocalMessage() {
-        if (messages.size != 0) {
-            queryMessageLists(messages[0])
+    fun loadMoreLocalMessage(isFirst: Boolean) {
+        val temp = if (isFirst) {
+            MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
+        }
+        else {
+            messages[0]
+        }
+        messageListReqeuestRemote.value = temp
+    }
+
+    /**
+     * 比较首次
+     */
+    fun compareData(remoteMessages: List<IMMessage>) {
+        var findIndex = -1
+        for ((withIndex, value) in remoteMessages.withIndex()) {
+            // 相同的话就继续
+            if (messages[messages.size - withIndex - 1].uuid == value.uuid) {
+                continue
+            }
+            else {
+                // 发现不一样
+                findIndex = withIndex
+                break
+            }
+        }
+        // 如果找到的话
+        if (findIndex != -1) {
+            var temp = ArrayList<IMMessage>()
+            for (i in (findIndex until remoteMessages.size)) {
+                temp.add(remoteMessages[findIndex])
+            }
+            // 倒序排列
+            Collections.reverse(temp)
+            // 删除旧数据
+            val temp2 = ArrayList<IMMessage>()
+            for ((withIndex, value) in messages.withIndex()) {
+                if (withIndex >= findIndex) {
+                    temp2.add(value)
+                }
+            }
+            messages.removeAll(temp2)
+            // 完成数据整合
+            messages.addAll(0, temp)
+
+            adapter.updateShowTimeItem(messages, true, false)
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -93,12 +145,11 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
             return
         }
         messages.addAll(0, imMessages)
-        adapter.updateShowTimeItem(messages, true, firstLoad)
+        adapter.updateShowTimeItem(messages, true, false)
         // 添加新数据
         adapter.notifyItemRangeInserted(0, imMessages.size)
         // 根据时间变化刷新老数据
         adapter.notifyItemRangeChanged(imMessages.size, messages.size)
-        firstLoad = false
     }
 
     /**

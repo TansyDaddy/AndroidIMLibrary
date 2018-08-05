@@ -8,6 +8,7 @@ import com.netease.nimlib.sdk.auth.LoginInfo
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimapp.bean.Resource
+import com.renyu.nimapp.bean.Status
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 
@@ -71,12 +72,41 @@ object Repos {
     /**
      * 向前获取会话详情
      */
-    fun queryMessageListExBefore(message: IMMessage): LiveData<Resource<List<IMMessage>>> {
+    fun queryMessageListExLocal(message: IMMessage): LiveData<Resource<List<IMMessage>>> {
         val temp = MutableLiveData<Resource<List<IMMessage>>>()
         temp.value = Resource.loading()
         MessageManager.queryMessageListExBefore(message, object : RequestCallback<List<IMMessage>> {
             override fun onSuccess(param: List<IMMessage>?) {
                 temp.value = Resource.sucess(param)
+            }
+
+            override fun onFailed(code: Int) {
+                temp.value = Resource.failed(code)
+            }
+
+            override fun onException(exception: Throwable?) {
+                temp.value = Resource.exception(exception?.message)
+            }
+        })
+        return temp
+    }
+
+    /**
+     * 获取历史消息
+     */
+    fun pullMessageHistory(message: IMMessage): LiveData<Resource<List<IMMessage>>> {
+        val temp = MutableLiveData<Resource<List<IMMessage>>>()
+        temp.value = Resource.loading()
+        MessageManager.pullMessageHistory(message, object : RequestCallback<List<IMMessage>> {
+            override fun onSuccess(param: List<IMMessage>?) {
+                // 首次同步
+                if (message.time == 0L) {
+                    temp.value = Resource(Status.SUCESS, param, "", null)
+                }
+                // 上拉加载更多
+                else {
+                    temp.value = Resource.sucess(param)
+                }
             }
 
             override fun onFailed(code: Int) {

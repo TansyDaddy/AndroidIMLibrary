@@ -207,16 +207,18 @@ object MessageManager {
         queryMessageListEx(message, QueryDirectionEnum.QUERY_OLD, requestCallback)
     }
 
-    /**
-     * 向后获取会话详情
-     */
-    fun queryMessageListExAfter(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
-        queryMessageListEx(message, QueryDirectionEnum.QUERY_NEW, requestCallback)
-    }
-
     private fun queryMessageListEx(message: IMMessage, direction: QueryDirectionEnum, requestCallback: RequestCallback<List<IMMessage>>) {
         NIMClient.getService(MsgService::class.java)
                 .queryMessageListEx(message, direction, 20, true)
+                .setCallback(requestCallback)
+    }
+
+    /**
+     * 远程获取历史数据
+     */
+    fun pullMessageHistory(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
+        NIMClient.getService(MsgService::class.java)
+                .pullMessageHistory(message, 20, true)
                 .setCallback(requestCallback)
     }
 
