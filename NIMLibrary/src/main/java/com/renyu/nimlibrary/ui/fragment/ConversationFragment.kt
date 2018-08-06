@@ -61,10 +61,10 @@ import kotlin.collections.ArrayList
 class ConversationFragment : Fragment(), EventImpl {
 
     companion object {
-        fun getInstance(contactId: String, isGroup: Boolean): ConversationFragment {
+        fun getInstance(account: String, isGroup: Boolean): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("contactId", contactId)
+            bundle.putString("account", account)
             bundle.putBoolean("isGroup", isGroup)
             fragment.arguments = bundle
             return fragment
@@ -115,15 +115,14 @@ class ConversationFragment : Fragment(), EventImpl {
         super.onActivityCreated(savedInstanceState)
         viewDataBinding.also {
             vm = ViewModelProviders.of(this,
-                    ConversationViewModelFactory(arguments!!.getString("contactId"),
+                    ConversationViewModelFactory(arguments!!.getString("account"),
                             if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P))
                     .get(ConversationViewModel::class.java)
             vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
                     Status.SUCESS -> {
                         vm!!.addOldIMMessages(it.data!!)
-                        // 首次加载完成发送消息已读回执
-                        vm!!.sendMsgReceipt()
+
                         // 首次加载完成滚动到最底部
                         rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
 
@@ -146,7 +145,14 @@ class ConversationFragment : Fragment(), EventImpl {
                     Status.SUCESS -> {
                         // 首次刷新数据
                         if (it.message != null && it.message == "async") {
+                            // 数据匹配检查
                             vm?.compareData(it.data!!)
+
+                            // 首次加载完成发送消息已读回执
+                            vm!!.sendMsgReceipt()
+
+                            // 首次加载完成滚动到最底部
+                            rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
                         }
                         else {
                             var temp = it.data!!
@@ -189,7 +195,7 @@ class ConversationFragment : Fragment(), EventImpl {
                         if (it.type == ObserveResponseType.ReceiveMessage) {
                             // 如果当前消息是最后一条的话就自动滚动到最底部
                             val isLast = isLastMessageVisible()
-                            val receive = vm!!.receiveIMMessages(it)
+                            val receive = vm!!.addNewIMMessages(it)
                             // 正在同步中收到的新消息被忽略
                             if (!receive) {
                                 return@doOnNext
@@ -225,7 +231,7 @@ class ConversationFragment : Fragment(), EventImpl {
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {
                             // 判断属于当前会话中的用户
-                            if ((it.data as CustomNotification).sessionId == arguments!!.getString("contactId")) {
+                            if ((it.data as CustomNotification).sessionId == arguments!!.getString("account")) {
                                 val content = (it.data as CustomNotification).content
                                 val type = JSONObject(content).getString(CommonParams.TYPE)
                                 if (type == CommonParams.COMMAND_INPUT) {
@@ -256,7 +262,7 @@ class ConversationFragment : Fragment(), EventImpl {
     override fun onResume() {
         super.onResume()
         // 设置当前正在聊天的对象
-        MessageManager.setChattingAccount(arguments!!.getString("contactId"),
+        MessageManager.setChattingAccount(arguments!!.getString("account"),
                 if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P)
     }
 
@@ -416,7 +422,7 @@ class ConversationFragment : Fragment(), EventImpl {
         if (TextUtils.isEmpty(edit_conversation.text.toString())) {
             return
         }
-        vm!!.sendIMMessage(MessageManager.sendTextMessage(arguments?.getString("contactId")!!, edit_conversation.text.toString()))
+        vm!!.sendIMMessage(MessageManager.sendTextMessage(arguments?.getString("account")!!, edit_conversation.text.toString()))
         rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         // 重置文本框
         edit_conversation.setText("")
@@ -428,7 +434,7 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     fun sendImageFile(file: File) {
         Handler().postDelayed({
-            vm!!.sendIMMessage(MessageManager.sendImageMessage(arguments?.getString("contactId")!!, file))
+            vm!!.sendIMMessage(MessageManager.sendImageMessage(arguments?.getString("account")!!, file))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }, 500)
     }
@@ -438,7 +444,7 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     private fun sendAudio(file: File, duration: Long) {
         Handler().postDelayed({
-            vm!!.sendIMMessage(MessageManager.sendAudioMessage(arguments?.getString("contactId")!!, file, duration))
+            vm!!.sendIMMessage(MessageManager.sendAudioMessage(arguments?.getString("account")!!, file, duration))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }, 500)
     }
@@ -449,7 +455,7 @@ class ConversationFragment : Fragment(), EventImpl {
     private fun sendSticker(stickerItem: StickerItem) {
         Handler().postDelayed({
             val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
-            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("contactId")!!, "贴图消息", attachment))
+            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "贴图消息", attachment))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }, 500)
     }

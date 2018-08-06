@@ -3,7 +3,7 @@
     <data>
         <import type="com.renyu.nimlibrary.util.OtherUtils"></import>
         <variable
-            name="iMMessage"
+            name="imMessage"
             type="com.netease.nimlib.sdk.msg.model.IMMessage"></variable>
     </data>
     <LinearLayout
@@ -15,7 +15,7 @@
             style="@style/chat_text_date_style"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(iMMessage.getTime())}"
+            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"
             android:layout_gravity="center" />
         <TextView
             android:layout_width="wrap_content"
@@ -25,7 +25,7 @@
             android:layout_marginStart="8dip"
             android:layout_marginEnd="8dip"
             android:background="@mipmap/nim_bg_message_tip"
-            android:text="@{iMMessage.getContent()}"
+            android:text="@{imMessage.getContent()}"
             android:gravity="center"
             android:paddingStart="8dip"
             android:paddingEnd="8dip"

@@ -7,6 +7,7 @@ import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.RequestCallbackWrapper
+import com.netease.nimlib.sdk.ResponseCode
 import com.netease.nimlib.sdk.msg.MessageBuilder
 import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.MsgServiceObserve
@@ -166,8 +167,8 @@ object MessageManager {
     /**
      * 删除一条消息记录
      */
-    fun deleteChattingHistory(message: IMMessage) {
-        NIMClient.getService(MsgService::class.java).deleteChattingHistory(message)
+    fun deleteChattingHistory(imMessage: IMMessage) {
+        NIMClient.getService(MsgService::class.java).deleteChattingHistory(imMessage)
     }
 
     /**
@@ -203,53 +204,53 @@ object MessageManager {
     /**
      * 向前获取会话详情
      */
-    fun queryMessageListExBefore(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
-        queryMessageListEx(message, QueryDirectionEnum.QUERY_OLD, requestCallback)
+    fun queryMessageListExBefore(imMessage: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
+        queryMessageListEx(imMessage, QueryDirectionEnum.QUERY_OLD, requestCallback)
     }
 
-    private fun queryMessageListEx(message: IMMessage, direction: QueryDirectionEnum, requestCallback: RequestCallback<List<IMMessage>>) {
+    private fun queryMessageListEx(imMessage: IMMessage, direction: QueryDirectionEnum, requestCallback: RequestCallback<List<IMMessage>>) {
         NIMClient.getService(MsgService::class.java)
-                .queryMessageListEx(message, direction, 20, true)
+                .queryMessageListEx(imMessage, direction, 20, true)
                 .setCallback(requestCallback)
     }
 
     /**
      * 远程获取历史数据
      */
-    fun pullMessageHistory(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
+    fun pullMessageHistory(imMessage: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
         NIMClient.getService(MsgService::class.java)
-                .pullMessageHistory(message, 20, true)
+                .pullMessageHistory(imMessage, 20, true)
                 .setCallback(requestCallback)
     }
 
     /**
      * 向后查找最新数据
      */
-    fun pullMessageHistoryEx(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
+    fun pullMessageHistoryEx(imMessage: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
         NIMClient.getService(MsgService::class.java)
-                .pullMessageHistoryEx(message, System.currentTimeMillis(), 100, QueryDirectionEnum.QUERY_NEW, true)
+                .pullMessageHistoryEx(imMessage, System.currentTimeMillis(), 100, QueryDirectionEnum.QUERY_NEW, true)
                 .setCallback(requestCallback)
     }
 
     /**
      * 消息撤回
      */
-    fun revokeMessage(message: IMMessage, requestCallback: RequestCallback<Void>) {
-        NIMClient.getService(MsgService::class.java).revokeMessage(message).setCallback(requestCallback)
+    fun revokeMessage(imMessage: IMMessage, requestCallback: RequestCallback<Void>) {
+        NIMClient.getService(MsgService::class.java).revokeMessage(imMessage).setCallback(requestCallback)
     }
 
     /**
      * 保存消息到本地数据库，但不发送到服务器端
      */
-    fun saveMessageToLocal(message: IMMessage, notify: Boolean, requestCallback: RequestCallback<Void>) {
-        NIMClient.getService(MsgService::class.java).saveMessageToLocal(message, notify).setCallback(requestCallback)
+    fun saveMessageToLocal(imMessage: IMMessage, notify: Boolean, requestCallback: RequestCallback<Void>) {
+        NIMClient.getService(MsgService::class.java).saveMessageToLocal(imMessage, notify).setCallback(requestCallback)
     }
 
     /**
      * 保存消息到本地数据库，但不发送到服务器端
      */
-    fun saveMessageToLocalEx(message: IMMessage, notify: Boolean, time: Long, requestCallback: RequestCallback<Void>) {
-        NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(message, notify, time).setCallback(requestCallback)
+    fun saveMessageToLocalEx(imMessage: IMMessage, notify: Boolean, time: Long, requestCallback: RequestCallback<Void>) {
+        NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(imMessage, notify, time).setCallback(requestCallback)
     }
 
     /**
@@ -369,6 +370,16 @@ object MessageManager {
 
                     override fun onFailed(code: Int) {
                         Log.d("NIM_APP", "消息发送失败 $code")
+                        // 被接收方加入黑名单
+                        if (code == ResponseCode.RES_IN_BLACK_LIST.toInt()) {
+                            val tip = MessageBuilder.createTipMessage(imMessage.sessionId, SessionTypeEnum.P2P)
+                            tip.content = "消息已发送，但对方拒收"
+                            tip.status = MsgStatusEnum.success
+                            val config = CustomMessageConfig()
+                            config.enableUnreadCount = false
+                            tip.config = config
+                            NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(tip, true, imMessage.time)
+                        }
                     }
 
                     override fun onException(exception: Throwable?) {

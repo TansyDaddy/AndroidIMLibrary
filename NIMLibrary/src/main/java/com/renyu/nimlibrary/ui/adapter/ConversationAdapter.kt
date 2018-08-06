@@ -93,7 +93,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
     override fun getItemCount() = messages.size
 
     private fun initViewDataBinding(viewDataBinding: ViewDataBinding, position: Int) {
-        viewDataBinding.setVariable(BR.iMMessage, messages[position])
+        viewDataBinding.setVariable(BR.imMessage, messages[position])
         viewDataBinding.setVariable(BR.eventImpl, eventImpl)
         viewDataBinding.executePendingBindings()
         // 调整时间显示
@@ -120,7 +120,9 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 initViewDataBinding((holder as AVChatViewHolder).avDataBinding, holder.layoutPosition)
             }
             16, 17 -> {
-                (holder as TipHolder).tipDataBinding.setVariable(BR.iMMessage, messages[holder.layoutPosition])
+                (holder as TipHolder).tipDataBinding.setVariable(BR.imMessage, messages[holder.layoutPosition])
+                // 调整时间显示
+                modifyShowTime(position, holder.tipDataBinding)
             }
             18, 19 -> {
                 if (messages[holder.layoutPosition].attachment != null) {

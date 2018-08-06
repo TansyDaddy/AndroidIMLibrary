@@ -35,7 +35,7 @@ import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ConversationViewModel(private val contactId: String, private val sessionType: SessionTypeEnum) : ViewModel(), EventImpl {
+class ConversationViewModel(private val account: String, private val sessionType: SessionTypeEnum) : ViewModel(), EventImpl {
 
     private val messages: ArrayList<IMMessage> by lazy {
         ArrayList<IMMessage>()
@@ -83,7 +83,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     fun queryMessageLists(imMessage: IMMessage?) {
         var temp = imMessage
         if (imMessage == null) {
-            temp = MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
+            temp = MessageBuilder.createEmptyMessage(account, sessionType, 0)
         }
         messageListReqeuestLocal.value = temp
     }
@@ -96,7 +96,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
             // 开启同步
             isAsync = true
 
-            MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
+            MessageBuilder.createEmptyMessage(account, sessionType, 0)
         }
         else {
             messages[0]
@@ -105,7 +105,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     }
 
     /**
-     * 比较首次
+     * 消息同步比较
      */
     fun compareData(remoteMessages: List<IMMessage>?) {
         if (remoteMessages == null) {
@@ -113,51 +113,56 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
             isAsync = false
             return
         }
-        var findIndex = -1
+        // 如果消息没有找到，记录索引位置
+        var notFindIndex = -1
         for ((withIndex, value) in remoteMessages.withIndex()) {
-            // 相同的话就继续
-            if (messages[messages.size - withIndex - 1].uuid == value.uuid) {
-                continue
+            var find = false
+            // 循环从新到旧查找本地，跳过本地自己保存的消息
+            loop@
+            for (temp in messages) {
+                if (temp.uuid == value.uuid) {
+                    find = true
+                    break@loop
+                }
             }
-            else {
-                // 发现不一样
-                findIndex = withIndex
+            // 没有找到
+            if (!find) {
+                notFindIndex = withIndex
                 break
             }
         }
-        // 如果找到的话
-        if (findIndex != -1) {
-            var temp = ArrayList<IMMessage>()
-            for (i in (findIndex until remoteMessages.size)) {
-                temp.add(remoteMessages[findIndex])
+
+        if (notFindIndex != -1) {
+            // 找到最后一条消息
+            val lastSameIndex = notFindIndex - 1
+            val lastSameMessage = remoteMessages[lastSameIndex]
+            // 去除时间早的消息
+            val temp: ArrayList<IMMessage> = ArrayList()
+            messages.filter {
+                it.time < lastSameMessage.time
+            }.forEach {
+                temp.add(it)
+            }
+            messages.removeAll(temp)
+
+            var temp2: ArrayList<IMMessage> = ArrayList()
+            for (i in notFindIndex until remoteMessages.size) {
+                temp2.add(remoteMessages[i])
             }
             // 倒序排列
-            Collections.reverse(temp)
-            // 删除旧数据
-            val temp2 = ArrayList<IMMessage>()
-            for ((withIndex, value) in messages.withIndex()) {
-                if (withIndex >= findIndex) {
-                    temp2.add(value)
-                }
-            }
-            messages.removeAll(temp2)
-            // 完成数据整合
-            messages.addAll(0, temp)
+            Collections.reverse(temp2)
+            // 添加同步过来的额外新数据
+            messages.addAll(0, temp2)
 
             adapter.updateShowTimeItem(messages, true, false)
             adapter.notifyDataSetChanged()
-
-            // 第一条消息就不一致，则需要发送已读回执
-            if (findIndex == 0) {
-                sendMsgReceipt()
-            }
         }
         // 同步结束
         isAsync = false
     }
 
     /**
-     * 添加旧的消息数据
+     * 添加历史消息数据
      */
     fun addOldIMMessages(imMessages: List<IMMessage>) {
         if (imMessages.isEmpty()) {
@@ -172,9 +177,9 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     }
 
     /**
-     * 收到新消息
+     * 添加新消息数据
      */
-    fun receiveIMMessages(observeResponse: ObserveResponse): Boolean {
+    fun addNewIMMessages(observeResponse: ObserveResponse): Boolean {
         if (isAsync) {
             return false
         }
@@ -196,8 +201,12 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     /**
      * 发送消息
      */
-    fun sendIMMessage(message: IMMessage) {
-        messages.add(message)
+    fun sendIMMessage(imMessage: IMMessage) {
+        if (isAsync) {
+            return
+        }
+
+        messages.add(imMessage)
         adapter.updateShowTimeItem(messages, false, true)
         adapter.notifyItemInserted(messages.size - 1)
     }
@@ -207,6 +216,11 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
      */
     override fun resendIMMessage(view: View, uuid: String) {
         super.resendIMMessage(view, uuid)
+
+        if (isAsync) {
+            return
+        }
+
         // 找到重发的那条消息
         val imMessages = messages.filter {
             it.uuid == uuid
@@ -253,7 +267,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     }
 
     /**
-     * 同步新数据
+     * 同步当前页面重连成功后的新数据
      */
     fun syncNewData(imMessage: IMMessage?, receiverData: ArrayList<IMMessage>) {
         isAsync = true
@@ -261,7 +275,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         // 向下同步数据anchor
         // 如果是首次向下同步数据，则使用默认值或者最后一条消息时间
         val tempAsynAnchor = imMessage ?: if (messages.size == 0) {
-            MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
+            MessageBuilder.createEmptyMessage(account, sessionType, 0)
         } else {
             messages[messages.size - 1]
         }
@@ -310,17 +324,17 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     /**
      * 判断是不是当前聊天用户的消息
      */
-    private fun isMyMessage(message: IMMessage): Boolean {
-        return message.sessionType == sessionType && message.sessionId != null && message.sessionId == contactId
+    private fun isMyMessage(imMessage: IMMessage): Boolean {
+        return imMessage.sessionType == sessionType && imMessage.sessionId != null && imMessage.sessionId == account
     }
 
     /**
-     * 判断是不是当前聊天用户的消息
+     * 判断是不是已经添加过的消息
      */
-    private fun isMessageAdded(message: IMMessage): Boolean {
+    private fun isMessageAdded(imMessage: IMMessage): Boolean {
         var isAdded = false
         messages.filter {
-            it.uuid == message.uuid
+            it.uuid == imMessage.uuid
         }.forEach {
             isAdded = true
         }
@@ -330,11 +344,11 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     /**
      * 删除消息
      */
-    private fun deleteItem(messageItem: IMMessage, isRelocateTime: Boolean): Int {
-        MessageManager.deleteChattingHistory(messageItem)
+    private fun deleteItem(imMessage: IMMessage, isRelocateTime: Boolean): Int {
+        MessageManager.deleteChattingHistory(imMessage)
         var index = 0
         for (item in messages) {
-            if (item.isTheSame(messageItem)) {
+            if (item.isTheSame(imMessage)) {
                 break
             }
             ++index
@@ -342,17 +356,10 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         if (index < messages.size) {
             messages.removeAt(index)
             if (isRelocateTime) {
-                adapter.relocateShowTimeItemAfterDelete(messageItem, index, messages)
+                adapter.relocateShowTimeItemAfterDelete(imMessage, index, messages)
             }
         }
         return index
-    }
-
-    /**
-     * 被对方拉入黑名单后，发消息失败的交互处理
-     */
-    fun sendFailWithBlackList(content: String) {
-        MessageManager.sendTipMessage(contactId, content)
     }
 
     /**
@@ -384,7 +391,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
      * 对方撤回消息
      */
     fun receiverRevokeMessage(notification: RevokeMsgNotification) {
-        if (notification.message.sessionId == contactId) {
+        if (notification.message.sessionId == account) {
             deleteItem(notification.message, false)
             MessageManager.sendRevokeMessage(notification.message, "对方撤回了一条消息")
         }
@@ -406,7 +413,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         }
         val message = getLastReceivedMessage()
         if (message != null) {
-            MessageManager.sendReceipt(contactId, message)
+            MessageManager.sendReceipt(account, message)
         }
     }
 
@@ -427,21 +434,10 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     /**
      * 非收到的消息，Tip消息和通知类消息，不要发已读回执
      */
-    private fun sendReceiptCheck(msg: IMMessage): Boolean {
-        return !(msg.direct != MsgDirectionEnum.In ||
-                msg.msgType == MsgTypeEnum.tip ||
-                msg.msgType == MsgTypeEnum.notification)
-    }
-
-    private fun sortMessages(list: List<IMMessage>) {
-        if (!list.isEmpty()) {
-            Collections.sort(list, comp)
-        }
-    }
-
-    private val comp = Comparator<IMMessage> { o1, o2 ->
-        val time = o1!!.time - o2!!.time
-        if (time == 0L) 0 else if (time < 0) -1 else 1
+    private fun sendReceiptCheck(imMessage: IMMessage): Boolean {
+        return !(imMessage.direct != MsgDirectionEnum.In ||
+                imMessage.msgType == MsgTypeEnum.tip ||
+                imMessage.msgType == MsgTypeEnum.notification)
     }
 
     /**
@@ -455,7 +451,7 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         if (System.currentTimeMillis() - typingTime > 5000L) {
             typingTime = System.currentTimeMillis()
             val command = CustomNotification()
-            command.sessionId = contactId
+            command.sessionId = account
             command.sessionType = sessionType
             val config = CustomNotificationConfig()
             config.enablePush = false
@@ -467,5 +463,19 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
 
             NIMClient.getService(MsgService::class.java).sendCustomNotification(command)
         }
+    }
+
+    /**
+     * 消息排序
+     */
+    private fun sortMessages(list: List<IMMessage>) {
+        if (!list.isEmpty()) {
+            Collections.sort(list, comp)
+        }
+    }
+
+    private val comp = Comparator<IMMessage> { o1, o2 ->
+        val time = o1!!.time - o2!!.time
+        if (time == 0L) 0 else if (time < 0) -1 else 1
     }
 }

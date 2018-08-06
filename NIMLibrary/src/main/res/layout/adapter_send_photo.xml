@@ -4,7 +4,7 @@
     <data>
         <import type="com.renyu.nimlibrary.util.OtherUtils"></import>
         <variable
-            name="iMMessage"
+            name="imMessage"
             type="com.netease.nimlib.sdk.msg.model.IMMessage"></variable>
         <variable
             name="eventImpl"
@@ -19,7 +19,7 @@
         <TextView
             android:id="@+id/aurora_tv_msgitem_date"
             style="@style/chat_text_date_style"
-            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(iMMessage.getTime())}"
+            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <RelativeLayout
@@ -33,7 +33,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 android:layout_marginEnd="10dip"
-                app:avatarImage="@{iMMessage.getFromAccount()}"
+                app:avatarImage="@{imMessage.getFromAccount()}"
                 fresco:actualImageResource="@drawable/default_grey_avatar"
                 fresco:actualImageScaleType="focusCrop"
                 fresco:placeholderImage="@drawable/default_grey_avatar"
@@ -59,7 +59,7 @@
                     fresco:failureImage="@drawable/default_grey_avatar"
                     fresco:failureImageScaleType="focusCrop"
                     fresco:roundedCornerRadius="15dp"
-                    app:cvListImageUrl="@{iMMessage}"/>
+                    app:cvListImageUrl="@{imMessage}"/>
             </RelativeLayout>
             <ImageView
                 android:layout_width="15dp"
@@ -68,15 +68,15 @@
                 android:layout_marginEnd="12dip"
                 android:layout_toStartOf="@id/bubble"
                 android:src="@mipmap/ease_msg_state_failed_resend"
-                android:onClick="@{(view) -> eventImpl.resendIMMessage(view, iMMessage.getUuid())}"
-                app:cvListIvStatue="@{iMMessage.getStatus().getValue()}" />
+                android:onClick="@{(view) -> eventImpl.resendIMMessage(view, imMessage.getUuid())}"
+                app:cvListIvStatue="@{imMessage.getStatus().getValue()}" />
             <ProgressBar
                 android:layout_width="15dp"
                 android:layout_height="15dp"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="12dip"
                 style="@style/pb_conversation_send"
-                app:cvListPbStatue="@{iMMessage.getStatus().getValue()}"
+                app:cvListPbStatue="@{imMessage.getStatus().getValue()}"
                 android:layout_toStartOf="@id/bubble"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -89,7 +89,7 @@
                 android:layout_toStartOf="@id/bubble"
                 android:textColor="#666666"
                 android:textSize="12sp"
-                app:read="@{iMMessage}"/>
+                app:read="@{imMessage}"/>
         </RelativeLayout>
     </LinearLayout>
 </layout>

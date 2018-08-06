@@ -16,7 +16,7 @@ class ConversationActivity : AppCompatActivity(), ConversationFragment.Conversat
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
 
-        conversationFragment = ConversationFragment.getInstance(intent.getStringExtra("contactId"),
+        conversationFragment = ConversationFragment.getInstance(intent.getStringExtra("account"),
                 intent.getBooleanExtra("isGroup", false))
 
         supportFragmentManager.beginTransaction()
