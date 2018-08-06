@@ -7,6 +7,9 @@ import com.netease.nimlib.sdk.auth.AuthServiceObserver
 import com.netease.nimlib.sdk.auth.ClientType
 import com.netease.nimlib.sdk.auth.OnlineClient
 import com.netease.nimlib.sdk.auth.constant.LoginSyncStatus
+import com.renyu.nimlibrary.bean.ObserveResponse
+import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.util.RxBus
 
 object StatueManager {
 
@@ -50,6 +53,8 @@ object StatueManager {
     fun observeOnlineStatus() {
         NIMClient.getService(AuthServiceObserver::class.java)
                 .observeOnlineStatus({
+                    RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.OnlineStatus))
+
                     // 踢下线
                     if (it.wontAutoLogin()) {
 

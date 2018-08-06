@@ -26,6 +26,7 @@ import android.widget.LinearLayout
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.netease.nimlib.sdk.NIMClient
+import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
@@ -52,6 +53,7 @@ import kotlinx.android.synthetic.main.panel_emoji.*
 import org.json.JSONObject
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Created by Administrator on 2018/7/30.
@@ -143,7 +145,7 @@ class ConversationFragment : Fragment(), EventImpl {
                 when(it?.status) {
                     Status.SUCESS -> {
                         // 首次刷新数据
-                        if (it.message != null) {
+                        if (it.message != null && it.message == "async") {
                             vm?.compareData(it.data!!)
                         }
                         else {
@@ -158,13 +160,19 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                     }
                     Status.FAIL -> {
-
+                        // 首次刷新数据
+                        if (it.message != null && it.message == "async") {
+                            vm?.compareData(null)
+                        }
                     }
                     Status.LOADING -> {
 
                     }
                     Status.Exception -> {
-
+                        // 首次刷新数据
+                        if (it.message != null && it.message == "async") {
+                            vm?.compareData(null)
+                        }
                     }
                 }
             })
@@ -181,7 +189,11 @@ class ConversationFragment : Fragment(), EventImpl {
                         if (it.type == ObserveResponseType.ReceiveMessage) {
                             // 如果当前消息是最后一条的话就自动滚动到最底部
                             val isLast = isLastMessageVisible()
-                            vm!!.receiveIMMessages(it)
+                            val receive = vm!!.receiveIMMessages(it)
+                            // 正在同步中收到的新消息被忽略
+                            if (!receive) {
+                                return@doOnNext
+                            }
                             if (isLast) {
                                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
                             }
@@ -202,6 +214,13 @@ class ConversationFragment : Fragment(), EventImpl {
                         // 收到已读回执
                         if (it.type == ObserveResponseType.MessageReceipt) {
                             vm!!.receiverMsgReceipt()
+                        }
+                        // 在线状态
+                        if (it.type == ObserveResponseType.OnlineStatus) {
+                            // 如果用户登录成功，则向后同步数据
+                            if (it.data is StatusCode && (it.data as StatusCode) == StatusCode.LOGINED) {
+                                vm?.syncNewData(null, ArrayList())
+                            }
                         }
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {

@@ -19,6 +19,8 @@ enum class ObserveResponseType {
     MessageReceipt,
     // 通知类消息
     CustomNotification,
+    // 在线状态
+    OnlineStatus,
     // emoji
     Emoji,
     // sticker

@@ -223,6 +223,15 @@ object MessageManager {
     }
 
     /**
+     * 向后查找最新数据
+     */
+    fun pullMessageHistoryEx(message: IMMessage, requestCallback: RequestCallback<List<IMMessage>>) {
+        NIMClient.getService(MsgService::class.java)
+                .pullMessageHistoryEx(message, System.currentTimeMillis(), 100, QueryDirectionEnum.QUERY_NEW, true)
+                .setCallback(requestCallback)
+    }
+
+    /**
      * 消息撤回
      */
     fun revokeMessage(message: IMMessage, requestCallback: RequestCallback<Void>) {

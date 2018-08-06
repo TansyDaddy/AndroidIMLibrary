@@ -101,7 +101,7 @@ object Repos {
             override fun onSuccess(param: List<IMMessage>?) {
                 // 首次同步
                 if (message.time == 0L) {
-                    temp.value = Resource(Status.SUCESS, param, "", null)
+                    temp.value = Resource(Status.SUCESS, param, "async", null)
                 }
                 // 上拉加载更多
                 else {
@@ -110,11 +110,23 @@ object Repos {
             }
 
             override fun onFailed(code: Int) {
-                temp.value = Resource.failed(code)
+                // 首次同步
+                if (message.time == 0L) {
+                    temp.value = Resource(Status.FAIL, null, "async", null)
+                }
+                else {
+                    temp.value = Resource.failed(code)
+                }
             }
 
             override fun onException(exception: Throwable?) {
-                temp.value = Resource.exception(exception?.message)
+                // 首次同步
+                if (message.time == 0L) {
+                    temp.value = Resource(Status.Exception, null, "async", null)
+                }
+                else {
+                    temp.value = Resource.exception(exception?.message)
+                }
             }
         })
         return temp

@@ -30,6 +30,7 @@ import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ConversationAdapter
+import com.renyu.nimlibrary.util.RxBus
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
@@ -52,6 +53,9 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
 
     // "正在输入提示"指令发送时间间隔
     private var typingTime: Long = 0
+
+    // 是不是正在同步远程数据
+    private var isAsync = false
 
     init {
         messageListResponseLocal = Transformations.switchMap(messageListReqeuestLocal) {
@@ -89,6 +93,9 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
      */
     fun loadMoreLocalMessage(isFirst: Boolean) {
         val temp = if (isFirst) {
+            // 开启同步
+            isAsync = true
+
             MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
         }
         else {
@@ -100,7 +107,12 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     /**
      * 比较首次
      */
-    fun compareData(remoteMessages: List<IMMessage>) {
+    fun compareData(remoteMessages: List<IMMessage>?) {
+        if (remoteMessages == null) {
+            // 同步结束
+            isAsync = false
+            return
+        }
         var findIndex = -1
         for ((withIndex, value) in remoteMessages.withIndex()) {
             // 相同的话就继续
@@ -134,7 +146,14 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
 
             adapter.updateShowTimeItem(messages, true, false)
             adapter.notifyDataSetChanged()
+
+            // 第一条消息就不一致，则需要发送已读回执
+            if (findIndex == 0) {
+                sendMsgReceipt()
+            }
         }
+        // 同步结束
+        isAsync = false
     }
 
     /**
@@ -148,27 +167,30 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
         adapter.updateShowTimeItem(messages, true, false)
         // 添加新数据
         adapter.notifyItemRangeInserted(0, imMessages.size)
-        // 根据时间变化刷新老数据
+        // 根据时间变化刷新之前的列表
         adapter.notifyItemRangeChanged(imMessages.size, messages.size)
     }
 
     /**
      * 收到新消息
      */
-    fun receiveIMMessages(observeResponse: ObserveResponse) {
-        if (observeResponse.type == ObserveResponseType.ReceiveMessage) {
-            val temp = ArrayList<IMMessage>()
-            for (message in observeResponse.data as List<*>) {
-                if (message is IMMessage && isMyMessage(message)) {
-                    temp.add(message)
-                }
-            }
-            // 添加消息并排序
-            messages.addAll(temp)
-            sortMessages(messages)
-            adapter.updateShowTimeItem(messages, false, true)
-            adapter.notifyDataSetChanged()
+    fun receiveIMMessages(observeResponse: ObserveResponse): Boolean {
+        if (isAsync) {
+            return false
         }
+        val temp = ArrayList<IMMessage>()
+        for (message in observeResponse.data as List<*>) {
+            // 判断消息是否属于当前会话并且是否已经添加
+            if (message is IMMessage && isMyMessage(message) && !isMessageAdded(message)) {
+                temp.add(message)
+            }
+        }
+        // 添加消息并排序
+        messages.addAll(temp)
+        sortMessages(messages)
+        adapter.updateShowTimeItem(messages, false, true)
+        adapter.notifyDataSetChanged()
+        return true
     }
 
     /**
@@ -231,6 +253,50 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
     }
 
     /**
+     * 同步新数据
+     */
+    fun syncNewData(imMessage: IMMessage?, receiverData: ArrayList<IMMessage>) {
+        isAsync = true
+
+        // 向下同步数据anchor
+        // 如果是首次向下同步数据，则使用默认值或者最后一条消息时间
+        val tempAsynAnchor = imMessage ?: if (messages.size == 0) {
+            MessageBuilder.createEmptyMessage(contactId, sessionType, 0)
+        } else {
+            messages[messages.size - 1]
+        }
+
+        MessageManager.pullMessageHistoryEx(tempAsynAnchor, object : RequestCallback<List<IMMessage>> {
+            override fun onSuccess(param: List<IMMessage>?) {
+                if (param!!.isNotEmpty()) {
+                    receiverData.addAll(param)
+                    // 判断是否要继续翻页
+                    if (param.size == 100) {
+                        syncNewData(param[99], receiverData)
+                    }
+                    else {
+                        isAsync = false
+                        // 获取新数据结束，通知前台刷新
+                        RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
+                    }
+                }
+            }
+
+            override fun onFailed(code: Int) {
+                isAsync = false
+                // 获取新数据结束，通知前台刷新
+                RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
+            }
+
+            override fun onException(exception: Throwable?) {
+                isAsync = false
+                // 获取新数据结束，通知前台刷新
+                RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
+            }
+        })
+    }
+
+    /**
      * 长按消息列表
      */
     override fun onLongClick(v: View, imMessage: IMMessage): Boolean {
@@ -246,6 +312,19 @@ class ConversationViewModel(private val contactId: String, private val sessionTy
      */
     private fun isMyMessage(message: IMMessage): Boolean {
         return message.sessionType == sessionType && message.sessionId != null && message.sessionId == contactId
+    }
+
+    /**
+     * 判断是不是当前聊天用户的消息
+     */
+    private fun isMessageAdded(message: IMMessage): Boolean {
+        var isAdded = false
+        messages.filter {
+            it.uuid == message.uuid
+        }.forEach {
+            isAdded = true
+        }
+        return isAdded
     }
 
     /**
