@@ -378,7 +378,8 @@ object MessageManager {
                             val config = CustomMessageConfig()
                             config.enableUnreadCount = false
                             tip.config = config
-                            NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(tip, true, imMessage.time)
+                            // 防止消息时间相同造成时间小时错误，故加1ms
+                            NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(tip, true, imMessage.time + 1)
                         }
                     }
 

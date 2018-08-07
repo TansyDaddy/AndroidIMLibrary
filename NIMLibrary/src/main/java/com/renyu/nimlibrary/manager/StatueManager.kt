@@ -65,7 +65,11 @@ object StatueManager {
                             StatusCode.UNLOGIN -> Log.d("NIM_APP", "在线状态：未登录")
                             StatusCode.CONNECTING -> Log.d("NIM_APP", "在线状态：连接中")
                             StatusCode.LOGINING -> Log.d("NIM_APP", "在线状态：登录中")
-                            StatusCode.LOGINED -> Log.d("NIM_APP", "在线状态：登录成功")
+                            StatusCode.LOGINED -> {
+                                Log.d("NIM_APP", "在线状态：登录成功")
+                                // 发布自己的在线状态
+                                EventSubscribeManager.publishEvent()
+                            }
                             else -> {
                                 Log.d("NIM_APP", "其他异常：$it")
                             }
