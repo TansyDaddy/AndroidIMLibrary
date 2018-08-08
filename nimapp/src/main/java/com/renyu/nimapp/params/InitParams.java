@@ -13,10 +13,16 @@ public class InitParams {
     public static String InitActivityName = "com.renyu.nimapp.ui.activity.SplashActivity";
     // 自定义的会话详情activity
     public static String ConversationActivityName = "com.renyu.nimapp.ui.activity.ConversationActivity";
+
     // 通知栏图片
     public static int notificationIcon = R.mipmap.ic_launcher;
     // 通知栏颜色
     public static int notificationColor = R.color.colorPrimary;
+
+    // 小米推送参数配置
+    public static String xmAppId = "2882303761517846609";
+    public static String xmAppKey = "5801784697609";
+    public static String xmCertificateName = "nimxiaomi";
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {

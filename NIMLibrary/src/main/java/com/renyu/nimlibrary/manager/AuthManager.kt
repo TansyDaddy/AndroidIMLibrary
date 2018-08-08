@@ -9,6 +9,7 @@ import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.*
 import com.netease.nimlib.sdk.auth.AuthService
 import com.netease.nimlib.sdk.auth.LoginInfo
+import com.netease.nimlib.sdk.mixpush.MixPushConfig
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.activity.NotificationActivity
 
@@ -40,6 +41,7 @@ object AuthManager {
         options.checkManifestConfig = true
         // 配置通知栏
         options.statusBarNotificationConfig = loadStatusBarNotificationConfig()
+        options.mixPushConfig = buildMixPushConfig()
 
         NIMClient.init(Utils.getApp(), null, options)
 
@@ -70,6 +72,31 @@ object AuthManager {
         config.ledOffMs = 1500
         // 是否APP ICON显示未读数红点(Android O有效)
         config.showBadge = true
+        return config
+    }
+
+    /**
+     * 第三方推送配置
+     */
+    private fun buildMixPushConfig(): MixPushConfig {
+        // 通过反射获取
+        val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+
+        val config = MixPushConfig()
+
+        // 小米推送
+        config.xmAppId = clazz.getField("xmAppId").get(clazz).toString()
+        config.xmAppKey = clazz.getField("xmAppKey").get(clazz).toString()
+        config.xmCertificateName = clazz.getField("xmCertificateName").get(clazz).toString()
+
+        // 华为推送
+        config.hwCertificateName = "DEMO_HW_PUSH"
+
+        // 魅族推送
+        config.mzAppId = "111710"
+        config.mzAppKey = "282bdd3a37ec4f898f47c5bbbf9d2369"
+        config.mzCertificateName = "DEMO_MZ_PUSH"
+
         return config
     }
 
