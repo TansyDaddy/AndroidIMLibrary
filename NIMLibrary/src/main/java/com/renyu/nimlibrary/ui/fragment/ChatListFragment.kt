@@ -17,10 +17,12 @@ import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.databinding.FragmentChatlistBinding
+import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.viewmodel.ChatListViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+
 
 class ChatListFragment : Fragment() {
 
@@ -91,6 +93,18 @@ class ChatListFragment : Fragment() {
                     }
                 }
                 .subscribe()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 不需要通知显示
+        MessageManager.enableMsgNotification(false)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 需要通知显示
+        MessageManager.enableMsgNotification(true)
     }
 
     override fun onDestroyView() {

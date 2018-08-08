@@ -261,17 +261,15 @@ class ConversationFragment : Fragment(), EventImpl {
 
     override fun onResume() {
         super.onResume()
-        // 设置当前正在聊天的对象
+        // 消息提醒场景设置，设置为当前正在聊天的对象，当前正在聊天的对象没有通知显示，其余有
         MessageManager.setChattingAccount(arguments!!.getString("account"),
                 if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P)
     }
 
     override fun onPause() {
         super.onPause()
-
-        // 去除正在聊天的对象
-        NIMClient.getService(MsgService::class.java).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE,
-                SessionTypeEnum.None)
+        // 需要通知显示
+        MessageManager.enableMsgNotification(true)
 
         // 语音处理
         layout_record.onPause()

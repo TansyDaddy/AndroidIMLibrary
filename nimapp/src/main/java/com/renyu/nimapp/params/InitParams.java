@@ -15,6 +15,8 @@ public class InitParams {
     public static String ConversationActivityName = "com.renyu.nimapp.ui.activity.ConversationActivity";
     // 通知栏图片
     public static int notificationIcon = R.mipmap.ic_launcher;
+    // 通知栏颜色
+    public static int notificationColor = R.color.colorPrimary;
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {

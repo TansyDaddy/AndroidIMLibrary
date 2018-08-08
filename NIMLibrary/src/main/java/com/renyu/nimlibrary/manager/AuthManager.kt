@@ -1,5 +1,7 @@
 package com.renyu.nimlibrary.manager
 
+import android.app.Activity
+import android.graphics.Color
 import android.text.TextUtils
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ScreenUtils
@@ -8,6 +10,7 @@ import com.netease.nimlib.sdk.*
 import com.netease.nimlib.sdk.auth.AuthService
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.renyu.nimlibrary.params.CommonParams
+import com.renyu.nimlibrary.ui.activity.NotificationActivity
 
 object AuthManager {
 
@@ -35,8 +38,39 @@ object AuthManager {
         options.preLoadServers = true
         // 是否在 SDK 初始化时检查清单文件配置是否完全，默认为 false，建议开发者在调试阶段打开，上线时关掉
         options.checkManifestConfig = true
+        // 配置通知栏
+        options.statusBarNotificationConfig = loadStatusBarNotificationConfig()
 
         NIMClient.init(Utils.getApp(), null, options)
+
+        // 初始化消息提醒
+        NIMClient.toggleNotification(true)
+    }
+
+    /**
+     * 自定义该应用初始的 StatusBarNotificationConfig
+     */
+    private fun loadStatusBarNotificationConfig(): StatusBarNotificationConfig {
+        val config = StatusBarNotificationConfig()
+
+        val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+        val initActivityName = clazz.getField("InitActivityName").get(clazz).toString()
+        val initClass = Class.forName(initActivityName)
+
+        // 点击通知需要跳转到的界面
+        config.notificationEntrance = if (initClass != null) (initClass as Class<out Activity>) else NotificationActivity::class.java
+        config.notificationSmallIconId = Integer.parseInt(clazz.getField("notificationIcon").get(clazz).toString())
+        config.notificationColor = Integer.parseInt(clazz.getField("notificationColor").get(clazz).toString())
+        // 通知铃声的uri字符串
+        config.notificationSound = "android.resource://com.renyu.nimapp/raw/msg"
+        config.notificationFolded = true
+        // 呼吸灯配置
+        config.ledARGB = Color.GREEN
+        config.ledOnMs = 1000
+        config.ledOffMs = 1500
+        // 是否APP ICON显示未读数红点(Android O有效)
+        config.showBadge = true
+        return config
     }
 
     /**

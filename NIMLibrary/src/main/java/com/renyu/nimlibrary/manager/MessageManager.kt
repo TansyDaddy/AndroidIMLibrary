@@ -419,4 +419,16 @@ object MessageManager {
     fun updateIMMessageStatus(imMessage: IMMessage) {
         NIMClient.getService(MsgService::class.java).updateIMMessageStatus(imMessage)
     }
+
+    /**
+     * 是否需要通知栏通知
+     */
+    fun enableMsgNotification(enable: Boolean) {
+        if (enable) {
+            NIMClient.getService(MsgService::class.java).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None)
+        }
+        else {
+            NIMClient.getService(MsgService::class.java).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None)
+        }
+    }
 }
