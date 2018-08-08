@@ -23,6 +23,8 @@ public class InitParams {
     public static String xmAppId = "2882303761517846609";
     public static String xmAppKey = "5801784697609";
     public static String xmCertificateName = "nimxiaomi";
+    // 华为参数配置
+    public static String hwCertificateName = "nimhuawei";
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {

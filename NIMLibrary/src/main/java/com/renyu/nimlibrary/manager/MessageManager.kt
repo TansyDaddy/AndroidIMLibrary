@@ -14,10 +14,7 @@ import com.netease.nimlib.sdk.msg.MsgServiceObserve
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
-import com.netease.nimlib.sdk.msg.model.CustomMessageConfig
-import com.netease.nimlib.sdk.msg.model.IMMessage
-import com.netease.nimlib.sdk.msg.model.QueryDirectionEnum
-import com.netease.nimlib.sdk.msg.model.RecentContact
+import com.netease.nimlib.sdk.msg.model.*
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.extension.CustomAttachParser
@@ -359,6 +356,13 @@ object MessageManager {
      */
     fun reSendMessage(imMessage: IMMessage) {
         sendMessage(imMessage, true)
+    }
+
+    /**
+     * 发送一条指令消息
+     */
+    fun sendCustomNotification(command: CustomNotification) {
+        NIMClient.getService(MsgService::class.java).sendCustomNotification(command)
     }
 
     private fun sendMessage(imMessage: IMMessage, resend: Boolean) {

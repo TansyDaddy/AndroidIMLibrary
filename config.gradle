@@ -14,6 +14,8 @@ ext {
             // 云信版本
             nimlib                : "5.4.0",
             // 云信key
-            nim_appKey            : "62dc70a4106624228d5bb0e1b7afccdb"
+            nim_appKey            : "62dc70a4106624228d5bb0e1b7afccdb",
+            // 华为推送key
+            huaweipush_appKey     : "100373793"
     ]
 }

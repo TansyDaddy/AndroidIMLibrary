@@ -9,11 +9,9 @@ import android.view.View
 import android.widget.Toast
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.Utils
-import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.ResponseCode
 import com.netease.nimlib.sdk.msg.MessageBuilder
-import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
@@ -460,8 +458,7 @@ class ConversationViewModel(private val account: String, private val sessionType
             val json = JSONObject()
             json.put(CommonParams.TYPE, CommonParams.COMMAND_INPUT)
             command.content = json.toString()
-
-            NIMClient.getService(MsgService::class.java).sendCustomNotification(command)
+            MessageManager.sendCustomNotification(command)
         }
     }
 

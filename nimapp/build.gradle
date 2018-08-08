@@ -22,7 +22,8 @@ android {
 
         manifestPlaceholders = [
                 IM_PKGNAME : rootProject.ext.app.applicationId,
-                nim_appKey : rootProject.ext.dependencies.nim_appKey
+                nim_appKey : rootProject.ext.dependencies.nim_appKey,
+                huaweipush_appKey : rootProject.ext.dependencies.huaweipush_appKey,
         ]
     }
     signingConfigs {
