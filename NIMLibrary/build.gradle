@@ -63,6 +63,8 @@ dependencies {
     api 'com.netease.nimlib:lucene:5.4.0'
     // 小米、华为、魅族、fcm 推送
     api 'com.netease.nimlib:push:5.4.0'
+    // 华为推送
+    api 'com.huawei.android.hms:push:2.6.0.301'
     // 工具类
     api 'com.blankj:utilcode:1.17.3'
     // Fresco

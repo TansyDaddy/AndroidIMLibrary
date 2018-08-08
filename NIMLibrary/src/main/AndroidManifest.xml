@@ -38,24 +38,24 @@
     <!-- SDK权限申明, 第三方APP接入时，请将com.netease.nim.demo替换为自己的包名 -->
     <!-- 和下面的uses-permission一起加入到你的AndroidManifest文件中。 -->
     <permission
-        android:name="com.renyu.nimapp.permission.RECEIVE_MSG"
+        android:name="${IM_PKGNAME}.permission.RECEIVE_MSG"
         android:protectionLevel="signature" />
 
     <!-- 接受SDK消息广播权限， 第三方APP接入时，请将com.netease.nim.demo替换为自己的包名 -->
-    <uses-permission android:name="com.renyu.nimapp.permission.RECEIVE_MSG" />
+    <uses-permission android:name="${IM_PKGNAME}.permission.RECEIVE_MSG" />
 
     <!-- 小米推送额外配置 -->
     <!--这里com.xiaomi.mipushdemo改成app的包名-->
-    <permission android:name="com.renyu.nimapp.permission.MIPUSH_RECEIVE" android:protectionLevel="signature" />
+    <permission android:name="${IM_PKGNAME}.permission.MIPUSH_RECEIVE" android:protectionLevel="signature" />
     <!--这里com.xiaomi.mipushdemo改成app的包名-->
-    <uses-permission android:name="com.renyu.nimapp.permission.MIPUSH_RECEIVE" />
+    <uses-permission android:name="${IM_PKGNAME}.permission.MIPUSH_RECEIVE" />
 
     <application>
         <!-- 365测试1  e37ca5acf989a4b1c18a6036cb08df86 -->
         <!-- 365测试   62dc70a4106624228d5bb0e1b7afccdb -->
         <meta-data
             android:name="com.netease.nim.appKey"
-            android:value="62dc70a4106624228d5bb0e1b7afccdb" />
+            android:value="${nim_appKey}" />
         <!-- 全面屏配置 -->
         <meta-data
             android:name="android.max_aspect"
@@ -98,7 +98,7 @@
         <!-- android:authorities="{包名}.ipc.provider", 请将com.netease.nim.demo替换为自己的包名 -->
         <provider
             android:name="com.netease.nimlib.ipc.NIMContentProvider"
-            android:authorities="com.renyu.nimapp.ipc.provider"
+            android:authorities="${IM_PKGNAME}.ipc.provider"
             android:exported="false"
             android:process=":core" />
 
@@ -109,7 +109,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.renyu.nimapp.ACTION.RECEIVE_CUSTOM_NOTIFICATION" />
+                <action android:name="${IM_PKGNAME}.ACTION.RECEIVE_CUSTOM_NOTIFICATION" />
             </intent-filter>
         </receiver>
 

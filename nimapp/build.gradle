@@ -4,25 +4,48 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion rootProject.ext.app.compileSdkVersion
     defaultConfig {
-        applicationId "com.renyu.nimapp"
-        minSdkVersion 19
-        targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        applicationId rootProject.ext.app.applicationId
+        minSdkVersion rootProject.ext.app.minSdkVersion
+        targetSdkVersion rootProject.ext.app.targetSdkVersion
+        versionCode rootProject.ext.app.versionCode
+        versionName rootProject.ext.app.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         multiDexEnabled true
 
         ndk {
             //选择要添加的对应cpu类型的.so库。
-            abiFilters 'armeabi', 'armeabi-v7a', 'x86' // 还可以添加 'armeabi-v8a', 'x86_64', 'mips', 'mips64'
+            abiFilters 'armeabi-v7a', 'x86' // 还可以添加 'armeabi', 'armeabi-v8a', 'x86_64', 'mips', 'mips64'
+        }
+
+        manifestPlaceholders = [
+                IM_PKGNAME : rootProject.ext.app.applicationId,
+                nim_appKey : rootProject.ext.dependencies.nim_appKey
+        ]
+    }
+    signingConfigs {
+        release {
+            try {
+                storeFile file("house365")
+                storePassword KEYSTORE_PASSWORD
+                keyAlias "house365"
+                keyPassword KEY_PASSWORD
+            } catch (ex) {
+                throw new InvalidUserDataException(ex.toString())
+            }
         }
     }
     buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -48,8 +71,8 @@ kapt {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.dependencies.supportLibraryVersion}"
+    implementation "com.android.support:recyclerview-v7:${rootProject.ext.dependencies.supportLibraryVersion}"
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
