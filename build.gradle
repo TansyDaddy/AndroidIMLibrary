@@ -18,6 +18,7 @@ buildscript {
         // in the individual module build.gradle files
         classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.novoda:bintray-release:0.8.0'
     }
 }
 
@@ -29,8 +30,15 @@ allprojects {
         maven {url 'http://developer.huawei.com/repo'}
         maven { url "https://raw.githubusercontent.com/HyphenateInc/Hyphenate-SDK-Android/master/repository" }
     }
+
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+tasks.getByPath(":NIMLibrary:releaseAndroidJavadocs").enabled = true

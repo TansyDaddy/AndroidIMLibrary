@@ -15,10 +15,15 @@ class ConversationActivity : AppCompatActivity(), ConversationFragment.Conversat
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
+        loadFragment(intent)
+    }
 
+    /**
+     * 加载Fragment
+     */
+    private fun loadFragment(intent: Intent) {
         conversationFragment = ConversationFragment.getInstance(intent.getStringExtra("account"),
                 intent.getBooleanExtra("isGroup", false))
-
         supportFragmentManager.beginTransaction()
                 .replace(R.id.layout_conversation, conversationFragment)
                 .commitAllowingStateLoss()
@@ -79,5 +84,11 @@ class ConversationActivity : AppCompatActivity(), ConversationFragment.Conversat
         if (conversationFragment!!.canBackPressed()) {
             super.onBackPressed()
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent != null)
+            loadFragment(intent)
     }
 }

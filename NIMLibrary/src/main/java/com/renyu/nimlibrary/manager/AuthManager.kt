@@ -1,6 +1,5 @@
 package com.renyu.nimlibrary.manager
 
-import android.app.Activity
 import android.graphics.Color
 import android.text.TextUtils
 import com.blankj.utilcode.util.SPUtils
@@ -56,11 +55,9 @@ object AuthManager {
         val config = StatusBarNotificationConfig()
 
         val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-        val initActivityName = clazz.getField("InitActivityName").get(clazz).toString()
-        val initClass = Class.forName(initActivityName)
 
         // 点击通知需要跳转到的界面
-        config.notificationEntrance = if (initClass != null) (initClass as Class<out Activity>) else NotificationActivity::class.java
+        config.notificationEntrance = NotificationActivity::class.java
         config.notificationSmallIconId = Integer.parseInt(clazz.getField("notificationIcon").get(clazz).toString())
         config.notificationColor = Integer.parseInt(clazz.getField("notificationColor").get(clazz).toString())
         // 通知铃声的uri字符串
@@ -132,5 +129,12 @@ object AuthManager {
      */
     fun getStatus(): StatusCode {
         return NIMClient.getStatus()
+    }
+
+    /**
+     * 判断是不是登录成功
+     */
+    fun isLogined(): Boolean {
+        return getStatus() == StatusCode.LOGINED
     }
 }
