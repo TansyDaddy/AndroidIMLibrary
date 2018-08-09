@@ -27,13 +27,14 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
-        maven {url 'http://developer.huawei.com/repo'}
+        maven { url 'http://developer.huawei.com/repo'}
+        maven { url 'https://dl.bintray.com/r17171709/AndroidNimLibrary/'}
         maven { url "https://raw.githubusercontent.com/HyphenateInc/Hyphenate-SDK-Android/master/repository" }
     }
 
-    tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-        options.addStringOption('encoding', 'UTF-8')
+    // 不纠结Javadoc的问题了
+    tasks.withType(Javadoc).all {
+        enabled = false
     }
 }
 
@@ -41,4 +42,5 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-tasks.getByPath(":NIMLibrary:releaseAndroidJavadocs").enabled = true
+//tasks.getByPath(":需要升级的module:bintrayUpload").enabled = true
+//tasks.getByPath(":不需要升级的module:bintrayUpload").enabled = false
