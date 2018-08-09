@@ -90,7 +90,7 @@ object AuthManager {
         config.xmCertificateName = clazz.getField("xmCertificateName").get(clazz).toString()
 
         // 华为推送
-        config.hwCertificateName = "DEMO_HW_PUSH"
+        config.hwCertificateName = clazz.getField("hwCertificateName").get(clazz).toString()
 
         // 魅族推送
         config.mzAppId = "111710"
