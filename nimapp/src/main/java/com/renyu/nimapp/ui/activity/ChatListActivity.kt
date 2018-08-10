@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.StatusCode
 import com.renyu.nimapp.R
+import com.renyu.nimapp.params.InitParams
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.fragment.ChatListFragment
@@ -15,6 +16,10 @@ class ChatListActivity : AppCompatActivity() {
     private var conversationFragment: ChatListFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            InitParams.isRestore = true
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chatlist)
 
@@ -33,9 +38,15 @@ class ChatListActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.addCategory(Intent.CATEGORY_HOME)
+//        val intent = Intent(Intent.ACTION_MAIN)
+//        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//        intent.addCategory(Intent.CATEGORY_HOME)
+//        startActivity(intent)
+
+        val intent = Intent(this, SplashActivity::class.java)
+        intent.putExtra(InitParams.TYPE, InitParams.FINISH)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         startActivity(intent)
+        finish()
     }
 }

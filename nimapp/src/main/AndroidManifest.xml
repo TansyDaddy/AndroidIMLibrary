@@ -42,5 +42,7 @@
             android:name=".ui.activity.BigImageActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize" />
+        <!-- 务必要实现 -->
+        <activity android:name=".ui.activity.NotificationActivity" android:screenOrientation="portrait"/>
     </application>
 </manifest>

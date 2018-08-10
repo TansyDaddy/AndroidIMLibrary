@@ -185,7 +185,5 @@
                 <action android:name="com.huawei.intent.action.PUSH" />
             </intent-filter>
         </receiver>
-
-        <activity android:name=".ui.activity.NotificationActivity" android:screenOrientation="portrait"/>
     </application>
 </manifest>

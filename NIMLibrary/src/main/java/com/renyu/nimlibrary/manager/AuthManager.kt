@@ -1,5 +1,6 @@
 package com.renyu.nimlibrary.manager
 
+import android.app.Activity
 import android.graphics.Color
 import android.text.TextUtils
 import com.blankj.utilcode.util.SPUtils
@@ -10,7 +11,6 @@ import com.netease.nimlib.sdk.auth.AuthService
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.netease.nimlib.sdk.mixpush.MixPushConfig
 import com.renyu.nimlibrary.params.CommonParams
-import com.renyu.nimlibrary.ui.activity.NotificationActivity
 
 object AuthManager {
 
@@ -55,9 +55,11 @@ object AuthManager {
         val config = StatusBarNotificationConfig()
 
         val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+        val notificationActivityName = clazz.getField("NotificationActivityName").get(clazz).toString()
+        val notificationActivityClass = Class.forName(notificationActivityName)
 
         // 点击通知需要跳转到的界面
-        config.notificationEntrance = NotificationActivity::class.java
+        config.notificationEntrance = notificationActivityClass as Class<out Activity>
         config.notificationSmallIconId = Integer.parseInt(clazz.getField("notificationIcon").get(clazz).toString())
         config.notificationColor = Integer.parseInt(clazz.getField("notificationColor").get(clazz).toString())
         // 通知铃声的uri字符串

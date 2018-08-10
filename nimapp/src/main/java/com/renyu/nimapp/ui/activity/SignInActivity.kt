@@ -14,6 +14,7 @@ import com.renyu.nimapp.R
 import com.renyu.nimapp.bean.Resource
 import com.renyu.nimapp.bean.Status
 import com.renyu.nimapp.databinding.ActivitySigninBinding
+import com.renyu.nimapp.params.InitParams
 import com.renyu.nimapp.viewmodel.SignInViewModel
 import com.renyu.nimlibrary.BR
 import com.renyu.nimlibrary.binding.EventImpl
@@ -46,7 +47,7 @@ class SignInActivity : AppCompatActivity(), EventImpl {
 
                         // 登录成功跳转首页
                         val intent = Intent(this@SignInActivity, SplashActivity::class.java)
-                        intent.putExtra(CommonParams.TYPE, CommonParams.MAIN)
+                        intent.putExtra(InitParams.TYPE, InitParams.MAIN)
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         startActivity(intent)
                         finish()
@@ -75,7 +76,7 @@ class SignInActivity : AppCompatActivity(), EventImpl {
 
     override fun onBackPressed() {
         val intent = Intent(this, SplashActivity::class.java)
-        intent.putExtra(CommonParams.TYPE, CommonParams.SIGNINBACK)
+        intent.putExtra(InitParams.TYPE, InitParams.SIGNINBACK)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         startActivity(intent)
         finish()

@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import com.blankj.utilcode.util.SPUtils
 import com.renyu.nimapp.R
+import com.renyu.nimapp.params.InitParams
 import com.renyu.nimlibrary.params.CommonParams
 
 class SplashActivity : AppCompatActivity() {
@@ -14,14 +15,17 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
+        InitParams.isFirst = true
+
         if (CommonParams.isKickout) {
             CommonParams.isKickout = false
             // 重置回收标志位
-            CommonParams.isRestore = false
+            InitParams.isRestore = false
         }
 
         // 发生回收，若执行返回操作则执行页面关闭
-        if (CommonParams.isRestore) {
+        if (InitParams.isRestore) {
+            InitParams.isFirst = false
             finish()
             return
         }
@@ -41,22 +45,24 @@ class SplashActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         // 重置回收标志位
-        CommonParams.isRestore = false
+        InitParams.isRestore = false
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.getIntExtra(CommonParams.TYPE, -1) == CommonParams.FINISH) {
+        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.FINISH) {
+            InitParams.isFirst = false
             finish()
         }
-        if (intent.getIntExtra(CommonParams.TYPE, -1) == CommonParams.KICKOUT) {
+        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.KICKOUT) {
             CommonParams.isKickout = false
             startActivity(Intent(this@SplashActivity, SignInActivity::class.java))
         }
-        if (intent.getIntExtra(CommonParams.TYPE, -1) == CommonParams.SIGNINBACK) {
+        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.SIGNINBACK) {
+            InitParams.isFirst = false
             finish()
         }
-        if (intent.getIntExtra(CommonParams.TYPE, -1) == CommonParams.MAIN) {
+        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.MAIN) {
             startActivity(Intent(this@SplashActivity, ChatListActivity::class.java))
         }
     }

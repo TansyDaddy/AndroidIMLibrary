@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.renyu.nimapp.R
+import com.renyu.nimapp.params.InitParams
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
@@ -13,6 +14,10 @@ class ConversationActivity : AppCompatActivity(), ConversationFragment.Conversat
     private var conversationFragment: ConversationFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState != null) {
+            InitParams.isRestore = true
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
         loadFragment(intent)
