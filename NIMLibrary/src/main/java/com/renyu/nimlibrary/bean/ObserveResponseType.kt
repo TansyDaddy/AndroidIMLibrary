@@ -21,6 +21,8 @@ enum class ObserveResponseType {
     CustomNotification,
     // 在线状态
     OnlineStatus,
+    // 被踢下线
+    Kickout,
     // emoji
     Emoji,
     // sticker

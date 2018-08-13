@@ -5,7 +5,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import com.netease.nimlib.sdk.auth.LoginInfo
-import com.renyu.nimapp.bean.Resource
+import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.repository.Repos
 
 class SignInViewModel : ViewModel() {

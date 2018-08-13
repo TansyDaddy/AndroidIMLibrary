@@ -1,9 +1,9 @@
 package com.renyu.nimapp.params;
 
-import android.widget.Toast;
-
-import com.blankj.utilcode.util.Utils;
 import com.renyu.nimapp.R;
+import com.renyu.nimlibrary.bean.ObserveResponse;
+import com.renyu.nimlibrary.bean.ObserveResponseType;
+import com.renyu.nimlibrary.util.RxBus;
 
 /**
  * 参数配置位置，因为通过反射，所以一定要类名位置写对
@@ -28,7 +28,7 @@ public class InitParams {
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {
-        Toast.makeText(Utils.getApp(), "HI，我退出了", Toast.LENGTH_SHORT).show();
+        RxBus.getDefault().post(new ObserveResponse("", ObserveResponseType.Kickout));
     }
 
     // ***********************************  Demo配置使用，不是必须实现内容  ***********************************

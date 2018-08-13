@@ -1,4 +1,4 @@
-package com.renyu.nimapp.bean
+package com.renyu.nimlibrary.bean
 
 enum class Status {
     SUCESS,

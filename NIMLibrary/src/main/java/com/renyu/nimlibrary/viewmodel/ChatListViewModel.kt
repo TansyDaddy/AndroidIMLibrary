@@ -9,7 +9,7 @@ import android.view.View
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.UserService
-import com.renyu.nimapp.bean.Resource
+import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.MessageManager

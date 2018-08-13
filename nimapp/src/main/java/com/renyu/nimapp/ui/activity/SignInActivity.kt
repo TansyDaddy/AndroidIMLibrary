@@ -11,8 +11,8 @@ import android.view.View
 import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.renyu.nimapp.R
-import com.renyu.nimapp.bean.Resource
-import com.renyu.nimapp.bean.Status
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimapp.databinding.ActivitySigninBinding
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimapp.viewmodel.SignInViewModel

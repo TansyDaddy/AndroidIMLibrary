@@ -5,10 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
 import java.io.File
 
-class TakePhotoActivity : AppCompatActivity() {
+class TakePhotoActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

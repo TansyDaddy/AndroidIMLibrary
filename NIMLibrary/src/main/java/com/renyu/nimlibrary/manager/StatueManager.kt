@@ -1,6 +1,7 @@
 package com.renyu.nimlibrary.manager
 
 import android.util.Log
+import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.auth.AuthServiceObserver
@@ -9,6 +10,7 @@ import com.netease.nimlib.sdk.auth.OnlineClient
 import com.netease.nimlib.sdk.auth.constant.LoginSyncStatus
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.util.RxBus
 
 object StatueManager {
@@ -46,20 +48,29 @@ object StatueManager {
                 }, true)
     }
 
-
     /**
      * 监听用户在线状态
      */
     fun observeOnlineStatus() {
         NIMClient.getService(AuthServiceObserver::class.java)
                 .observeOnlineStatus({
-                    RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.OnlineStatus))
-
                     // 踢下线
                     if (it.wontAutoLogin()) {
+                        Log.d("NIM_APP", "被踢下线")
 
+                        SPUtils.getInstance().remove(CommonParams.SP_UNAME)
+                        SPUtils.getInstance().remove(CommonParams.SP_PWD)
+
+                        CommonParams.isKickout = true
+
+                        // 第三方框架自行处理踢下线方法
+                        val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+                        val kickoutFuncMethod = clazz.getDeclaredMethod("kickoutFunc")
+                        kickoutFuncMethod.invoke(null)
                     }
                     else {
+                        RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.OnlineStatus))
+
                         when (it) {
                             StatusCode.NET_BROKEN -> Log.d("NIM_APP", "在线状态：当前网络不可用")
                             StatusCode.UNLOGIN -> Log.d("NIM_APP", "在线状态：未登录")

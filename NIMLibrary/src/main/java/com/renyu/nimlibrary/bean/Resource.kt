@@ -1,4 +1,4 @@
-package com.renyu.nimapp.bean
+package com.renyu.nimlibrary.bean
 
 data class Resource<T>(val status: Status, val data: T?, val message: String?, val code:Int?) {
     companion object {

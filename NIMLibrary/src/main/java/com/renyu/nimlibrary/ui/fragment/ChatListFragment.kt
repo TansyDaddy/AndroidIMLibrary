@@ -11,8 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.model.RecentContact
-import com.renyu.nimapp.bean.Resource
-import com.renyu.nimapp.bean.Status
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType

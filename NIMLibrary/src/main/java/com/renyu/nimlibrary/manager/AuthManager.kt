@@ -11,6 +11,9 @@ import com.netease.nimlib.sdk.auth.AuthService
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.netease.nimlib.sdk.mixpush.MixPushConfig
 import com.renyu.nimlibrary.params.CommonParams
+import com.netease.nimlib.sdk.NIMClient
+
+
 
 object AuthManager {
 
@@ -138,5 +141,16 @@ object AuthManager {
      */
     fun isLogined(): Boolean {
         return getStatus() == StatusCode.LOGINED
+    }
+
+    /**
+     * 登出
+     */
+    fun logout() {
+        // 清除用户登录信息
+        SPUtils.getInstance().remove(CommonParams.SP_UNAME)
+        SPUtils.getInstance().remove(CommonParams.SP_PWD)
+
+        NIMClient.getService(AuthService::class.java).logout()
     }
 }

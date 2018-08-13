@@ -7,8 +7,8 @@ import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RecentContact
-import com.renyu.nimapp.bean.Resource
-import com.renyu.nimapp.bean.Status
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 

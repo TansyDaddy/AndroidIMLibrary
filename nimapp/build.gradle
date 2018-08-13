@@ -81,6 +81,8 @@ dependencies {
     implementation "org.jetbrains.anko:anko:$anko_version"
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'com.android.support:multidex:1.0.3'
+    // rxandroid
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     implementation project(':NIMAvChatLibrary')
 //    implementation 'com.github.renyu:AndroidNimLibrary:1.0.0'
     implementation project(':NIMLibrary')

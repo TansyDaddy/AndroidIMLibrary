@@ -3,14 +3,13 @@ package com.renyu.nimapp.ui.activity
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
-class ConversationActivity : AppCompatActivity(), ConversationFragment.ConversationListener {
+class ConversationActivity : BaseActivity(), ConversationFragment.ConversationListener {
     private var conversationFragment: ConversationFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -20,7 +20,7 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimapp.bean.Resource
+import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.binding.EventImpl

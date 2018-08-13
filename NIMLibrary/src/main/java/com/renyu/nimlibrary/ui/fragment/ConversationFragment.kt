@@ -25,13 +25,11 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
-import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
-import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimapp.bean.Status
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType

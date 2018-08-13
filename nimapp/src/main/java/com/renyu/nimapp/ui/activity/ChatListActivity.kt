@@ -2,7 +2,6 @@ package com.renyu.nimapp.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.StatusCode
 import com.renyu.nimapp.R
@@ -10,8 +9,9 @@ import com.renyu.nimapp.params.InitParams
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.fragment.ChatListFragment
+import kotlinx.android.synthetic.main.view_nav.*
 
-class ChatListActivity : AppCompatActivity() {
+class ChatListActivity : BaseActivity() {
 
     private var conversationFragment: ChatListFragment? = null
 
@@ -22,6 +22,14 @@ class ChatListActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chatlist)
+
+        tv_nav_right.text = "退出登录"
+        tv_nav_right.setOnClickListener {
+            // 退出登录
+            AuthManager.logout()
+            // 打开登录页
+            jumpToSignIn()
+        }
 
         conversationFragment = ChatListFragment()
         supportFragmentManager
