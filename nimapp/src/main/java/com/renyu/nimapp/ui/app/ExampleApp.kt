@@ -4,7 +4,7 @@ import android.support.multidex.MultiDexApplication
 import com.blankj.utilcode.util.Utils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.util.NIMUtil
-import com.renyu.nimavchatlibrary.manager.AVManager
+import com.renyu.nimavchatlibrary.noui.manager.AVManager
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.StatueManager
@@ -52,8 +52,8 @@ class ExampleApp : MultiDexApplication() {
             UserManager.observeUserInfoUpdate()
             // 注册自定义消息类型解析
             MessageManager.registerCustomAttachmentParser()
-            // 音视频通话基础配置
-            AVManager.init()
+            // 音视频通话接听配置
+            AVManager.observeIncomingCall()
 
             // 假登录获取本地数据
             AuthManager.fakeLogin()

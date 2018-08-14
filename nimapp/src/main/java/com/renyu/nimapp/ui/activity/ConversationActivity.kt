@@ -25,7 +25,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         loadFragment(intent)
 
         val jsonObject = JSONObject()
-        jsonObject.put("key", "value")
+        jsonObject.put("account", intent.getStringExtra("account"))
         AVChatActivity.outgoingCall(this, intent.getStringExtra("account"), jsonObject.toString(), AVChatType.AUDIO.value, AVChatActivity.FROM_INTERNAL)
     }
 

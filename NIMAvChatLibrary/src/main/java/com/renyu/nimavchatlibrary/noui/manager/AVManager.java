@@ -9,11 +9,13 @@ import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.auth.ClientType;
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
+import com.netease.nimlib.sdk.avchat.constant.AVChatControlCommand;
 import com.netease.nimlib.sdk.avchat.constant.AVChatEventType;
 import com.netease.nimlib.sdk.avchat.constant.AVChatType;
 import com.netease.nimlib.sdk.avchat.model.AVChatCalleeAckEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
 import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
+import com.netease.nimlib.sdk.avchat.model.AVChatControlEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
 import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
 import com.netease.nimlib.sdk.avchat.model.AVChatOnlineAckEvent;
@@ -25,6 +27,7 @@ import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
 import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
 import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
+import com.renyu.nimavchatlibrary.noui.AVChatActivity;
 import com.renyu.nimavchatlibrary.receiver.PhoneCallStateObserver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +50,15 @@ public class AVManager {
 
     // 来电超时
     private Observer<Integer> timeoutObserver = (Observer<Integer>) integer -> hangUp(AVChatExitCode.CANCEL);
+
+    // 网络通话控制命令通知
+    Observer<AVChatControlEvent> callControlObserver = (Observer<AVChatControlEvent>) netCallControlNotification -> {
+        // 不是当前音视频聊天用户
+        if (AVChatManager.getInstance().getCurrentChatId() != netCallControlNotification.getChatId()) {
+            return;
+        }
+        Log.d("NIM_AV_APP", "对方发来指令值：" + netCallControlNotification.getControlCommand());
+    };
 
     private SimpleAVChatStateObserver avchatStateObserver = new SimpleAVChatStateObserver() {
         /**
@@ -175,6 +187,7 @@ public class AVManager {
         AVChatManager.getInstance().observeAVChatState(avchatStateObserver, register);
         AVChatManager.getInstance().observeHangUpNotification(callHangupObserver, register);
         AVChatManager.getInstance().observeCalleeAckNotification(callAckObserver, register);
+        AVChatManager.getInstance().observeControlNotification(callControlObserver, register);
         AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, register, mIsInComingCall);
         AVChatManager.getInstance().observeOnlineAckNotification(onlineAckObserver, register);
         PhoneCallStateObserver.getInstance().observeAutoHangUpForLocalPhone(autoHangUpForLocalPhoneObserver, register);
@@ -212,6 +225,37 @@ public class AVManager {
             @Override
             public void onException(Throwable exception) {
                 closeRtc();
+            }
+        });
+    }
+
+    public void receive() {
+        AVChatManager.getInstance().enableRtc();
+        if (mVideoCapturer == null) {
+            mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
+            AVChatManager.getInstance().setupVideoCapturer(mVideoCapturer);
+            AVChatManager.getInstance().setParameters(avChatConfigs.getAvChatParameters());
+        }
+        AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
+        AVChatManager.getInstance().accept2(avChatData.getChatId(), new AVChatCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                isCallEstablish.set(true);
+            }
+
+            @Override
+            public void onFailed(int code) {
+                if (code == -1) {
+                    Toast.makeText(Utils.getApp(), "本地音视频启动失败", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Utils.getApp(), "建立连接失败", Toast.LENGTH_SHORT).show();
+                }
+                hangUp(AVChatExitCode.CANCEL);
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                hangUp(AVChatExitCode.CANCEL);
             }
         });
     }
@@ -326,5 +370,35 @@ public class AVManager {
      */
     public void toggleSpeaker() {
         AVChatManager.getInstance().setSpeaker(!AVChatManager.getInstance().speakerEnabled());
+    }
+
+    /**
+     * 注册网络来电
+     */
+    public static void observeIncomingCall() {
+        AVChatManager.getInstance().observeIncomingCall((Observer<AVChatData>) avChatData -> {
+            String extra = avChatData.getExtra();
+            if (PhoneCallStateObserver.getInstance().getPhoneCallState() != PhoneCallStateObserver.PhoneCallStateEnum.IDLE
+                    || AVManager.isAVChatting()
+                    || AVChatManager.getInstance().getCurrentChatId() != 0) {
+                // 给对方用户发送占线指令
+                AVChatManager.getInstance().sendControlCommand(avChatData.getChatId(), AVChatControlCommand.BUSY, null);
+                return;
+            }
+            // 有网络来电打开AVChatActivity
+            AVManager.setAVChatting(true);
+            AVChatActivity.incomingCall(Utils.getApp(), avChatData.getAccount(), extra, AVChatType.AUDIO.getValue(), avChatData, AVChatActivity.FROM_BROADCASTRECEIVER);
+        }, true);
+    }
+
+    // 是否正在音视频通话
+    private static boolean isAVChatting = false;
+
+    public static boolean isAVChatting() {
+        return isAVChatting;
+    }
+
+    public static void setAVChatting(boolean chating) {
+        isAVChatting = chating;
     }
 }

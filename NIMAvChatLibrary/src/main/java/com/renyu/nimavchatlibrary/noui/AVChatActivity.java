@@ -57,6 +57,25 @@ public class AVChatActivity extends Activity {
         context.startActivity(intent);
     }
 
+    /**
+     * 接听电话
+     * @param context
+     * @param config
+     * @param source
+     */
+    public static void incomingCall(Context context, String account, String extendMessage, int callType, AVChatData config, int source) {
+        needFinish = false;
+        Intent intent = new Intent(context, AVChatActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(KEY_ACCOUNT, account);
+        intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
+        intent.putExtra(KEY_CALL_CONFIG, config);
+        intent.putExtra(KEY_IN_CALLING, true);
+        intent.putExtra(KEY_CALL_TYPE, callType);
+        intent.putExtra(KEY_SOURCE, source);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +116,8 @@ public class AVChatActivity extends Activity {
             if (mIsInComingCall) {
                 // 来电
                 AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.RING);
+                // 接听电话
+                manager.receive();
             }
             else {
                 // 去电
@@ -137,6 +158,9 @@ public class AVChatActivity extends Activity {
 
         // 关闭所有监听
         manager.registerObserves(false);
+
+        // 设置当前没有接听音视频消息
+        AVManager.setAVChatting(false);
 
         needFinish = true;
     }
