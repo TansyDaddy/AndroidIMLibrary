@@ -15,6 +15,7 @@ import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimapp.databinding.ActivitySigninBinding
 import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.util.string.MD5
 import com.renyu.nimapp.viewmodel.SignInViewModel
 import com.renyu.nimlibrary.BR
 import com.renyu.nimlibrary.binding.EventImpl
@@ -69,7 +70,7 @@ class SignInActivity : AppCompatActivity(), EventImpl {
     override fun click(view: View) {
         when(view.id) {
             R.id.btn_signin -> {
-                vm!!.login(ed_username.text.toString(), ed_pwd.text.toString())
+                vm!!.login(ed_username.text.toString(), MD5.getStringMD5(ed_pwd.text.toString()))
             }
         }
     }

@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.renyu.nimavchatlibrary" >
     <application>
+        <activity android:name=".noui.AVChatActivity"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullScreenTheme"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".ui.activity.AVChatActivity"
             android:launchMode="singleInstance"

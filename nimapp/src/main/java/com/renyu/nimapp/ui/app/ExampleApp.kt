@@ -30,6 +30,8 @@ class ExampleApp : MultiDexApplication() {
             StatueManager.observeLoginSyncDataStatus()
             // 监听多端登录状态
             StatueManager.observeOtherClients()
+            // 过滤音视频聊天消息
+            MessageManager.registerIMMessageFilter()
             // 消息接收观察者
             MessageManager.observeReceiveMessage()
             // 监听最近会话变更

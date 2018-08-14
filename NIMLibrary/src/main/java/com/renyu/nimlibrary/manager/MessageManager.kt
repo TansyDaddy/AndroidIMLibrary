@@ -8,6 +8,7 @@ import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.RequestCallbackWrapper
 import com.netease.nimlib.sdk.ResponseCode
+import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
 import com.netease.nimlib.sdk.msg.MessageBuilder
 import com.netease.nimlib.sdk.msg.MsgService
 import com.netease.nimlib.sdk.msg.MsgServiceObserve
@@ -433,6 +434,18 @@ object MessageManager {
         }
         else {
             NIMClient.getService(MsgService::class.java).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None)
+        }
+    }
+
+    /**
+     * 通知消息过滤器（如果过滤则该消息不存储不上报）
+     */
+    fun registerIMMessageFilter() {
+        NIMClient.getService(MsgService::class.java).registerIMMessageFilter {
+            if (it.attachment is AVChatAttachment) {
+                return@registerIMMessageFilter true
+            }
+            return@registerIMMessageFilter false
         }
     }
 }

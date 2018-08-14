@@ -1,0 +1,330 @@
+package com.renyu.nimavchatlibrary.noui.manager;
+
+import android.util.Log;
+import android.widget.Toast;
+
+import com.blankj.utilcode.util.Utils;
+import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.auth.ClientType;
+import com.netease.nimlib.sdk.avchat.AVChatCallback;
+import com.netease.nimlib.sdk.avchat.AVChatManager;
+import com.netease.nimlib.sdk.avchat.constant.AVChatEventType;
+import com.netease.nimlib.sdk.avchat.constant.AVChatType;
+import com.netease.nimlib.sdk.avchat.model.AVChatCalleeAckEvent;
+import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
+import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
+import com.netease.nimlib.sdk.avchat.model.AVChatData;
+import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
+import com.netease.nimlib.sdk.avchat.model.AVChatOnlineAckEvent;
+import com.netease.nimlib.sdk.avchat.model.AVChatParameters;
+import com.netease.nimlib.sdk.avchat.model.AVChatVideoCapturerFactory;
+import com.renyu.nimavchatlibrary.R;
+import com.renyu.nimavchatlibrary.config.AVChatConfigs;
+import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
+import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
+import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
+import com.renyu.nimavchatlibrary.receiver.PhoneCallStateObserver;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class AVManager {
+
+    private boolean mIsInComingCall;
+
+    private AVChatData avChatData;
+
+    private AVChatCameraCapturer mVideoCapturer;
+    // 音视频配置参数
+    private AVChatConfigs avChatConfigs;
+    // 是否已经结束音视频服务
+    private boolean destroyRTC = false;
+    // 是否恢复音频通话
+    private boolean needRestoreLocalAudio = false;
+
+    private AtomicBoolean isCallEstablish = new AtomicBoolean(false);
+
+    // 来电超时
+    private Observer<Integer> timeoutObserver = (Observer<Integer>) integer -> hangUp(AVChatExitCode.CANCEL);
+
+    private SimpleAVChatStateObserver avchatStateObserver = new SimpleAVChatStateObserver() {
+        /**
+         * 服务器连接回调
+         * @param code
+         * @param audioFile
+         * @param videoFile
+         * @param elapsed
+         */
+        @Override
+        public void onJoinedChannel(int code, String audioFile, String videoFile, int elapsed) {
+            super.onJoinedChannel(code, audioFile, videoFile, elapsed);
+            if (code == 200) {
+                Log.d("NIM_AV_APP", "连接成功");
+            } else if (code == 101) { // 连接超时
+                showQuitToast(AVChatExitCode.PEER_NO_RESPONSE);
+            } else if (code == 401) { // 验证失败
+                showQuitToast(AVChatExitCode.CONFIG_ERROR);
+            } else if (code == 417) { // 无效的channelId
+                showQuitToast(AVChatExitCode.INVALIDE_CHANNELID);
+            } else { // 连接服务器错误，直接退出
+                showQuitToast(AVChatExitCode.CONFIG_ERROR);
+            }
+        }
+
+        /**
+         * 用户加入频道
+         * @param account
+         */
+        @Override
+        public void onUserJoined(String account) {
+            super.onUserJoined(account);
+        }
+
+        /**
+         * 用户离开频道
+         * @param account
+         * @param event
+         */
+        @Override
+        public void onUserLeave(String account, int event) {
+            super.onUserLeave(account, event);
+            hangUp(AVChatExitCode.HANGUP);
+        }
+
+        /**
+         * 会话成功建立
+         */
+        @Override
+        public void onCallEstablished() {
+            super.onCallEstablished();
+            //移除超时监听
+            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, mIsInComingCall);
+        }
+    };
+
+    // 通话过程中，收到对方挂断电话
+    private Observer<AVChatCommonEvent> callHangupObserver = (Observer<AVChatCommonEvent>) avChatCommonEvent -> {
+        if (avChatData != null && avChatData.getChatId() == avChatCommonEvent.getChatId()) {
+            onHangUp(AVChatExitCode.HANGUP);
+        }
+    };
+
+    // 呼叫时，被叫方的响应（接听、拒绝、忙）
+    private Observer<AVChatCalleeAckEvent> callAckObserver = (Observer<AVChatCalleeAckEvent>) avChatCalleeAckEvent -> {
+        if (avChatData != null && avChatData.getChatId() == avChatCalleeAckEvent.getChatId()) {
+            AVChatSoundPlayer.instance().stop();
+            if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_BUSY) {
+                AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.PEER_BUSY);
+                onHangUp(AVChatExitCode.PEER_BUSY);
+            } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_REJECT) {
+                onHangUp(AVChatExitCode.REJECT);
+            } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_AGREE) {
+                isCallEstablish.set(true);
+            }
+        }
+    };
+
+    // 注册/注销同时在线的其他端对主叫方的响应
+    private Observer<AVChatOnlineAckEvent> onlineAckObserver = (Observer<AVChatOnlineAckEvent>) avChatOnlineAckEvent -> {
+        if (avChatData != null && avChatData.getChatId() == avChatOnlineAckEvent.getChatId()) {
+            AVChatSoundPlayer.instance().stop();
+
+            String client = null;
+            switch (avChatOnlineAckEvent.getClientType()) {
+                case ClientType.Web:
+                    client = "Web";
+                    break;
+                case ClientType.Windows:
+                    client = "Windows";
+                    break;
+                case ClientType.Android:
+                    client = "Android";
+                    break;
+                case ClientType.iOS:
+                    client = "iOS";
+                    break;
+                case ClientType.MAC:
+                    client = "Mac";
+                    break;
+                default:
+                    break;
+            }
+            if (client != null) {
+                String option = avChatOnlineAckEvent.getEvent() == AVChatEventType.CALLEE_ONLINE_CLIENT_ACK_AGREE ? "接听！" : "拒绝！";
+                Toast.makeText(Utils.getApp(), "通话已在" + client + "端被" + option, Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
+    // 发生本地来电的通知
+    private Observer<Integer> autoHangUpForLocalPhoneObserver = (Observer<Integer>) integer -> onHangUp(AVChatExitCode.PEER_BUSY);
+
+    private AVManager() {
+
+    }
+
+    public AVManager(AVChatData avChatData, boolean mIsInComingCall) {
+        this.avChatData = avChatData;
+        this.mIsInComingCall = mIsInComingCall;
+        // 配置音视频参数
+        avChatConfigs = new AVChatConfigs(Utils.getApp());
+    }
+
+    public void registerObserves(boolean register) {
+        AVChatManager.getInstance().observeAVChatState(avchatStateObserver, register);
+        AVChatManager.getInstance().observeHangUpNotification(callHangupObserver, register);
+        AVChatManager.getInstance().observeCalleeAckNotification(callAckObserver, register);
+        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, register, mIsInComingCall);
+        AVChatManager.getInstance().observeOnlineAckNotification(onlineAckObserver, register);
+        PhoneCallStateObserver.getInstance().observeAutoHangUpForLocalPhone(autoHangUpForLocalPhoneObserver, register);
+    }
+
+    public void doCalling(String account, String extendMessage) {
+        AVChatManager.getInstance().enableRtc();
+        if (mVideoCapturer == null) {
+            mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
+            AVChatManager.getInstance().setupVideoCapturer(mVideoCapturer);
+        }
+        AVChatManager.getInstance().setParameters(avChatConfigs.getAvChatParameters());
+        AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
+        // 添加自定义参数
+        AVChatNotifyOption notifyOption = new AVChatNotifyOption();
+        notifyOption.extendMessage = extendMessage;
+        // 去电
+        AVChatManager.getInstance().call2(account, AVChatType.AUDIO, notifyOption, new AVChatCallback<AVChatData>() {
+            @Override
+            public void onSuccess(AVChatData avChatData) {
+                // 去电成功
+                AVManager.this.avChatData = avChatData;
+            }
+
+            @Override
+            public void onFailed(int code) {
+                if (code == ResponseCode.RES_FORBIDDEN) {
+                    Toast.makeText(Utils.getApp(), R.string.avchat_no_permission, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Utils.getApp(), R.string.avchat_call_failed, Toast.LENGTH_SHORT).show();
+                }
+                closeRtc();
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                closeRtc();
+            }
+        });
+    }
+
+    public void hangUp(int type) {
+        if (destroyRTC) {
+            return;
+        }
+        if ((type == AVChatExitCode.HANGUP || type == AVChatExitCode.PEER_NO_RESPONSE
+                || type == AVChatExitCode.CANCEL || type == AVChatExitCode.REJECT) && avChatData != null) {
+            AVChatManager.getInstance().hangUp2(avChatData.getChatId(), new AVChatCallback<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+
+                }
+
+                @Override
+                public void onFailed(int code) {
+
+                }
+
+                @Override
+                public void onException(Throwable exception) {
+
+                }
+            });
+        }
+        AVChatManager.getInstance().disableRtc();
+        destroyRTC = true;
+        AVChatSoundPlayer.instance().stop();
+        showQuitToast(type);
+    }
+
+    private void onHangUp(int exitCode) {
+        if (destroyRTC) {
+            return;
+        }
+        AVChatSoundPlayer.instance().stop();
+        AVChatManager.getInstance().disableRtc();
+        destroyRTC = true;
+        showQuitToast(exitCode);
+    }
+
+    private void closeRtc() {
+        if (destroyRTC) {
+            return;
+        }
+        AVChatManager.getInstance().disableRtc();
+        destroyRTC = true;
+        AVChatSoundPlayer.instance().stop();
+    }
+
+    private void showQuitToast(int code) {
+        switch (code) {
+            case AVChatExitCode.NET_CHANGE: // 网络切换
+            case AVChatExitCode.NET_ERROR: // 网络异常
+            case AVChatExitCode.CONFIG_ERROR: // 服务器返回数据错误
+                Toast.makeText(Utils.getApp(), R.string.avchat_net_error_then_quit, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.REJECT:
+                Toast.makeText(Utils.getApp(), R.string.avchat_call_reject, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.PEER_HANGUP:
+            case AVChatExitCode.HANGUP:
+                if (isCallEstablish.get()) {
+                    Toast.makeText(Utils.getApp(), R.string.avchat_call_finish, Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case AVChatExitCode.PEER_BUSY:
+                Toast.makeText(Utils.getApp(), R.string.avchat_peer_busy, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.PROTOCOL_INCOMPATIBLE_PEER_LOWER:
+                Toast.makeText(Utils.getApp(), R.string.avchat_peer_protocol_low_version, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.PROTOCOL_INCOMPATIBLE_SELF_LOWER:
+                Toast.makeText(Utils.getApp(), R.string.avchat_local_protocol_low_version, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.INVALIDE_CHANNELID:
+                Toast.makeText(Utils.getApp(), R.string.avchat_invalid_channel_id, Toast.LENGTH_SHORT).show();
+                break;
+            case AVChatExitCode.LOCAL_CALL_BUSY:
+                Toast.makeText(Utils.getApp(), R.string.avchat_local_call_busy, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 恢复语音发送
+     */
+    public void resumeVideo() {
+        if (needRestoreLocalAudio) {
+            AVChatManager.getInstance().muteLocalAudio(false);
+            needRestoreLocalAudio = false;
+        }
+
+    }
+
+    /**
+     * 关闭语音发送
+     */
+    public void pauseVideo() {
+        if (!AVChatManager.getInstance().isLocalAudioMuted()) {
+            AVChatManager.getInstance().muteLocalAudio(true);
+            needRestoreLocalAudio = true;
+        }
+    }
+
+    /**
+     * 设置扬声器是否开启
+     */
+    public void toggleSpeaker() {
+        AVChatManager.getInstance().setSpeaker(!AVChatManager.getInstance().speakerEnabled());
+    }
+}

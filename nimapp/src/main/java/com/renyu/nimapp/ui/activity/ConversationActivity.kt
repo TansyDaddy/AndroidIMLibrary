@@ -4,9 +4,12 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.netease.nimlib.sdk.avchat.constant.AVChatType
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
+import com.renyu.nimavchatlibrary.noui.AVChatActivity
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
+import org.json.JSONObject
 import java.io.File
 
 class ConversationActivity : BaseActivity(), ConversationFragment.ConversationListener {
@@ -20,6 +23,10 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
         loadFragment(intent)
+
+        val jsonObject = JSONObject()
+        jsonObject.put("key", "value")
+        AVChatActivity.outgoingCall(this, intent.getStringExtra("account"), jsonObject.toString(), AVChatType.AUDIO.value, AVChatActivity.FROM_INTERNAL)
     }
 
     /**
