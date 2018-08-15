@@ -4,7 +4,6 @@
         <activity android:name=".noui.AVChatActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait"
-            android:theme="@style/FullScreenTheme"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".ui.activity.AVChatActivity"
