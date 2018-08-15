@@ -129,8 +129,8 @@ object MessageManager {
      */
     fun observeCustomNotification() {
         NIMClient.getService(MsgServiceObserve::class.java).observeCustomNotification({
-            RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.CustomNotification))
             Log.d("NIM_APP", "收到自定义通知：${it?.content}")
+            RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.CustomNotification))
         }, true)
     }
 

@@ -11,14 +11,27 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
+import com.netease.nimlib.sdk.msg.MsgService;
+import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.model.CustomNotification;
+import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig;
 import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
 import com.renyu.nimavchatlibrary.constant.CallStateEnum;
 import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
 import com.renyu.nimavchatlibrary.noui.manager.AVManager;
 import com.renyu.nimavchatlibrary.noui.params.AVChatTypeEnum;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Date;
 
 public class AVChatActivity extends AppCompatActivity implements AVManager.AVChatTypeListener {
 
@@ -44,12 +57,29 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
 
     AVManager manager = null;
 
-    Button btn_avchat;
+    // VR带看中的自定义消息
+    Observer<CustomNotification> observer = new Observer<CustomNotification>() {
+        @Override
+        public void onEvent(CustomNotification customNotification) {
+            try {
+                JSONObject contentJson = new JSONObject(customNotification.getContent());
+                if (contentJson.getString("type").equals("VR")) {
+                    text_avchat_receive.setText(contentJson.getString("content"));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
-    // 来电广播
+    Button btn_avchat;
+    Button btn_avchat_send;
+    TextView text_avchat_receive;
+
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            // 来电广播
             if (TelephonyManager.ACTION_PHONE_STATE_CHANGED.equals(intent.getAction())) {
                 Log.d("NIM_AV_APP", "收到来电");
                 manager.hangUp(AVChatExitCode.HANGUP);
@@ -59,8 +89,10 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
     };
 
     /**
-     * 拨打电话
+     * 主叫
      * @param context
+     * @param account
+     * @param extendMessage
      * @param callType
      * @param source
      */
@@ -78,8 +110,11 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
     }
 
     /**
-     * 接听电话
+     * 被叫
      * @param context
+     * @param account
+     * @param extendMessage
+     * @param callType
      * @param config
      * @param source
      */
@@ -101,7 +136,30 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avchat);
 
+        text_avchat_receive = findViewById(R.id.text_avchat_receive);
         btn_avchat = findViewById(R.id.btn_avchat);
+        btn_avchat_send = findViewById(R.id.btn_avchat_send);
+        btn_avchat_send.setOnClickListener(v -> {
+            // 如果正在聊天，则可以发送自定义信息
+            if (manager.getAvChatData() != null && manager.getIsCallEstablish().get()) {
+                CustomNotification command = new CustomNotification();
+                command.setSessionId(manager.getAvChatData().getAccount());
+                command.setSessionType(SessionTypeEnum.P2P);
+                CustomNotificationConfig config = new CustomNotificationConfig();
+                config.enablePush = false;
+                config.enableUnreadCount = false;
+                command.setConfig(config);
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("type", "VR");
+                    json.put("content", "VR自定义消息："+new Date().toString());
+                    command.setContent(json.toString());
+                    NIMClient.getService(MsgService.class).sendCustomNotification(command);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         // 若来电或去电未接通时，点击home。另外一方挂断通话。从最近任务列表恢复，则finish
         if (needFinish) {
@@ -134,6 +192,8 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         // 注册监听
         manager.registerObserves(true);
 
+        // 设置正在音视频聊天
+        AVManager.isAVChatting = true;
         if (state == CallStateEnum.AUDIO.getValue()) {
             if (mIsInComingCall) {
                 // 来电
@@ -145,13 +205,16 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
                 // 去电
                 AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
                 // 拨打电话
-                manager.doCalling(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
             }
         }
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(receiver, filter);
+
+        // 开启自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
     }
 
     @Override
@@ -180,10 +243,13 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
             manager.registerObserves(false);
         }
         // 设置当前没有接听音视频消息
-        AVManager.setAVChatting(false);
+        AVManager.isAVChatting = false;
         needFinish = true;
 
         unregisterReceiver(receiver);
+
+        // 关闭自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
     }
 
     @Override

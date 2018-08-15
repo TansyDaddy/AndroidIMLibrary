@@ -8,8 +8,22 @@
         android:layout_weight="1">
 
     </WebView>
-    <Button
-        android:id="@+id/btn_avchat"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/text_avchat_receive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_avchat_send"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="发送自定义消息"/>
+        <Button
+            android:id="@+id/btn_avchat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </LinearLayout>

@@ -29,7 +29,7 @@ import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
 import com.renyu.nimavchatlibrary.noui.AVChatActivity;
 import com.renyu.nimavchatlibrary.noui.params.AVChatTypeEnum;
-import com.renyu.nimavchatlibrary.receiver.PhoneCallStateObserver;
+import com.renyu.nimavchatlibrary.receiver.IncomingCallReceiver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -49,7 +49,7 @@ public class AVManager {
     // 是否音视频通话连接成功
     private AtomicBoolean isCallEstablish = new AtomicBoolean(false);
     // 当前音视频状态
-    AVChatTypeListener avChatTypeListener;
+    private AVChatTypeListener avChatTypeListener;
     public interface AVChatTypeListener {
         void chatTypeChange(AVChatTypeEnum avChatTypeEnum);
     }
@@ -130,6 +130,8 @@ public class AVManager {
             avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_AGREE);
             //移除超时监听
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, mIsInComingCall);
+            // 开启扬声器
+            AVChatManager.getInstance().setSpeaker(true);
         }
     };
 
@@ -204,7 +206,12 @@ public class AVManager {
         AVChatManager.getInstance().observeOnlineAckNotification(onlineAckObserver, register);
     }
 
-    public void doCalling(String account, String extendMessage) {
+    /**
+     * 主叫拨号
+     * @param account
+     * @param extendMessage
+     */
+    public void call(String account, String extendMessage) {
         AVChatManager.getInstance().enableRtc();
         if (mVideoCapturer == null) {
             mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
@@ -240,6 +247,9 @@ public class AVManager {
         });
     }
 
+    /**
+     * 被叫接听
+     */
     public void receive() {
         AVChatManager.getInstance().enableRtc();
         if (mVideoCapturer == null) {
@@ -271,6 +281,10 @@ public class AVManager {
         });
     }
 
+    /**
+     * 挂断
+     * @param type
+     */
     public void hangUp(int type) {
         if (destroyRTC) {
             return;
@@ -381,39 +395,31 @@ public class AVManager {
     }
 
     /**
-     * 设置扬声器是否开启
-     */
-    public void toggleSpeaker() {
-        AVChatManager.getInstance().setSpeaker(!AVChatManager.getInstance().speakerEnabled());
-    }
-
-    /**
      * 注册网络来电
      */
     public static void observeIncomingCall() {
         AVChatManager.getInstance().observeIncomingCall((Observer<AVChatData>) avChatData -> {
             String extra = avChatData.getExtra();
-            if (PhoneCallStateObserver.getInstance().getPhoneCallState() != PhoneCallStateObserver.PhoneCallStateEnum.IDLE
-                    || AVManager.isAVChatting()
+            if (IncomingCallReceiver.stateEnum != IncomingCallReceiver.PhoneCallStateEnum.IDLE
+                    || AVManager.isAVChatting
                     || AVChatManager.getInstance().getCurrentChatId() != 0) {
                 // 给对方用户发送占线指令
                 AVChatManager.getInstance().sendControlCommand(avChatData.getChatId(), AVChatControlCommand.BUSY, null);
                 return;
             }
             // 有网络来电打开AVChatActivity
-            AVManager.setAVChatting(true);
             AVChatActivity.incomingCall(Utils.getApp(), avChatData.getAccount(), extra, AVChatType.AUDIO.getValue(), avChatData, AVChatActivity.FROM_BROADCASTRECEIVER);
         }, true);
     }
 
-    // 是否正在音视频通话
-    private static boolean isAVChatting = false;
+    // 是否进入音视频通话
+    public static boolean isAVChatting = false;
 
-    public static boolean isAVChatting() {
-        return isAVChatting;
+    public AVChatData getAvChatData() {
+        return avChatData;
     }
 
-    public static void setAVChatting(boolean chating) {
-        isAVChatting = chating;
+    public AtomicBoolean getIsCallEstablish() {
+        return isCallEstablish;
     }
 }
