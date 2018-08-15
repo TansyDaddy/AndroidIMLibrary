@@ -4,7 +4,7 @@ import android.support.multidex.MultiDexApplication
 import com.blankj.utilcode.util.Utils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.util.NIMUtil
-import com.renyu.nimavchatlibrary.noui.manager.AVManager
+import com.renyu.nimavchatlibrary.manager.AVManager
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.StatueManager

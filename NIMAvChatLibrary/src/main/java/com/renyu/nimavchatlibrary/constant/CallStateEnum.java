@@ -29,22 +29,4 @@ public enum CallStateEnum {
     public int getValue() {
         return value;
     }
-
-    public static boolean isVideoMode(CallStateEnum value) {
-        return value.getValue() % 2 == 0;
-    }
-
-    public static boolean isAudioMode(CallStateEnum value) {
-        return value.getValue() % 2 == 1;
-    }
-
-    public static CallStateEnum getCallStateEnum(int value) {
-        for (CallStateEnum e : values()) {
-            if (e.getValue() == value) {
-                return e;
-            }
-        }
-
-        return INVALID;
-    }
 }

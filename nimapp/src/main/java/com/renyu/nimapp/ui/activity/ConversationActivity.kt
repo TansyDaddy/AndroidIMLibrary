@@ -7,7 +7,7 @@ import android.util.Log
 import com.netease.nimlib.sdk.avchat.constant.AVChatType
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
-import com.renyu.nimavchatlibrary.noui.AVChatActivity
+import com.renyu.nimavchatlibrary.ui.AVChatActivity
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import org.json.JSONObject
 import java.io.File

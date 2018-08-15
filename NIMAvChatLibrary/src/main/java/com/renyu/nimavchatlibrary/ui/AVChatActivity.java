@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.noui;
+package com.renyu.nimavchatlibrary.ui;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -25,8 +25,8 @@ import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
 import com.renyu.nimavchatlibrary.constant.CallStateEnum;
 import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
-import com.renyu.nimavchatlibrary.noui.manager.AVManager;
-import com.renyu.nimavchatlibrary.noui.params.AVChatTypeEnum;
+import com.renyu.nimavchatlibrary.manager.AVManager;
+import com.renyu.nimavchatlibrary.constant.AVChatTypeEnum;
 
 import org.json.JSONException;
 import org.json.JSONObject;
