@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetManager;
 
 import com.blankj.utilcode.util.Utils;
+import com.renyu.nimlibrary.bean.StickerItem;
 
 import java.io.IOException;
 import java.io.InputStream;

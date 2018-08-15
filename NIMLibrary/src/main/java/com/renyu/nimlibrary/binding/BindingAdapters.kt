@@ -30,6 +30,7 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.uinfo.UserService
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.extension.StickerAttachment
+import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
 import com.renyu.nimlibrary.util.sticker.StickerUtils
@@ -103,6 +104,11 @@ object BindingAdapters {
         // 如果是自定义消息中的贴图消息
         if (attachment != null && attachment is StickerAttachment) {
             textView.text = "[贴图]"
+            return
+        }
+        // 如果是自定义消息中的VR消息
+        if (attachment != null && attachment is VRAttachment) {
+            textView.text = "[VR]"
             return
         }
         EmojiUtils.replaceFaceMsgByFresco(textView, text)
@@ -244,6 +250,25 @@ object BindingAdapters {
             //主动拒绝
             AVChatRecordState.Rejected -> "已挂断"
             else -> ""
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListVRImage"])
+    fun loadChatListVRImage(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as VRAttachment
+        if (simpleDraweeView.tag !=null &&
+                !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
+                simpleDraweeView.tag.toString() == attachment.vrJson) {
+            // 什么都不做，防止Fresco闪烁
+        }
+        else {
+            val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(attachment.vrJson))
+                    .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+            val draweeController = Fresco.newDraweeControllerBuilder()
+                    .setImageRequest(request).setAutoPlayAnimations(true).build()
+            simpleDraweeView.controller = draweeController
+            simpleDraweeView.tag = attachment.vrJson
         }
     }
 }

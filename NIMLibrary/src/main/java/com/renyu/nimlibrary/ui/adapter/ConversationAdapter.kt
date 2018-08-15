@@ -86,6 +86,16 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_send_sticker, parent,
                             false))
+            20 -> return VRViewHolder(
+                    DataBindingUtil.inflate<AdapterReceiveVrBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_receive_vr, parent,
+                            false))
+            21 -> return VRViewHolder(
+                    DataBindingUtil.inflate<AdapterSendVrBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_send_vr, parent,
+                            false))
         }
         throw Throwable("对指定viewType类型缺少判断")
     }
@@ -128,6 +138,13 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 if (messages[holder.layoutPosition].attachment != null) {
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
                         CustomAttachmentType.Sticker -> initViewDataBinding((holder as StickerViewHolder).ivDataBinding, holder.layoutPosition)
+                    }
+                }
+            }
+            20, 21 -> {
+                if (messages[holder.layoutPosition].attachment != null) {
+                    when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
+                        CustomAttachmentType.VR -> initViewDataBinding((holder as VRViewHolder).ivDataBinding, holder.layoutPosition)
                     }
                 }
             }
@@ -212,6 +229,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             if (messages[position].attachment != null) {
                 when((messages[position].attachment as CustomAttachment).type) {
                     CustomAttachmentType.Sticker -> return 18
+                    CustomAttachmentType.VR -> return 20
                 }
             }
         }
@@ -220,6 +238,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             if (messages[position].attachment != null) {
                 when((messages[position].attachment as CustomAttachment).type) {
                     CustomAttachmentType.Sticker -> return 19
+                    CustomAttachmentType.VR -> return 21
                 }
             }
         }

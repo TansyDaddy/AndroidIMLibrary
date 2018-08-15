@@ -24,9 +24,12 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         setContentView(R.layout.activity_conversation)
         loadFragment(intent)
 
-        val jsonObject = JSONObject()
-        jsonObject.put("account", intent.getStringExtra("account"))
-        AVChatActivity.outgoingCall(this, intent.getStringExtra("account"), jsonObject.toString(), AVChatType.AUDIO.value, AVChatActivity.FROM_INTERNAL)
+        // 测试
+//        sendVR("http://g.hiphotos.baidu.com/image/pic/item/5bafa40f4bfbfbedc5597ab474f0f736aec31ffc.jpg")
+        // 语音
+//        val jsonObject = JSONObject()
+//        jsonObject.put("account", intent.getStringExtra("account"))
+//        AVChatActivity.outgoingCall(this, intent.getStringExtra("account"), jsonObject.toString(), AVChatType.AUDIO.value, AVChatActivity.FROM_INTERNAL)
     }
 
     /**

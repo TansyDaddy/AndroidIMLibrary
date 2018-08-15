@@ -12,7 +12,7 @@ import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.ui.adapter.StickerAdapter
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.sticker.StickerCategory
-import com.renyu.nimlibrary.util.sticker.StickerItem
+import com.renyu.nimlibrary.bean.StickerItem
 import kotlinx.android.synthetic.main.fragment_emoji.*
 
 class StickerFragment : Fragment() {

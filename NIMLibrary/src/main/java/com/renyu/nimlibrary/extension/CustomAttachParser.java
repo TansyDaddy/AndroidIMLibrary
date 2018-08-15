@@ -38,6 +38,9 @@ public class CustomAttachParser implements MsgAttachmentParser {
                 case CustomAttachmentType.OpenedRedPacket:
 //                    attachment = new RedPacketOpenedAttachment();
                     break;
+                case CustomAttachmentType.VR:
+                    attachment = new VRAttachment();
+                    break;
                 default:
                     attachment = new DefaultCustomAttachment();
                     break;

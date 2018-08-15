@@ -12,7 +12,7 @@ import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.util.sticker.StickerCategory
-import com.renyu.nimlibrary.util.sticker.StickerItem
+import com.renyu.nimlibrary.bean.StickerItem
 import com.renyu.nimlibrary.util.sticker.StickerUtils
 import kotlinx.android.synthetic.main.adapter_sticker.view.*
 

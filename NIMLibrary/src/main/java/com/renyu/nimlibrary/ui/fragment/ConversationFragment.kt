@@ -29,18 +29,19 @@ import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Status
+import com.renyu.nimlibrary.bean.StickerItem
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
 import com.renyu.nimlibrary.extension.StickerAttachment
+import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
-import com.renyu.nimlibrary.util.sticker.StickerItem
 import com.renyu.nimlibrary.util.sticker.StickerUtils
 import com.renyu.nimlibrary.viewmodel.ConversationViewModel
 import com.renyu.nimlibrary.viewmodel.ConversationViewModelFactory
@@ -452,6 +453,17 @@ class ConversationFragment : Fragment(), EventImpl {
         Handler().postDelayed({
             val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
             vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "贴图消息", attachment))
+            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+        }, 500)
+    }
+
+    /**
+     * 发送VR消息
+     */
+    private fun sendVR(vrString: String) {
+        Handler().postDelayed({
+            val attachment = VRAttachment(vrString)
+            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "VR", attachment))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }, 500)
     }
