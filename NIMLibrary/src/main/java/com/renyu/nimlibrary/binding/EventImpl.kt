@@ -19,4 +19,10 @@ interface EventImpl {
     fun onLongClick(v: View, imMessage: IMMessage): Boolean {
         return true
     }
+
+    // 客户前往VR去电页面
+    fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {}
+
+    // 经纪人前往VR来电页面
+    fun gotoVrInComingCall(view: View, imMessage: IMMessage) {}
 }

@@ -1,6 +1,9 @@
 package com.renyu.nimapp.params;
 
+import com.blankj.utilcode.util.Utils;
 import com.renyu.nimapp.R;
+import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity;
+import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity;
 import com.renyu.nimlibrary.bean.ObserveResponse;
 import com.renyu.nimlibrary.bean.ObserveResponseType;
 import com.renyu.nimlibrary.util.RxBus;
@@ -26,9 +29,29 @@ public class InitParams {
     // 华为参数配置
     public static String hwCertificateName = "nimhuawei";
 
+    // 是否为经纪人
+    public static boolean isAgent = false;
+
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {
         RxBus.getDefault().post(new ObserveResponse("", ObserveResponseType.Kickout));
+    }
+
+    /**
+     * 客户进入VR页面
+     * @param account
+     * @param extendMessage
+     * @param needCall
+     */
+    public static void vrOutgoingCall(String account, String extendMessage, boolean needCall) {
+        OutGoingAVChatActivity.outgoingCall(Utils.getApp(), account, extendMessage, needCall);
+    }
+
+    /**
+     * 经纪人进入VR看房
+     */
+    public static void vrIncomingCall(String account, String extendMessage) {
+        InComingAVChatActivity.incomingCall(Utils.getApp(), account, extendMessage);
     }
 
     // ***********************************  Demo配置使用，不是必须实现内容  ***********************************

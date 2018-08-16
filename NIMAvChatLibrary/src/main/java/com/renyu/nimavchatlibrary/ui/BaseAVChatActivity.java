@@ -15,7 +15,6 @@ import android.widget.TextView;
 
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
-import com.netease.nimlib.sdk.avchat.model.AVChatData;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
@@ -23,39 +22,33 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig;
 import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
-import com.renyu.nimavchatlibrary.constant.CallStateEnum;
-import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
-import com.renyu.nimavchatlibrary.manager.AVManager;
 import com.renyu.nimavchatlibrary.constant.AVChatTypeEnum;
+import com.renyu.nimavchatlibrary.manager.BaseAVManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-public class AVChatActivity extends AppCompatActivity implements AVManager.AVChatTypeListener {
+public abstract class BaseAVChatActivity extends AppCompatActivity implements BaseAVManager.AVChatTypeListener {
 
-    private static final String KEY_IN_CALLING = "KEY_IN_CALLING";
-    private static final String KEY_ACCOUNT = "KEY_ACCOUNT";
-    private static final String KEY_CALL_TYPE = "KEY_CALL_TYPE";
-    private static final String KEY_SOURCE = "source";
-    private static final String KEY_CALL_CONFIG = "KEY_CALL_CONFIG";
-    private static final String KEY_EXTEND_MESSAGE = "extendMessage";
+    public abstract BaseAVManager initBaseAVManager();
+    public abstract void registerObserver();
+    public abstract void unregisterObserver();
 
-    // 来自广播
-    public static final int FROM_BROADCASTRECEIVER = 0;
-    // 来自发起方
-    public static final int FROM_INTERNAL = 1;
-    // 未知的入口
-    public static final int FROM_UNKNOWN = -1;
+    BaseAVManager manager;
 
-    private static boolean needFinish = true;
-    // 区分音频或者视频
-    private int state;
+    static final String KEY_ACCOUNT = "KEY_ACCOUNT";
+    static final String KEY_NEEDCALL = "KEY_NEEDCALL";
+    static final String KEY_EXTEND_MESSAGE = "extendMessage";
+
+    static boolean needFinish = true;
     // 是否暂停音视频
-    private boolean hasOnPause = false;
+    boolean hasOnPause = false;
 
-    AVManager manager = null;
+    Button btn_avchat;
+    Button btn_avchat_send;
+    TextView text_avchat_receive;
 
     // VR带看中的自定义消息
     Observer<CustomNotification> observer = new Observer<CustomNotification>() {
@@ -72,10 +65,6 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         }
     };
 
-    Button btn_avchat;
-    Button btn_avchat_send;
-    TextView text_avchat_receive;
-
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -88,49 +77,6 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         }
     };
 
-    /**
-     * 主叫
-     * @param context
-     * @param account
-     * @param extendMessage
-     * @param callType
-     * @param source
-     */
-    public static void outgoingCall(Context context, String account, String extendMessage, int callType, int source) {
-        needFinish = false;
-
-        Intent intent = new Intent(context, AVChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(KEY_ACCOUNT, account);
-        intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
-        intent.putExtra(KEY_IN_CALLING, false);
-        intent.putExtra(KEY_CALL_TYPE, callType);
-        intent.putExtra(KEY_SOURCE, source);
-        context.startActivity(intent);
-    }
-
-    /**
-     * 被叫
-     * @param context
-     * @param account
-     * @param extendMessage
-     * @param callType
-     * @param config
-     * @param source
-     */
-    public static void incomingCall(Context context, String account, String extendMessage, int callType, AVChatData config, int source) {
-        needFinish = false;
-        Intent intent = new Intent(context, AVChatActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(KEY_ACCOUNT, account);
-        intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
-        intent.putExtra(KEY_CALL_CONFIG, config);
-        intent.putExtra(KEY_IN_CALLING, true);
-        intent.putExtra(KEY_CALL_TYPE, callType);
-        intent.putExtra(KEY_SOURCE, source);
-        context.startActivity(intent);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,9 +87,9 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         btn_avchat_send = findViewById(R.id.btn_avchat_send);
         btn_avchat_send.setOnClickListener(v -> {
             // 如果正在聊天，则可以发送自定义信息
-            if (manager.getAvChatData() != null && manager.getIsCallEstablish().get()) {
+            if (BaseAVManager.avChatData != null && BaseAVManager.isCallEstablish.get()) {
                 CustomNotification command = new CustomNotification();
-                command.setSessionId(manager.getAvChatData().getAccount());
+                command.setSessionId(BaseAVManager.avChatData.getAccount());
                 command.setSessionType(SessionTypeEnum.P2P);
                 CustomNotificationConfig config = new CustomNotificationConfig();
                 config.enablePush = false;
@@ -168,53 +114,23 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-
-        boolean mIsInComingCall = getIntent().getBooleanExtra(KEY_IN_CALLING, false);
-        switch (getIntent().getIntExtra(KEY_SOURCE, FROM_UNKNOWN)) {
-            case FROM_BROADCASTRECEIVER:
-                // 来电
-                AVChatData avChatData = (AVChatData) getIntent().getSerializableExtra(KEY_CALL_CONFIG);
-                state = avChatData.getChatType().getValue();
-                manager = new AVManager(avChatData, mIsInComingCall, this);
-                break;
-            case FROM_INTERNAL:
-                // 去电
-                state = getIntent().getIntExtra(KEY_CALL_TYPE, -1);
-                manager = new AVManager(null, mIsInComingCall, this);
-                break;
-            default:
-                break;
-        }
-
-        // 注册监听
-        manager.registerObserves(true);
-
-        // 设置正在音视频聊天
-        AVManager.isAVChatting = true;
-        if (state == CallStateEnum.AUDIO.getValue()) {
-            if (mIsInComingCall) {
-                // 来电
-                AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.RING);
-                // 接听电话
-                manager.receive();
-            }
-            else {
-                // 去电
-                AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
-                // 拨打电话
-                manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
-            }
-        }
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        registerReceiver(receiver, filter);
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
         // 开启自定义消息通道
         NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
+
+        manager = initBaseAVManager();
+        manager.setAvChatTypeListener(this);
+        // 注册监听
+        registerObserver();
+        manager.registerCommonObserver(true);
+
+        // 通话状态广播
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+        registerReceiver(receiver, filter);
     }
 
     @Override
@@ -240,10 +156,11 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
             //界面销毁时强制尝试挂断，防止出现红米Note 4X等手机在切后台点击杀死程序时，实际没有杀死的情况
             manager.hangUp(AVChatExitCode.HANGUP);
             // 关闭所有监听
-            manager.registerObserves(false);
+            unregisterObserver();
+            manager.registerCommonObserver(false);
+            // 重置参数
+            manager.reSetParams();
         }
-        // 设置当前没有接听音视频消息
-        AVManager.isAVChatting = false;
         needFinish = true;
 
         unregisterReceiver(receiver);
@@ -261,9 +178,10 @@ public class AVChatActivity extends AppCompatActivity implements AVManager.AVCha
     public void chatTypeChange(AVChatTypeEnum avChatTypeEnum) {
         switch (avChatTypeEnum) {
             case CONN:
-                btn_avchat.setText("正在呼叫");
+                btn_avchat.setText("正在呼叫，点击关闭");
                 btn_avchat.setOnClickListener(v -> {
-
+                    manager.hangUp(AVChatExitCode.CANCEL);
+                    finish();
                 });
                 break;
             case CONFIG_ERROR:

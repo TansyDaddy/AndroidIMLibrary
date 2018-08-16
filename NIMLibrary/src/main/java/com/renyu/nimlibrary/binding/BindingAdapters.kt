@@ -34,6 +34,7 @@ import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
 import com.renyu.nimlibrary.util.sticker.StickerUtils
+import org.json.JSONObject
 import java.io.File
 
 object BindingAdapters {
@@ -257,18 +258,37 @@ object BindingAdapters {
     @BindingAdapter(value = ["cvListVRImage"])
     fun loadChatListVRImage(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
         val attachment = imMessage.attachment as VRAttachment
-        if (simpleDraweeView.tag !=null &&
-                !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
-                simpleDraweeView.tag.toString() == attachment.vrJson) {
-            // 什么都不做，防止Fresco闪烁
+        val vrJson = attachment.vrJson
+        try {
+            val jsonObject = JSONObject(vrJson)
+            if (simpleDraweeView.tag !=null &&
+                    !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
+                    simpleDraweeView.tag.toString() == jsonObject.getString("coverPic")) {
+                // 什么都不做，防止Fresco闪烁
+            }
+            else {
+                val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(jsonObject.getString("coverPic")))
+                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+                val draweeController = Fresco.newDraweeControllerBuilder()
+                        .setImageRequest(request).setAutoPlayAnimations(true).build()
+                simpleDraweeView.controller = draweeController
+                simpleDraweeView.tag = jsonObject.getString("coverPic")
+            }
+        } catch (e: Exception) {
+
         }
-        else {
-            val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(attachment.vrJson))
-                    .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
-            val draweeController = Fresco.newDraweeControllerBuilder()
-                    .setImageRequest(request).setAutoPlayAnimations(true).build()
-            simpleDraweeView.controller = draweeController
-            simpleDraweeView.tag = attachment.vrJson
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListVRTitle"])
+    fun loadChatListVRTitle(textView: TextView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as VRAttachment
+        val vrJson = attachment.vrJson
+        try {
+            val jsonObject = JSONObject(vrJson)
+            textView.text = jsonObject.getString("houseTitle")
+        } catch (e: Exception) {
+
         }
     }
 }

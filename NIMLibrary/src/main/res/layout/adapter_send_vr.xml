@@ -47,19 +47,29 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dip"
                 android:layout_toStartOf="@id/aurora_iv_msgitem_avatar">
-                <com.facebook.drawee.view.SimpleDraweeView
-                    xmlns:fresco="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/aurora_iv_msgitem_vr"
-                    android:layout_width="123dip"
-                    android:layout_height="115dip"
-                    fresco:actualImageResource="@drawable/default_grey_avatar"
-                    fresco:actualImageScaleType="focusCrop"
-                    fresco:placeholderImage="@drawable/default_grey_avatar"
-                    fresco:placeholderImageScaleType="focusCrop"
-                    fresco:failureImage="@drawable/default_grey_avatar"
-                    fresco:failureImageScaleType="focusCrop"
-                    fresco:roundedCornerRadius="15dp"
-                    app:cvListVRImage="@{imMessage}"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:onClick="@{(view) -> eventImpl.gotoVrOutgoingCall(view, imMessage)}">
+                    <com.facebook.drawee.view.SimpleDraweeView
+                        xmlns:fresco="http://schemas.android.com/apk/res-auto"
+                        android:layout_width="123dip"
+                        android:layout_height="115dip"
+                        fresco:actualImageResource="@drawable/default_grey_avatar"
+                        fresco:actualImageScaleType="focusCrop"
+                        fresco:placeholderImage="@drawable/default_grey_avatar"
+                        fresco:placeholderImageScaleType="focusCrop"
+                        fresco:failureImage="@drawable/default_grey_avatar"
+                        fresco:failureImageScaleType="focusCrop"
+                        fresco:roundedCornerRadius="15dp"
+                        app:cvListVRImage="@{imMessage}"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dip"
+                        app:cvListVRTitle="@{imMessage}"/>
+                </LinearLayout>
             </RelativeLayout>
             <ImageView
                 android:layout_width="15dp"

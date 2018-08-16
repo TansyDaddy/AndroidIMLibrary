@@ -30,10 +30,7 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimlibrary.R
-import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.ObserveResponseType
-import com.renyu.nimlibrary.bean.Status
-import com.renyu.nimlibrary.bean.StickerItem
+import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
 import com.renyu.nimlibrary.extension.StickerAttachment
@@ -397,6 +394,13 @@ class ConversationFragment : Fragment(), EventImpl {
                 // 发送文本
                 sendText()
             }
+            R.id.iv_vr -> {
+                // 发送VR信息
+                sendVR(VRItem(
+                        "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
+                        "明华清园 3室2厅 690万",
+                        "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
+            }
         }
     }
 
@@ -460,11 +464,20 @@ class ConversationFragment : Fragment(), EventImpl {
     /**
      * 发送VR消息
      */
-    private fun sendVR(vrString: String) {
+    private fun sendVR(vrItem: VRItem) {
         Handler().postDelayed({
-            val attachment = VRAttachment(vrString)
+            val attachment = VRAttachment(vrItem.vrJson)
             vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "VR", attachment))
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+
+            try {
+                // 客户进入VR环节
+                val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+                val kickoutFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
+                kickoutFuncMethod.invoke(clazz.newInstance(), arguments?.getString("account")!!, vrItem.vrJson, true)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }, 500)
     }
 

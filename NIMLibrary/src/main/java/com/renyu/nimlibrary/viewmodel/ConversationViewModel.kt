@@ -20,10 +20,11 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.binding.EventImpl
+import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
@@ -474,5 +475,33 @@ class ConversationViewModel(private val account: String, private val sessionType
     private val comp = Comparator<IMMessage> { o1, o2 ->
         val time = o1!!.time - o2!!.time
         if (time == 0L) 0 else if (time < 0) -1 else 1
+    }
+
+    /**
+     * 客户前往VR去电页面
+     */
+    override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
+        super.gotoVrOutgoingCall(view, imMessage)
+        try {
+            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+            val vrOutgoingCallFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
+            vrOutgoingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 经纪人前往VR来电页面
+     */
+    override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
+        super.gotoVrInComingCall(view, imMessage)
+        try {
+            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+            val vrIncomingCallFuncMethod = clazz.getDeclaredMethod("vrIncomingCall", String::class.java, String::class.java)
+            vrIncomingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

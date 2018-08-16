@@ -4,7 +4,8 @@ import android.support.multidex.MultiDexApplication
 import com.blankj.utilcode.util.Utils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.util.NIMUtil
-import com.renyu.nimavchatlibrary.manager.AVManager
+import com.renyu.nimapp.params.InitParams
+import com.renyu.nimavchatlibrary.manager.InComingAVManager
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.StatueManager
@@ -12,6 +13,7 @@ import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.params.CommonParams
 
 class ExampleApp : MultiDexApplication() {
+
     override fun onCreate() {
         super.onCreate()
 
@@ -53,7 +55,10 @@ class ExampleApp : MultiDexApplication() {
             // 注册自定义消息类型解析
             MessageManager.registerCustomAttachmentParser()
             // 音视频通话接听配置
-            AVManager.observeIncomingCall()
+            if (InitParams.isAgent) {
+                InComingAVManager.inComingAVManager = InComingAVManager()
+                InComingAVManager.inComingAVManager.registerInComingObserver()
+            }
 
             // 假登录获取本地数据
             AuthManager.fakeLogin()
