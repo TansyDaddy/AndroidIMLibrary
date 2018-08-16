@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.controll;
+package com.renyu.nimavchatlibrary.util;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

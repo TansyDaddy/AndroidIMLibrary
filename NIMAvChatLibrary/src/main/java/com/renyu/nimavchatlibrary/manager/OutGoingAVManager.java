@@ -15,9 +15,9 @@ import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
 import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
 import com.renyu.nimavchatlibrary.R;
-import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
-import com.renyu.nimavchatlibrary.constant.AVChatTypeEnum;
-import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.params.AVChatExitCode;
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
+import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 
 public class OutGoingAVManager extends BaseAVManager {

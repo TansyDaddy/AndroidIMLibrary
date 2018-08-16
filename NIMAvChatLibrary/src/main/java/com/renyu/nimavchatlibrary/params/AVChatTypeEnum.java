@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.constant;
+package com.renyu.nimavchatlibrary.params;
 
 public enum AVChatTypeEnum {
     /**

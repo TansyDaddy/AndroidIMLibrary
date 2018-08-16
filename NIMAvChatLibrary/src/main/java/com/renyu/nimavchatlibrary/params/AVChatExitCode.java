@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.constant;
+package com.renyu.nimavchatlibrary.params;
 
 /**
  * Created by hzxuwen on 2015/4/24.

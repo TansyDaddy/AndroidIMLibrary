@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.config;
+package com.renyu.nimavchatlibrary.params;
 
 import android.content.Context;
 import android.content.SharedPreferences;

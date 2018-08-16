@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 import com.renyu.nimavchatlibrary.manager.BaseAVManager;
 import com.renyu.nimavchatlibrary.manager.OutGoingAVManager;
 

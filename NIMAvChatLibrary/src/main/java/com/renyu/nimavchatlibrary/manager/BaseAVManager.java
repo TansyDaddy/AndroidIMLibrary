@@ -16,10 +16,10 @@ import com.netease.nimlib.sdk.avchat.model.AVChatOnlineAckEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatParameters;
 import com.netease.nimlib.sdk.avchat.model.AVChatVideoCapturerFactory;
 import com.renyu.nimavchatlibrary.R;
-import com.renyu.nimavchatlibrary.config.AVChatConfigs;
-import com.renyu.nimavchatlibrary.constant.AVChatExitCode;
-import com.renyu.nimavchatlibrary.constant.AVChatTypeEnum;
-import com.renyu.nimavchatlibrary.controll.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.params.AVChatConfigs;
+import com.renyu.nimavchatlibrary.params.AVChatExitCode;
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
+import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
 

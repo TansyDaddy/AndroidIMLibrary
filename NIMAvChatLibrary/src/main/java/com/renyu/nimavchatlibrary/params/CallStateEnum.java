@@ -1,4 +1,4 @@
-package com.renyu.nimavchatlibrary.constant;
+package com.renyu.nimavchatlibrary.params;
 
 /**
  * 呼叫状态,用来控制刷新界面
