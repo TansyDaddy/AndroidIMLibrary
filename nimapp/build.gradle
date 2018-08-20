@@ -83,7 +83,6 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     // rxandroid
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    //    implementation 'com.github.renyu:AndroidNimLibrary:1.0.0'
     implementation project(':NIMAvChatLibrary')
-//    implementation 'com.github.renyu:AndroidNimLibrary:1.0.0'
-    implementation project(':NIMLibrary')
 }

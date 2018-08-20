@@ -5,23 +5,20 @@ import android.widget.Toast;
 
 import com.blankj.utilcode.util.Utils;
 import com.netease.nimlib.sdk.Observer;
-import com.netease.nimlib.sdk.auth.ClientType;
+import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
-import com.netease.nimlib.sdk.avchat.constant.AVChatEventType;
 import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
-import com.netease.nimlib.sdk.avchat.model.AVChatControlEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
-import com.netease.nimlib.sdk.avchat.model.AVChatOnlineAckEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatParameters;
 import com.netease.nimlib.sdk.avchat.model.AVChatVideoCapturerFactory;
 import com.renyu.nimavchatlibrary.R;
+import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
+import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
 import com.renyu.nimavchatlibrary.params.AVChatConfigs;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
-import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
-import com.renyu.nimavchatlibrary.module.SimpleAVChatStateObserver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,48 +71,6 @@ public class BaseAVManager {
         }
     };
 
-    // 网络通话控制命令通知
-    private Observer<AVChatControlEvent> callControlObserver = (Observer<AVChatControlEvent>) netCallControlNotification -> {
-        // 不是当前音视频聊天用户不接收其指令
-        if (AVChatManager.getInstance().getCurrentChatId() != netCallControlNotification.getChatId()) {
-            return;
-        }
-        Log.d("NIM_AV_APP", "音视频对方发来指令值：" + netCallControlNotification.getControlCommand());
-    };
-
-    // 注册/注销同时在线的其他端对主叫方的响应
-    private Observer<AVChatOnlineAckEvent> onlineAckObserver = (Observer<AVChatOnlineAckEvent>) avChatOnlineAckEvent -> {
-        Log.d("NIM_AV_APP", "AVChatOnlineAckEvent");
-        if (avChatData != null) {
-            AVChatSoundPlayer.instance().stop();
-
-            String client = null;
-            switch (avChatOnlineAckEvent.getClientType()) {
-                case ClientType.Web:
-                    client = "Web";
-                    break;
-                case ClientType.Windows:
-                    client = "Windows";
-                    break;
-                case ClientType.Android:
-                    client = "Android";
-                    break;
-                case ClientType.iOS:
-                    client = "iOS";
-                    break;
-                case ClientType.MAC:
-                    client = "Mac";
-                    break;
-                default:
-                    break;
-            }
-            if (client != null) {
-                String option = avChatOnlineAckEvent.getEvent() == AVChatEventType.CALLEE_ONLINE_CLIENT_ACK_AGREE ? "接听！" : "拒绝！";
-                Toast.makeText(Utils.getApp(), "通话已在" + client + "端被" + option, Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
-
     private SimpleAVChatStateObserver avchatStateObserver = new SimpleAVChatStateObserver() {
         /**
          * 服务器连接回调
@@ -137,7 +92,7 @@ public class BaseAVManager {
                 isAVChatting = false;
                 avChatData = null;
                 // 注销来电超时
-                AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, true);
+                AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
                 if (code == 101) {
                     // 连接超时
                     Log.d("NIM_AV_APP", "onJoinedChannel 连接超时");
@@ -178,7 +133,7 @@ public class BaseAVManager {
             super.onCallEstablished();
             Log.d("NIM_AV_APP", "onCallEstablished");
             // 注销来电超时
-            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, true);
+            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
             // 音视频通话建立
             isCallEstablish.set(true);
             // 开启扬声器
@@ -186,6 +141,16 @@ public class BaseAVManager {
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_AGREE);
             }
+        }
+    };
+
+    // 在线状态变化观察者
+    Observer<StatusCode> onlineStatusObserver = (Observer<StatusCode>) statusCode -> {
+        if (statusCode.wontAutoLogin()) {
+            // 取消
+            hangUp(AVChatExitCode.CANCEL);
+            // 注销来电超时
+            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
         }
     };
 

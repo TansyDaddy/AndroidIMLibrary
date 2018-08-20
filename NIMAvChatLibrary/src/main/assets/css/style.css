@@ -1,0 +1,57 @@
+a,abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,caption,center,cite,code,dd,del,details,dfn,dialog,div,dl,dt,em,embed,fieldset,figcaption,figure,font,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,html,i,iframe,img,ins,kbd,label,legend,li,main,mark,menu,meter,nav,object,ol,output,p,pre,progress,q,rp,rt,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,tt,u,ul,var,video,xmp{border:0;margin:0;padding:0}
+html{height:100%;width:100%;outline:0;-webkit-text-size-adjust:none;-webkit-tap-highlight-color:transparent}
+body{ background: #fff; font-family:'Heiti SC','Microsoft YaHei',SimSun;height:100%;width:100%}
+article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section{display:block}
+img{color:transparent;font-size:0;border:none;-ms-interpolation-mode:bicubic;-moz-force-broken-image-icon:1;vertical-align:top}
+ol,ul{list-style:none}
+li{display:list-item}
+svg{overflow:hidden}
+address,caption,cite,code,dfn,i,s,u,var{font-style:normal;font-weight:400;text-decoration:none}
+h1,h2,h3,h4,h5,h6{font-family:'Heiti SC','Microsoft YaHei',SimSun;font-weight:400;font-size:100%}
+button,input,select,textarea{padding:0;margin:0;font-family:'Heiti SC','Microsoft YaHei',SimSun}
+a,a:active,a:hover,a:visited{text-decoration:none;-webkit-touch-callout:none;-webkit-user-select:none}
+button:focus,input:focus,textarea:focus{outline:0;-webkit-tap-highlight-color:transparent}
+button,input[type=submit],input[type=reset],input[type=button],input[type=text]{-webkit-appearance:none}
+.clearfix:after,.clearfix:before{content:'.';display:block;visibility:hidden;font-size:0;line-height:0;width:0;height:0}
+.clearfix:after{clear:both}
+.clearfix{zoom:1}
+@media screen and (min-width:240px){body,html{font-size:12.8px}
+}
+@media screen and (min-width:320px){body,html{font-size:17.07px}
+}
+@media screen and (min-width:360px){body,html{font-size:19.2px}
+}
+@media screen and (min-width:375px){body,html{font-size:20px}
+}
+@media screen and (min-width:400px){body,html{font-size:21.33px}
+}
+@media screen and (min-width:414px){body,html{font-size:22.08px}
+}
+@media screen and (min-width:480px){body,html{font-size:25.6px}
+}
+@media screen and (min-width:540px){body,html{font-size:28.8px}
+}
+@media screen and (min-width:600px){body,html{font-size:32px}
+}
+@media screen and (min-width:640px){body,html{font-size:34.13px}
+}
+@media screen and (min-width:720px){body,html{font-size:38.4px}
+}
+@media screen and (min-width:750px){body,html{font-size:40px}
+}
+body{margin:0 auto;height:100%;max-width:18.75rem;position:relative;font-family:"微软雅黑"}
+.hide{display:none}
+a:hover{text-decoration:none}
+.cf:after,.cf:before{content:'.';display:block;visibility:hidden;font-size:0;line-height:0;width:0;height:0}
+.cf:after{clear:both}
+.cf{zoom:1}
+.fl{float:left}
+.fr{float:right}
+.pre{position:relative}
+
+.wap{ width: 15.825rem; margin: 0 auto;}
+.btnone{ border:0;box-shadow: 0px 0px 10px #feaf64; border-radius: 1.25rem;background: linear-gradient(to right,#feaf64, #ff9d86); width: 15rem; height: 2.325rem; font-size: 0.8rem;  margin: 1rem auto 0; color: #fff; cursor: pointer;}
+.wordtwo,.wordone{ margin-top: 1rem;border-radius:0.125rem; background: #fbe3dd;box-shadow: 0px 0px 10px #fbe3dd;padding: 0.25rem; width: 14.5rem; margin:1rem auto 0;color: #666; font-size: 0.8rem;}
+
+
+

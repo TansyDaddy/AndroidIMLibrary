@@ -23,8 +23,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -42,7 +40,9 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig;
 import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.impl.WebAppImpl;
+import com.renyu.nimavchatlibrary.impl.WebAppInterface;
 import com.renyu.nimavchatlibrary.manager.BaseAVManager;
+import com.renyu.nimavchatlibrary.manager.OutGoingAVManager;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 
@@ -50,7 +50,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -69,16 +68,13 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static boolean needFinish = true;
     // 是否暂停音视频
     boolean hasOnPause = false;
-    // 是否已经在线
-    boolean isOnLineStatue = false;
     BaseAVManager manager;
     // 监听事件
     EventSubscribeRequest eventSubscribeRequest;
     Observer<List<Event>> observeEventChanged;
+    // 当前通话状态
+    AVChatTypeEnum avChatType = AVChatTypeEnum.UNDEFINE;
 
-    Button btn_avchat;
-    Button btn_avchat_send;
-    TextView text_avchat_receive;
     WebView web_webview;
 
     private String url;
@@ -92,7 +88,9 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             try {
                 JSONObject contentJson = new JSONObject(customNotification.getContent());
                 if (contentJson.getString("type").equals("VR")) {
-                    text_avchat_receive.setText(contentJson.getString("content"));
+                    if (impl != null) {
+                        ((WebAppInterface) impl).receiverMessage(contentJson.getString("content"));
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -166,6 +164,14 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                // 如果页面在加载完毕之前已经发生状态变化，则忽略
+                if (avChatType != AVChatTypeEnum.UNDEFINE) {
+
+                }
+                else {
+                    // 页面加载完毕之后根据主叫或者被叫区分状态内容
+                    chatTypeChange(AVChatTypeEnum.UNDEFINE);
+                }
             }
 
             @Override
@@ -185,32 +191,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             // cookies同步方法要在WebView的setting设置完之后调用，否则无效。
             syncCookie(this, getIntent().getStringExtra("cookieUrl"), cookies);
         }
-        web_webview.loadUrl(url);
-
-        text_avchat_receive = findViewById(R.id.text_avchat_receive);
-        btn_avchat = findViewById(R.id.btn_avchat);
-        btn_avchat_send = findViewById(R.id.btn_avchat_send);
-        btn_avchat_send.setOnClickListener(v -> {
-            // 如果正在聊天，则可以发送自定义信息
-            if (BaseAVManager.avChatData != null && BaseAVManager.isCallEstablish.get()) {
-                CustomNotification command = new CustomNotification();
-                command.setSessionId(BaseAVManager.avChatData.getAccount());
-                command.setSessionType(SessionTypeEnum.P2P);
-                CustomNotificationConfig config = new CustomNotificationConfig();
-                config.enablePush = false;
-                config.enableUnreadCount = false;
-                command.setConfig(config);
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("type", "VR");
-                    json.put("content", "VR自定义消息："+new Date().toString());
-                    command.setContent(json.toString());
-                    NIMClient.getService(MsgService.class).sendCustomNotification(command);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        web_webview.loadUrl("file:///android_asset/index.html");
 
         // 若来电或去电未接通时，点击home。另外一方挂断通话。从最近任务列表恢复，则finish
         if (needFinish) {
@@ -301,6 +282,11 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
     }
 
+    @Override
+    public void onBackPressed() {
+        // 禁用返回键
+    }
+
     // 订阅有效期 1天，单位秒
     private static final long SUBSCRIBE_EXPIRY = 60 * 60 * 24;
 
@@ -337,16 +323,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                             }
                             finish();
                         } else {
-                            // 音视频聊天用户发生二次登录
-                            if (isOnLineStatue) {
-                                // 如果正在通话中，就挂断电话
-                                if (BaseAVManager.isCallEstablish.get()) {
-                                    manager.hangUp(AVChatExitCode.HANGUP);
-                                }
-                                finish();
-                                return;
-                            }
-                            isOnLineStatue = true;
                             Log.d("NIM_APP", event.getPublisherAccount()+"上线："+new JSONObject(event.getNimConfig()).getJSONArray("online").toString());
                         }
                     } catch (JSONException e) {
@@ -363,52 +339,131 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         NIMClient.getService(EventSubscribeServiceObserver.class).observeEventChanged(observeEventChanged, false);
     }
 
-    @Override
-    public void onBackPressed() {
-        // 禁用返回键
+    public void sendCustomNotification(String string) {
+        if (BaseAVManager.avChatData != null && BaseAVManager.isCallEstablish.get()) {
+            CustomNotification command = new CustomNotification();
+            command.setSessionId(BaseAVManager.avChatData.getAccount());
+            command.setSessionType(SessionTypeEnum.P2P);
+            CustomNotificationConfig config = new CustomNotificationConfig();
+            config.enablePush = false;
+            config.enableUnreadCount = false;
+            command.setConfig(config);
+            JSONObject json = new JSONObject();
+            try {
+                json.put("type", "VR");
+                json.put("content", "VR自定义消息："+string);
+                command.setContent(json.toString());
+                NIMClient.getService(MsgService.class).sendCustomNotification(command);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void chatTypeChange(AVChatTypeEnum avChatTypeEnum) {
+        this.avChatType = avChatTypeEnum;
+
+        chatTypeChangeUI(avChatTypeEnum);
+    }
+
+    /**
+     * 根据状态刷新UI
+     * @param avChatTypeEnum
+     */
+    public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
         switch (avChatTypeEnum) {
             case CONN:
-                btn_avchat.setText("正在呼叫，点击关闭");
-                btn_avchat.setOnClickListener(v -> {
-                    manager.hangUp(AVChatExitCode.CANCEL);
-                    finish();
-                });
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击关闭");
+                }
                 break;
             case CONFIG_ERROR:
-                btn_avchat.setText("出错，点击关闭");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("出错，点击关闭");
+                }
                 break;
             case PEER_HANG_UP:
-                btn_avchat.setText("已挂断，点击关闭");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("已挂断，点击关闭");
+                }
                 break;
             case PEER_NO_RESPONSE:
-                btn_avchat.setText("已超时，点击关闭");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("已超时，点击关闭");
+                }
                 break;
             case INVALIDE_CHANNELID:
-                btn_avchat.setText("聊天ID错误");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("聊天ID错误");
+                }
                 break;
             case CALLEE_ACK_AGREE:
-                btn_avchat.setText("正在通话，点击挂断");
-                btn_avchat.setOnClickListener(v -> {
-                    manager.hangUp(AVChatExitCode.HANGUP);
-                    finish();
-                });
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("正在通话，点击挂断");
+                }
                 break;
             case CALLEE_ACK_REJECT:
-                btn_avchat.setText("已被拒绝，点击关闭");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("已被拒绝，点击关闭");
+                }
                 break;
             case CALLEE_ACK_BUSY:
-                btn_avchat.setText("对方繁忙，点击关闭");
-                btn_avchat.setOnClickListener(v -> finish());
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("对方繁忙，点击关闭");
+                }
                 break;
+            default:
+                if (getIntent().hasExtra("KEY_NEEDCALL")) {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("点击呼叫");
+                    }
+                } else {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("暂无连接，点击关闭");
+                    }
+                }
+        }
+    }
+
+    /**
+     * 根据状态刷新点击事件
+     */
+    public void chatTypeChangeClick() {
+        switch (avChatType) {
+            case CONN:
+                manager.hangUp(AVChatExitCode.CANCEL);
+                finish();
+                break;
+            case CONFIG_ERROR:
+                finish();
+                break;
+            case PEER_HANG_UP:
+                finish();
+                break;
+            case PEER_NO_RESPONSE:
+                finish();
+                break;
+            case INVALIDE_CHANNELID:
+                finish();
+                break;
+            case CALLEE_ACK_AGREE:
+                manager.hangUp(AVChatExitCode.HANGUP);
+                finish();
+                break;
+            case CALLEE_ACK_REJECT:
+                finish();
+                break;
+            case CALLEE_ACK_BUSY:
+                finish();
+                break;
+            default:
+                // 根据主叫或者被叫区分默认点击功能
+                if (getIntent().hasExtra("KEY_NEEDCALL")) {
+                    ((OutGoingAVManager) manager).call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                } else {
+                    finish();
+                }
         }
     }
 

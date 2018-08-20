@@ -16,7 +16,6 @@ import java.util.List;
 
 public class AVChatTimeoutObserver {
 
-    private static final String TAG = "AVChatTimeoutObserver";
     private List<TimeoutObserver> timeoutObservers = new ArrayList<>();
     private List<Observer<Integer>> timeoutObserverLocal = new ArrayList<>(1); // 来电or呼出超时监听
     private Handler uiHandler;
@@ -61,14 +60,10 @@ public class AVChatTimeoutObserver {
         }
     }
 
-    public void observeTimeoutNotification(Observer<Integer> observer, boolean register, boolean isIncoming) {
+    public void observeTimeoutNotification(Observer<Integer> observer, boolean register) {
         registerObservers(timeoutObserverLocal, observer, register);
         if (register) {
-            if (isIncoming) {
-                addIncomingTimeout();
-            } else {
-                addOutgoingTimeout();
-            }
+            addTimeout();
         } else {
             removeAllTimeout();
         }
@@ -81,10 +76,10 @@ public class AVChatTimeoutObserver {
         }
     }
 
-    private void addOutgoingTimeout() {
+    private void addTimeout() {
         TimeoutObserver timeoutObserver = new TimeoutObserver();
         timeoutObservers.add(timeoutObserver);
-        int OUTGOING_TIME_OUT = 45 * 1000;
+        int OUTGOING_TIME_OUT = 60 * 1000;
         uiHandler.postDelayed(timeoutObserver, OUTGOING_TIME_OUT);
     }
 
@@ -93,13 +88,5 @@ public class AVChatTimeoutObserver {
             uiHandler.removeCallbacks(observer);
         }
         timeoutObservers.clear();
-    }
-
-    private void addIncomingTimeout() {
-        TimeoutObserver timeoutObserver = new TimeoutObserver();
-        timeoutObservers.add(timeoutObserver);
-
-        int INCOMING_TIME_OUT = 55 * 1000;
-        uiHandler.postDelayed(timeoutObserver, INCOMING_TIME_OUT);
     }
 }

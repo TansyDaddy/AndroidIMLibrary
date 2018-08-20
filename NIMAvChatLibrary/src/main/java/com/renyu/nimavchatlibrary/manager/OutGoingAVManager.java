@@ -4,8 +4,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.Utils;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.avchat.constant.AVChatEventType;
@@ -15,10 +17,10 @@ import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
 import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
 import com.renyu.nimavchatlibrary.R;
+import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
-import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 
 public class OutGoingAVManager extends BaseAVManager {
 
@@ -49,7 +51,7 @@ public class OutGoingAVManager extends BaseAVManager {
         Log.d("NIM_AV_APP", "收到对方挂断电话");
         onHangUp(AVChatExitCode.HANGUP);
         // 注销来电超时
-        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, true);
+        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
         if (avChatTypeListener != null) {
             avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_HANG_UP);
         }
@@ -69,6 +71,8 @@ public class OutGoingAVManager extends BaseAVManager {
         AVChatManager.getInstance().observeCalleeAckNotification(callAckObserver, register);
         // 注册网络通话对方挂断的通知
         AVChatManager.getInstance().observeHangUpNotification(callHangupObserver, register);
+        // 监听踢下线通知
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(onlineStatusObserver, register);
     }
 
     /**
@@ -77,7 +81,8 @@ public class OutGoingAVManager extends BaseAVManager {
      * @param extendMessage
      */
     public void call(String account, String extendMessage) {
-       initParams();
+        AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
+        initParams();
         // 添加自定义参数
         AVChatNotifyOption notifyOption = new AVChatNotifyOption();
         notifyOption.extendMessage = extendMessage;

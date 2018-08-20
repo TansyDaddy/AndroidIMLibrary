@@ -4,17 +4,19 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.Utils;
+import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.avchat.constant.AVChatControlCommand;
 import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
+import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
-import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
-import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.receiver.IncomingCallReceiver;
+import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 
 public class InComingAVManager extends BaseAVManager {
 
@@ -45,8 +47,10 @@ public class InComingAVManager extends BaseAVManager {
             // 有来电发生
             BaseAVManager.avChatData = avChatData;
             isAVChatting = true;
+            // 重置参数
+            reSetParams();
             // 注册来电未接超时
-            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true, true);
+            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true);
 
             AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.RING);
             Toast.makeText(Utils.getApp(), avChatData.getAccount()+"要求进行VR带看", Toast.LENGTH_SHORT).show();
@@ -57,13 +61,16 @@ public class InComingAVManager extends BaseAVManager {
             Log.d("NIM_AV_APP", "收到对方挂断电话");
             onHangUp(AVChatExitCode.HANGUP);
             // 注销来电超时
-            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false, true);
+            AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_HANG_UP);
             }
 
             Toast.makeText(Utils.getApp(), avChatCommonEvent.getAccount()+"终止VR带看", Toast.LENGTH_SHORT).show();
         }, true);
+
+        // 在线状态变化观察者
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(onlineStatusObserver, true);
     }
 
     /**

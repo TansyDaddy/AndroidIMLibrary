@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.impl.WebAppInterface;
 import com.renyu.nimavchatlibrary.manager.BaseAVManager;
 import com.renyu.nimavchatlibrary.manager.OutGoingAVManager;
 
@@ -41,6 +41,8 @@ public class OutGoingAVChatActivity extends BaseAVChatActivity {
         intent.putExtra(KEY_ACCOUNT, account);
         intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
         intent.putExtra(KEY_NEEDCALL, needCall);
+        intent.putExtra("WebAppImplName", "android");
+        intent.putExtra("WebAppImpl", new WebAppInterface());
         context.startActivity(intent);
     }
 
@@ -48,18 +50,9 @@ public class OutGoingAVChatActivity extends BaseAVChatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        btn_avchat.setText("点击呼叫");
-        btn_avchat.setOnClickListener(v -> call());
-
         // 去电的时候需要判断是不是需要发生去电行为
         if (getIntent().getBooleanExtra("KEY_NEEDCALL", false)) {
-            call();
+            ((OutGoingAVManager) manager).call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
         }
-    }
-
-    private void call() {
-        AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
-        // 拨打电话
-        ((OutGoingAVManager) manager).call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
     }
 }

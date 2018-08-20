@@ -1,0 +1,55 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="baidu-site-verification" content="v3NGId0qCU" />
+		<meta name="apple-itunes-app" content="app-id=543472063, app-argument=" />
+		<meta name="mobile-agent" content="format=html5;url=https://m.house365.com/nj.html">
+		<meta name="shenma-site-verification" content="5197e90ea0e81267602d403891d4151b_1502436201">
+		<link rel="stylesheet" href="css/style.css" />
+		<title>数据更新</title>
+	</head>
+	<body>	
+		<div class="wap">
+			<div class="wordone" id="one">
+				自定义消息内容
+			</div>
+			<p align="center">
+			<button class="btnone" onclick="sendOne('2')">自定义消息按钮</button>
+			</p>
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<p align="center">
+			<button class="btnone" onclick="sendTwo()">AVChat点击按钮</button>
+			</p>
+			<div class="wordtwo" id="two">
+				音视频当前状态
+			</div>
+		</div>
+		<script src="js/rem.js" type="text/javascript"></script>
+		<script>
+			//内容一变更
+			function changeConOne(info){
+				var info= info;
+				document.getElementById('one').innerText = info;				
+			}
+			//内容二变更
+			function changeConTwo(info){
+				var info= info;
+				document.getElementById('two').innerText = info;	
+			}
+			//按钮一点击
+			function sendOne(num){
+				android.sendCustomNotification(num);
+			}
+			//按钮二点击
+			function sendTwo(){
+				android.avChatClick();
+			}
+		</script>
+	</body>
+</html>

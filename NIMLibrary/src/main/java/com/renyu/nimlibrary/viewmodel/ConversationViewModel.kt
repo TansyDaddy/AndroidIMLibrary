@@ -443,9 +443,6 @@ class ConversationViewModel(private val account: String, private val sessionType
      * 发送“正在输入”通知
      */
     fun sendTypingCommand() {
-        if (sessionType === SessionTypeEnum.Team || sessionType === SessionTypeEnum.ChatRoom) {
-            return
-        }
         // 每5s发出一次
         if (System.currentTimeMillis() - typingTime > 5000L) {
             typingTime = System.currentTimeMillis()
