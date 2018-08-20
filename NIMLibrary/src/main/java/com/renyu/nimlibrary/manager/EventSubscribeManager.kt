@@ -3,7 +3,6 @@ package com.renyu.nimlibrary.manager
 import android.util.Log
 import com.blankj.utilcode.util.NetworkUtils
 import com.netease.nimlib.sdk.NIMClient
-import com.netease.nimlib.sdk.Observer
 import com.netease.nimlib.sdk.RequestCallbackWrapper
 import com.netease.nimlib.sdk.ResponseCode
 import com.netease.nimlib.sdk.event.EventSubscribeService
@@ -47,18 +46,15 @@ object EventSubscribeManager {
                         }
                     }
                 })
-        NIMClient.getService(EventSubscribeServiceObserver::class.java).observeEventChanged(object : Observer<List<Event>>{
-            override fun onEvent(t: List<Event>?) {
-                t?.forEach {
-                    if (NimOnlineStateEvent.isOnlineStateEvent(it)) {
-                        if (JSONObject(it.nimConfig).getJSONArray("online").length() == 0) {
-                            onlineAccent.add(it.publisherAccount)
-                            Log.d("NIM_APP", "${it.publisherAccount}下线")
-                        }
-                        else {
-                            onlineAccent.remove(it.publisherAccount)
-                            Log.d("NIM_APP", "${it.publisherAccount}上线")
-                        }
+        NIMClient.getService(EventSubscribeServiceObserver::class.java).observeEventChanged({ t ->
+            t?.forEach {
+                if (NimOnlineStateEvent.isOnlineStateEvent(it)) {
+                    if (JSONObject(it.nimConfig).getJSONArray("online").length() == 0) {
+                        onlineAccent.add(it.publisherAccount)
+                        Log.d("NIM_APP", "${it.publisherAccount}下线")
+                    } else {
+                        onlineAccent.remove(it.publisherAccount)
+                        Log.d("NIM_APP", "${it.publisherAccount}上线")
                     }
                 }
             }

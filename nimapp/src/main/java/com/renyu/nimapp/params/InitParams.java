@@ -29,7 +29,7 @@ public class InitParams {
     // 华为参数配置
     public static String hwCertificateName = "nimhuawei";
 
-    // 是否为经纪人
+    // 是否为经纪人（区分租售宝和淘房）
     public static boolean isAgent = false;
 
     // 自定义的踢下线逻辑

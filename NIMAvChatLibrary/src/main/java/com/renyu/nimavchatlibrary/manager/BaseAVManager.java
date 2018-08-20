@@ -268,7 +268,6 @@ public class BaseAVManager {
             AVChatManager.getInstance().muteLocalAudio(false);
             needRestoreLocalAudio = false;
         }
-
     }
 
     /**

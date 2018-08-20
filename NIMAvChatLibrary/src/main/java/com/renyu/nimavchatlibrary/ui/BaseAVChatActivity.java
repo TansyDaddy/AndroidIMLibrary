@@ -28,6 +28,13 @@ import android.widget.TextView;
 
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.RequestCallbackWrapper;
+import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.event.EventSubscribeService;
+import com.netease.nimlib.sdk.event.EventSubscribeServiceObserver;
+import com.netease.nimlib.sdk.event.model.Event;
+import com.netease.nimlib.sdk.event.model.EventSubscribeRequest;
+import com.netease.nimlib.sdk.event.model.NimOnlineStateEvent;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
@@ -46,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public abstract class BaseAVChatActivity extends AppCompatActivity implements BaseAVManager.AVChatTypeListener {
@@ -54,8 +62,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     public abstract void registerObserver();
     public abstract void unregisterObserver();
 
-    BaseAVManager manager;
-
     static final String KEY_ACCOUNT = "KEY_ACCOUNT";
     static final String KEY_NEEDCALL = "KEY_NEEDCALL";
     static final String KEY_EXTEND_MESSAGE = "extendMessage";
@@ -63,6 +69,12 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static boolean needFinish = true;
     // 是否暂停音视频
     boolean hasOnPause = false;
+    // 是否已经在线
+    boolean isOnLineStatue = false;
+    BaseAVManager manager;
+    // 监听事件
+    EventSubscribeRequest eventSubscribeRequest;
+    Observer<List<Event>> observeEventChanged;
 
     Button btn_avchat;
     Button btn_avchat_send;
@@ -225,6 +237,11 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(receiver, filter);
+
+        // 监听音视频聊天对方在线情况
+        ArrayList<String> accounts = new ArrayList<>();
+        accounts.add(getIntent().getStringExtra(KEY_ACCOUNT));
+        subscribeEvent(accounts);
     }
 
     @Override
@@ -278,8 +295,72 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
         unregisterReceiver(receiver);
 
+        unsubscribeEvent();
+
         // 关闭自定义消息通道
         NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
+    }
+
+    // 订阅有效期 1天，单位秒
+    private static final long SUBSCRIBE_EXPIRY = 60 * 60 * 24;
+
+    /**
+     * 订阅指定账号的在线状态事件
+     */
+    private void subscribeEvent(List<String> accounts) {
+        eventSubscribeRequest = new EventSubscribeRequest();
+        eventSubscribeRequest.setEventType(NimOnlineStateEvent.EVENT_TYPE);
+        eventSubscribeRequest.setPublishers(accounts);
+        eventSubscribeRequest.setExpiry(SUBSCRIBE_EXPIRY);
+        eventSubscribeRequest.setSyncCurrentValue(true);
+        NIMClient.getService(EventSubscribeService.class).subscribeEvent(eventSubscribeRequest)
+                .setCallback(new RequestCallbackWrapper<List<String>> () {
+                    @Override
+                    public void onResult(int code, List<String> result, Throwable exception) {
+                        if (code == ResponseCode.RES_SUCCESS) {
+                            if (result != null) {
+
+                            }
+                        }
+                    }
+                });
+
+        observeEventChanged = (Observer<List<Event>>) events -> {
+            for (Event event : events) {
+                if (NimOnlineStateEvent.isOnlineStateEvent(event)) {
+                    try {
+                        if (new JSONObject(event.getNimConfig()).getJSONArray("online").length() == 0) {
+                            Log.d("NIM_APP", event.getPublisherAccount()+"下线");
+                            // 如果正在通话中，就挂断电话
+                            if (BaseAVManager.isCallEstablish.get()) {
+                                manager.hangUp(AVChatExitCode.HANGUP);
+                            }
+                            finish();
+                        } else {
+                            // 音视频聊天用户发生二次登录
+                            if (isOnLineStatue) {
+                                // 如果正在通话中，就挂断电话
+                                if (BaseAVManager.isCallEstablish.get()) {
+                                    manager.hangUp(AVChatExitCode.HANGUP);
+                                }
+                                finish();
+                                return;
+                            }
+                            isOnLineStatue = true;
+                            Log.d("NIM_APP", event.getPublisherAccount()+"上线："+new JSONObject(event.getNimConfig()).getJSONArray("online").toString());
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        NIMClient.getService(EventSubscribeServiceObserver.class).observeEventChanged(observeEventChanged, true);
+    }
+
+    private void unsubscribeEvent() {
+        NIMClient.getService(EventSubscribeService.class).unSubscribeEvent(eventSubscribeRequest);
+        NIMClient.getService(EventSubscribeServiceObserver.class).observeEventChanged(observeEventChanged, false);
     }
 
     @Override
