@@ -5,22 +5,14 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.content.Intent
-import android.util.Log
 import android.view.View
-import com.netease.nimlib.sdk.NIMClient
-import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.msg.model.RecentContact
-import com.netease.nimlib.sdk.uinfo.UserService
-import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.MessageManager
-import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
-import com.renyu.nimlibrary.util.RxBus
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -67,9 +59,6 @@ class ChatListViewModel : ViewModel(), EventImpl {
         beans.clear()
         beans.addAll(sortRecentContacts(recentContacts))
         adapter.notifyDataSetChanged()
-
-        // 刷新用户个人数据
-        refreshUserInfo()
     }
 
     /**
@@ -96,9 +85,6 @@ class ChatListViewModel : ViewModel(), EventImpl {
         }
         sortRecentContacts(beans)
         adapter.notifyDataSetChanged()
-
-        // 刷新用户个人数据
-        refreshUserInfo()
     }
 
     /**
@@ -139,37 +125,6 @@ class ChatListViewModel : ViewModel(), EventImpl {
         }
         catch (e:NoSuchFieldException) {
             e.printStackTrace()
-        }
-    }
-
-    /**
-     * 刷新用户个人数据
-     */
-    private fun refreshUserInfo() {
-        val refreshLists = ArrayList<String>()
-        beans.forEach {
-            val userInfo = NIMClient.getService(UserService::class.java).getUserInfo(it.contactId)
-            if (userInfo == null) {
-                refreshLists.add(it.contactId)
-            }
-        }
-        if (refreshLists.size>0) {
-            UserManager.fetchUserInfo(refreshLists, object : RequestCallback<List<NimUserInfo>> {
-                override fun onSuccess(param: List<NimUserInfo>?) {
-                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
-                    param?.forEach {
-                        Log.d("NIM_APP", "从服务器获取用户资料：${it.name}")
-                    }
-                }
-
-                override fun onFailed(code: Int) {
-
-                }
-
-                override fun onException(exception: Throwable?) {
-
-                }
-            })
         }
     }
 

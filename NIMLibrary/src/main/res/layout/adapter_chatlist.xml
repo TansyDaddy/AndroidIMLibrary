@@ -65,6 +65,7 @@
                             android:layout_weight="1"
                             android:textSize="14sp"
                             app:chatName="@{recentContact.getContactId()}"
+                            app:checkUserInfoExists="@{recentContact.getContactId()}"
                             android:textColor="#333333"/>
                         <TextView
                             android:layout_width="wrap_content"

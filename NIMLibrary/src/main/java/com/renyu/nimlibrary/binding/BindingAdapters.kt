@@ -5,6 +5,7 @@ import android.net.Uri
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -15,7 +16,7 @@ import com.facebook.drawee.span.SimpleDraweeSpanTextView
 import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
-import com.netease.nimlib.sdk.NIMClient
+import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.avchat.constant.AVChatRecordState
 import com.netease.nimlib.sdk.avchat.constant.AVChatType
 import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
@@ -27,11 +28,15 @@ import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
-import com.netease.nimlib.sdk.uinfo.UserService
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.R
+import com.renyu.nimlibrary.bean.ObserveResponse
+import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
+import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.util.OtherUtils
+import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
 import com.renyu.nimlibrary.util.sticker.StickerUtils
 import org.json.JSONObject
@@ -53,7 +58,7 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["avatarImage"])
     fun loadAvatarImage(simpleDraweeView: SimpleDraweeView, account: String) {
-        val userInfo = NIMClient.getService(UserService::class.java).getUserInfo(account)
+        val userInfo = UserManager.getUserInfo(account)
         if (userInfo != null) {
             if (simpleDraweeView.tag !=null &&
                     !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
@@ -84,12 +89,41 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["chatName"])
     fun loadChatName(textView: TextView, contactId: String) {
-        val userInfo = NIMClient.getService(UserService::class.java).getUserInfo(contactId)
+        val userInfo = UserManager.getUserInfo(contactId)
         if (userInfo != null) {
             textView.text = userInfo.name
         }
         else {
             textView.text = contactId
+        }
+    }
+
+    /**
+     * 检测用户信息是否存在，不存在的话执行云端获取操作
+     */
+    @JvmStatic
+    @BindingAdapter(value = ["checkUserInfoExists"])
+    fun checkUserInfoExists(textView: TextView, contactId: String) {
+        val userInfo = UserManager.getUserInfo(contactId)
+        if (userInfo == null) {
+            val refreshLists = ArrayList<String>()
+            refreshLists.add(contactId)
+            UserManager.fetchUserInfo(refreshLists, object : RequestCallback<List<NimUserInfo>> {
+                override fun onSuccess(param: List<NimUserInfo>?) {
+                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
+                    param?.forEach {
+                        Log.d("NIM_APP", "从服务器获取用户资料：${it.name}")
+                    }
+                }
+
+                override fun onFailed(code: Int) {
+
+                }
+
+                override fun onException(exception: Throwable?) {
+
+                }
+            })
         }
     }
 
