@@ -5,17 +5,22 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.content.Intent
+import android.util.Log
 import android.view.View
 import com.netease.nimlib.sdk.NIMClient
+import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.UserService
-import com.renyu.nimlibrary.bean.Resource
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.bean.ObserveResponse
+import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
+import com.renyu.nimlibrary.util.RxBus
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -149,7 +154,22 @@ class ChatListViewModel : ViewModel(), EventImpl {
             }
         }
         if (refreshLists.size>0) {
-            UserManager.fetchUserInfo(refreshLists)
+            UserManager.fetchUserInfo(refreshLists, object : RequestCallback<List<NimUserInfo>> {
+                override fun onSuccess(param: List<NimUserInfo>?) {
+                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
+                    param?.forEach {
+                        Log.d("NIM_APP", "从服务器获取用户资料：${it.name}")
+                    }
+                }
+
+                override fun onFailed(code: Int) {
+
+                }
+
+                override fun onException(exception: Throwable?) {
+
+                }
+            })
         }
     }
 

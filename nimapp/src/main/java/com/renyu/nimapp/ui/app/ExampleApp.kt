@@ -6,10 +6,7 @@ import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.util.NIMUtil
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimavchatlibrary.manager.InComingAVManager
-import com.renyu.nimlibrary.manager.AuthManager
-import com.renyu.nimlibrary.manager.MessageManager
-import com.renyu.nimlibrary.manager.StatueManager
-import com.renyu.nimlibrary.manager.UserManager
+import com.renyu.nimlibrary.manager.*
 import com.renyu.nimlibrary.params.CommonParams
 
 class ExampleApp : MultiDexApplication() {
@@ -52,6 +49,10 @@ class ExampleApp : MultiDexApplication() {
             MessageManager.observeCustomNotification()
             // 监听用户资料变更
             UserManager.observeUserInfoUpdate()
+            // 监听黑名单变更通知
+            FriendManager.observeBlackListChangedNotify()
+            // 监听好友关系变化通知
+            FriendManager.observeFriendChangedNotify()
             // 注册自定义消息类型解析
             MessageManager.registerCustomAttachmentParser()
             // 音视频通话接听配置

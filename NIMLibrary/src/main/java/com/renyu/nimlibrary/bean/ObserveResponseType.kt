@@ -9,6 +9,7 @@ enum class ObserveResponseType {
     UserInfoUpdate,
     // 从服务器获取用户资料
     FetchUserInfo,
+    FetchUserInfoByContact,
     // 用户发送的消息状态
     MsgStatus,
     // 用户收到的消息
@@ -26,5 +27,9 @@ enum class ObserveResponseType {
     // emoji
     Emoji,
     // sticker
-    Sticker
+    Sticker,
+    // 好友关系改变通知
+    FriendChangedNotify,
+    // 黑名单变更通知
+    BlackListChangedNotify
 }
