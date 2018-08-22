@@ -16,6 +16,8 @@ ext {
             // 云信key
             nim_appKey            : "45c6af3c98409b18a84451215d0bdd6e",
             // 华为推送key
-            huaweipush_appKey     : "100373793"
+            huaweipush_appKey     : "100373793",
+            // 百度地图key
+            baidumap              : "X0SY6wLaNLvoHSkcUpainNUAawYBNI7q"
     ]
 }

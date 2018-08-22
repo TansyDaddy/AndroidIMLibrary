@@ -4,14 +4,17 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
+import android.content.Intent
 import android.os.Handler
 import android.view.View
 import android.widget.Toast
+import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.ResponseCode
 import com.netease.nimlib.sdk.msg.MessageBuilder
+import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
@@ -20,17 +23,18 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.ObserveResponseType
-import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
+import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
+import com.renyu.nimlibrary.ui.activity.MapPreviewActivity
 import com.renyu.nimlibrary.ui.adapter.ConversationAdapter
 import com.renyu.nimlibrary.util.RxBus
 import org.json.JSONObject
+import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -198,13 +202,71 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 发送消息
+     * 准备文字消息
      */
-    fun sendIMMessage(imMessage: IMMessage) {
+    fun prepareText(text: String): IMMessage? {
         if (isAsync) {
-            return
+            return null
         }
+        return MessageManager.sendTextMessage(account, text)
+    }
 
+    /**
+     * 准备图片消息
+     */
+    fun prepareImageFile(file: File): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendImageMessage(account, file)
+    }
+
+    /**
+     * 准备语音消息
+     */
+    fun prepareAudio(file: File, duration: Long): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendAudioMessage(account, file, duration)
+    }
+
+    /**
+     * 准备地理位置消息
+     */
+    fun prepareLocation(latLng: LatLng, address: String): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendLocationMessage(account, latLng.latitude, latLng.longitude, address)
+    }
+
+    /**
+     * 准备贴图消息
+     */
+    fun prepareSticker(stickerItem: StickerItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
+        return MessageManager.createCustomMessage(account, "贴图消息", attachment)
+    }
+
+    /**
+     * 准备VR消息
+     */
+    fun prepareVR(vrItem: VRItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        val attachment = VRAttachment(vrItem.vrJson)
+        return MessageManager.createCustomMessage(account, "VR", attachment)
+    }
+
+    /**
+     * 消息发送后刷新列表
+     */
+    fun refreshSendIMMessage(imMessage: IMMessage) {
         messages.add(imMessage)
         adapter.updateShowTimeItem(messages, false, true)
         adapter.notifyItemInserted(messages.size - 1)
@@ -500,5 +562,20 @@ class ConversationViewModel(private val account: String, private val sessionType
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * 前往地图预览页面
+     */
+    override fun gotoMapPreview(view: View, imMessage: IMMessage) {
+        super.gotoMapPreview(view, imMessage)
+
+        val attachment = imMessage.attachment as LocationAttachment
+
+        val intent = Intent(Utils.getApp(), MapPreviewActivity::class.java)
+        intent.putExtra("address", attachment.address)
+        intent.putExtra("lat", attachment.latitude)
+        intent.putExtra("lng", attachment.longitude)
+        Utils.getApp().startActivity(intent)
     }
 }

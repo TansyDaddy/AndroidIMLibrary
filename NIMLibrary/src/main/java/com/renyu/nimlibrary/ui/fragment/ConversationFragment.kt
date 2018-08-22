@@ -4,6 +4,7 @@ import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.graphics.Color
 import android.os.Bundle
@@ -25,6 +26,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
+import com.baidu.mapapi.model.LatLng
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
@@ -33,10 +35,9 @@ import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
-import com.renyu.nimlibrary.extension.StickerAttachment
-import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
+import com.renyu.nimlibrary.ui.activity.MapActivity
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
 import com.renyu.nimlibrary.util.sticker.StickerUtils
@@ -283,6 +284,13 @@ class ConversationFragment : Fragment(), EventImpl {
         layout_record.onDestroy()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 2000 && resultCode == Activity.RESULT_OK) {
+            sendLocation(data!!.getParcelableExtra("LatLng"), data.getStringExtra("address"))
+        }
+    }
+
     private fun initUI() {
         edit_conversation.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
@@ -401,6 +409,9 @@ class ConversationFragment : Fragment(), EventImpl {
                         "明华清园 3室2厅 690万",
                         "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
             }
+            R.id.iv_map -> {
+                startActivityForResult(Intent(activity, MapActivity::class.java), 2000)
+            }
         }
     }
 
@@ -423,11 +434,13 @@ class ConversationFragment : Fragment(), EventImpl {
         if (TextUtils.isEmpty(edit_conversation.text.toString())) {
             return
         }
-        vm!!.sendIMMessage(MessageManager.sendTextMessage(arguments?.getString("account")!!, edit_conversation.text.toString()))
-        rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
-        // 重置文本框
-        edit_conversation.setText("")
-        rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+        val imMessage = vm!!.prepareText(edit_conversation.text.toString())
+        if (imMessage != null) {
+            vm!!.refreshSendIMMessage(imMessage)
+            // 重置文本框
+            edit_conversation.setText("")
+            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+        }
     }
 
     /**
@@ -435,8 +448,11 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     fun sendImageFile(file: File) {
         Handler().postDelayed({
-            vm!!.sendIMMessage(MessageManager.sendImageMessage(arguments?.getString("account")!!, file))
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            val imMessage = vm!!.prepareImageFile(file)
+            if (imMessage != null) {
+                vm!!.refreshSendIMMessage(imMessage)
+                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            }
         }, 500)
     }
 
@@ -445,8 +461,24 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     private fun sendAudio(file: File, duration: Long) {
         Handler().postDelayed({
-            vm!!.sendIMMessage(MessageManager.sendAudioMessage(arguments?.getString("account")!!, file, duration))
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            val imMessage = vm!!.prepareAudio(file, duration)
+            if (imMessage != null) {
+                vm!!.refreshSendIMMessage(imMessage)
+                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            }
+        }, 500)
+    }
+
+    /**
+     * 发送地理位置
+     */
+    private fun sendLocation(latLng: LatLng, address: String) {
+        Handler().postDelayed({
+            val imMessage = vm!!.prepareLocation(latLng, address)
+            if (imMessage != null) {
+                vm!!.refreshSendIMMessage(imMessage)
+                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            }
         }, 500)
     }
 
@@ -455,9 +487,11 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     private fun sendSticker(stickerItem: StickerItem) {
         Handler().postDelayed({
-            val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
-            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "贴图消息", attachment))
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            val imMessage = vm!!.prepareSticker(stickerItem)
+            if (imMessage != null) {
+                vm!!.refreshSendIMMessage(imMessage)
+                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            }
         }, 500)
     }
 
@@ -466,17 +500,19 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     private fun sendVR(vrItem: VRItem) {
         Handler().postDelayed({
-            val attachment = VRAttachment(vrItem.vrJson)
-            vm!!.sendIMMessage(MessageManager.createCustomMessage(arguments?.getString("account")!!, "VR", attachment))
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            val imMessage = vm!!.prepareVR(vrItem)
+            if (imMessage != null) {
+                vm!!.refreshSendIMMessage(imMessage)
+                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
 
-            try {
-                // 客户进入VR环节
-                val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-                val kickoutFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
-                kickoutFuncMethod.invoke(clazz.newInstance(), arguments?.getString("account")!!, vrItem.vrJson, true)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                try {
+                    // 客户进入VR环节
+                    val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+                    val kickoutFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
+                    kickoutFuncMethod.invoke(clazz.newInstance(), arguments?.getString("account")!!, vrItem.vrJson, true)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }, 500)
     }

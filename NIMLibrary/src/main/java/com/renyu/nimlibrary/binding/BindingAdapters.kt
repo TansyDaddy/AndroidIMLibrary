@@ -22,6 +22,7 @@ import com.netease.nimlib.sdk.avchat.constant.AVChatType
 import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
+import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
@@ -326,5 +327,12 @@ object BindingAdapters {
         } catch (e: Exception) {
 
         }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListLocationTitle"])
+    fun loadChatListLocationTitle(textView: TextView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as LocationAttachment
+        textView.text = attachment.address
     }
 }

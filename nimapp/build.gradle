@@ -24,6 +24,7 @@ android {
                 IM_PKGNAME : rootProject.ext.app.applicationId,
                 nim_appKey : rootProject.ext.dependencies.nim_appKey,
                 huaweipush_appKey : rootProject.ext.dependencies.huaweipush_appKey,
+                baidumap : rootProject.ext.dependencies.baidumap
         ]
     }
     signingConfigs {

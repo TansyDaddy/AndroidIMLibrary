@@ -1,5 +1,9 @@
 package com.renyu.nimlibrary.util;
 
+import android.view.View;
+
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.blankj.utilcode.constant.TimeConstants;
 import com.blankj.utilcode.util.TimeUtils;
 
@@ -132,5 +136,12 @@ public class OtherUtils {
             retStr = "0" + Integer.toString(i);
         else retStr = "" + i;
         return retStr;
+    }
+
+    public static BitmapDescriptor getBitmapDescriptor(View view) {
+        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        return BitmapDescriptorFactory.fromView(view);
     }
 }

@@ -61,6 +61,16 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_send_voice, parent,
                             false), this)
+            8 -> return LocationViewHolder(
+                    DataBindingUtil.inflate<AdapterReceiveLocationBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_receive_location, parent,
+                            false))
+            9 -> return LocationViewHolder(
+                    DataBindingUtil.inflate<AdapterSendLocationBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_send_location, parent,
+                            false))
             12 -> return AVChatViewHolder(
                     DataBindingUtil.inflate<AdapterReceiveAvchatBinding>(
                             LayoutInflater.from(parent.context),
@@ -126,6 +136,9 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 holder.audioControl = MessageAudioControl.getInstance()
                 holder.changeUI()
             }
+            8, 9 -> {
+                initViewDataBinding((holder as LocationViewHolder).locationDataBinding, holder.layoutPosition)
+            }
             12, 13 -> {
                 initViewDataBinding((holder as AVChatViewHolder).avDataBinding, holder.layoutPosition)
             }
@@ -186,11 +199,11 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         }
         // 接收位置消息
         if (messages[position].msgType == MsgTypeEnum.location && messages[position].direct == MsgDirectionEnum.In) {
-
+            return 8
         }
         // 发送位置消息
         else if (messages[position].msgType == MsgTypeEnum.location && messages[position].direct == MsgDirectionEnum.Out) {
-
+            return 9
         }
         // 接收文件消息
         if (messages[position].msgType == MsgTypeEnum.file && messages[position].direct == MsgDirectionEnum.In) {

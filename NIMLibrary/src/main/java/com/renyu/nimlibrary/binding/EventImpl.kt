@@ -25,4 +25,7 @@ interface EventImpl {
 
     // 经纪人前往VR来电页面
     fun gotoVrInComingCall(view: View, imMessage: IMMessage) {}
+
+    // 前往地图预览页面
+    fun gotoMapPreview(view: View, imMessage: IMMessage) {}
 }

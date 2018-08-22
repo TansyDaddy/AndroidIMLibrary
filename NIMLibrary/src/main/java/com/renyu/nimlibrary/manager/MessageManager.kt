@@ -311,7 +311,7 @@ object MessageManager {
     /**
      * 发送位置消息
      */
-    fun sendAudioMessage(account: String, lat: Double, lng: Double, addr: String): IMMessage {
+    fun sendLocationMessage(account: String, lat: Double, lng: Double, addr: String): IMMessage {
         val message = MessageBuilder.createLocationMessage(account, SessionTypeEnum.P2P, lat, lng, addr)
         sendMessage(message, false)
         return message
