@@ -23,12 +23,23 @@
 			<br>
 			<br>
 			<br>
+			<div class="wordtwo" id="two">
+				音频当前状态
+			</div>
 			<p align="center">
 			<button class="btnone" onclick="sendTwo()">AVChat点击按钮</button>
 			</p>
-			<div class="wordtwo" id="two">
-				音视频当前状态
+			<br>
+			<br>
+			<br>
+			<br>
+			<br>
+			<div class="wordtwo" id="three">
+				静音当前状态
 			</div>
+			<p align="center">
+				<button class="btnone" onclick="sendThree()">静音按钮</button>
+			</p>
 		</div>
 		<script src="js/rem.js" type="text/javascript"></script>
 		<script>
@@ -42,6 +53,11 @@
 				var info= info;
 				document.getElementById('two').innerText = info;	
 			}
+			//内容三变更
+			function changeConThree(info){
+				var info= info;
+				document.getElementById('three').innerText = info;
+			}
 			//按钮一点击
 			function sendOne(num){
 				android.sendCustomNotification(num);
@@ -49,6 +65,10 @@
 			//按钮二点击
 			function sendTwo(){
 				android.avChatClick();
+			}
+			//按钮三点击
+			function sendThree(){
+				android.avChatMuteClick();
 			}
 		</script>
 	</body>

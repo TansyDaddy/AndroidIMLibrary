@@ -122,10 +122,12 @@ class ContactViewModel : ViewModel() {
         arrayList.add(account)
         UserManager.fetchUserInfo(arrayList, object : RequestCallback<List<NimUserInfo>> {
             override fun onSuccess(param: List<NimUserInfo>?) {
-                RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfoByContact))
-                if (param != null) {
-                    userInfos.addAll(param)
-                    adapter.notifyDataSetChanged()
+                if (param?.size != 0) {
+                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfoByContact))
+                    if (param != null) {
+                        userInfos.addAll(param)
+                        adapter.notifyDataSetChanged()
+                    }
                 }
             }
 

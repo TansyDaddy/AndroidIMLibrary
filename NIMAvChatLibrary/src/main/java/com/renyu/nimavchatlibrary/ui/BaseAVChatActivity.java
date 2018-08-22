@@ -55,7 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BaseAVChatActivity extends AppCompatActivity implements BaseAVManager.AVChatTypeListener {
+public abstract class BaseAVChatActivity extends AppCompatActivity implements BaseAVManager.AVChatTypeListener, BaseAVManager.AVChatMuteListener {
 
     public abstract BaseAVManager initBaseAVManager();
     public abstract void registerObserver();
@@ -66,7 +66,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static final String KEY_EXTEND_MESSAGE = "extendMessage";
 
     static boolean needFinish = true;
-    // 是否暂停音视频
+    // 是否暂停音频
     boolean hasOnPause = false;
     BaseAVManager manager;
     // 监听事件
@@ -172,6 +172,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                     // 页面加载完毕之后根据主叫或者被叫区分状态内容
                     chatTypeChange(AVChatTypeEnum.UNDEFINE);
                 }
+                ((WebAppInterface) impl).updateMuteStatues("非静音");
             }
 
             @Override
@@ -210,6 +211,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
         manager = initBaseAVManager();
         manager.setAvChatTypeListener(this);
+        manager.setAVChatMuteListener(this);
         // 注册监听
         registerObserver();
         manager.registerCommonObserver(true);
@@ -219,7 +221,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(receiver, filter);
 
-        // 监听音视频聊天对方在线情况
+        // 监听音频聊天对方在线情况
         ArrayList<String> accounts = new ArrayList<>();
         accounts.add(getIntent().getStringExtra(KEY_ACCOUNT));
         subscribeEvent(accounts);
@@ -360,6 +362,13 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         }
     }
 
+    /**
+     * 切换静音状态
+     */
+    public void toggleMute() {
+        manager.toggleMute();
+    }
+
     @Override
     public void chatTypeChange(AVChatTypeEnum avChatTypeEnum) {
         this.avChatType = avChatTypeEnum;
@@ -464,6 +473,16 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 } else {
                     finish();
                 }
+        }
+    }
+
+    @Override
+    public void chatMuteChange(boolean mute) {
+        if (mute) {
+            ((WebAppInterface) impl).updateMuteStatues("已静音");
+        }
+        else {
+            ((WebAppInterface) impl).updateMuteStatues("非静音");
         }
     }
 

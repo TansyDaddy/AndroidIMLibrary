@@ -24,23 +24,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BaseAVManager {
 
-    // 当前音视频状态
+    // 当前音频状态
     AVChatTypeListener avChatTypeListener;
     public interface AVChatTypeListener {
         void chatTypeChange(AVChatTypeEnum avChatTypeEnum);
     }
 
-    // 接收方音视频通话信息
+    // 当前静音状态
+    AVChatMuteListener avChatMuteListener;
+    public interface AVChatMuteListener {
+        void chatMuteChange(boolean mute);
+    }
+
+    // 接收方音频通话信息
     public static AVChatData avChatData = null;
     // 是否有来电发生
     static boolean isAVChatting = false;
-    // 是否音视频通话连接成功
+    // 是否音频通话连接成功
     public static AtomicBoolean isCallEstablish = new AtomicBoolean(false);
 
     private AVChatCameraCapturer mVideoCapturer;
-    // 音视频配置参数
+    // 音频配置参数
     private AVChatConfigs avChatConfigs;
-    // 是否已经结束音视频服务
+    // 是否已经结束音频服务
     private boolean destroyRTC = false;
     // 是否恢复音频通话
     private boolean needRestoreLocalAudio = false;
@@ -55,10 +61,20 @@ public class BaseAVManager {
     public void reSetParams() {
         destroyRTC = false;
         needRestoreLocalAudio = false;
+
+        // 打开音频
+        AVChatManager.getInstance().muteLocalAudio(false);
+        if (avChatMuteListener != null) {
+            avChatMuteListener.chatMuteChange(false);
+        }
     }
 
     public void setAvChatTypeListener(AVChatTypeListener avChatTypeListener) {
         this.avChatTypeListener = avChatTypeListener;
+    }
+
+    public void setAVChatMuteListener(AVChatMuteListener avChatMuteListener) {
+        this.avChatMuteListener = avChatMuteListener;
     }
 
     // 来电未接超时
@@ -134,7 +150,7 @@ public class BaseAVManager {
             Log.d("NIM_AV_APP", "onCallEstablished");
             // 注销来电超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
-            // 音视频通话建立
+            // 音频通话建立
             isCallEstablish.set(true);
             // 开启扬声器
             AVChatManager.getInstance().setSpeaker(true);
@@ -231,6 +247,9 @@ public class BaseAVManager {
     public void resumeVideo() {
         if (needRestoreLocalAudio) {
             AVChatManager.getInstance().muteLocalAudio(false);
+            if (avChatMuteListener != null) {
+                avChatMuteListener.chatMuteChange(false);
+            }
             needRestoreLocalAudio = false;
         }
     }
@@ -241,7 +260,38 @@ public class BaseAVManager {
     public void pauseVideo() {
         if (!AVChatManager.getInstance().isLocalAudioMuted()) {
             AVChatManager.getInstance().muteLocalAudio(true);
+            if (avChatMuteListener != null) {
+                avChatMuteListener.chatMuteChange(true);
+            }
             needRestoreLocalAudio = true;
+        }
+    }
+
+    /**
+     * 判断当前是否处于静音状态
+     * @return
+     */
+    public boolean isLocalAudioMuted() {
+        return AVChatManager.getInstance().isLocalAudioMuted();
+    }
+
+    /**
+     * 切换音频开关
+     */
+    public void toggleMute() {
+        // isMute是否处于静音状态
+        if (!AVChatManager.getInstance().isLocalAudioMuted()) {
+            // 关闭音频
+            AVChatManager.getInstance().muteLocalAudio(true);
+            if (avChatMuteListener != null) {
+                avChatMuteListener.chatMuteChange(true);
+            }
+        } else {
+            // 打开音频
+            AVChatManager.getInstance().muteLocalAudio(false);
+            if (avChatMuteListener != null) {
+                avChatMuteListener.chatMuteChange(false);
+            }
         }
     }
 

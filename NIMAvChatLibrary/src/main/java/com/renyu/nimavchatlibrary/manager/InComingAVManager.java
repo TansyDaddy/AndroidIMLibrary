@@ -30,13 +30,17 @@ public class InComingAVManager extends BaseAVManager {
         super.setAvChatTypeListener(avChatTypeListener);
     }
 
+    public void setAVChatMuteListener(AVChatMuteListener avChatMuteListener) {
+        super.setAVChatMuteListener(avChatMuteListener);
+    }
+
     /**
      * 注册被叫监听
      */
     public void registerInComingObserver() {
         // 注册网络来电
         AVChatManager.getInstance().observeIncomingCall((Observer<AVChatData>) avChatData -> {
-            // 非电话场景并且未发生音视频连接的情况下可以接收呼叫
+            // 非电话场景并且未发生音频连接的情况下可以接收呼叫
             if (IncomingCallReceiver.stateEnum != IncomingCallReceiver.PhoneCallStateEnum.IDLE
                     || isAVChatting
                     || AVChatManager.getInstance().getCurrentChatId() != 0) {
@@ -87,7 +91,7 @@ public class InComingAVManager extends BaseAVManager {
             @Override
             public void onFailed(int code) {
                 if (code == -1) {
-                    Toast.makeText(Utils.getApp(), "本地音视频启动失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Utils.getApp(), "本地音频启动失败", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(Utils.getApp(), "建立连接失败", Toast.LENGTH_SHORT).show();
                 }

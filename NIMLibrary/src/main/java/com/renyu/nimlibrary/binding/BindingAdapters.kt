@@ -110,9 +110,11 @@ object BindingAdapters {
             refreshLists.add(contactId)
             UserManager.fetchUserInfo(refreshLists, object : RequestCallback<List<NimUserInfo>> {
                 override fun onSuccess(param: List<NimUserInfo>?) {
-                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
-                    param?.forEach {
-                        Log.d("NIM_APP", "从服务器获取用户资料：${it.name}")
+                    if (param?.size != 0) {
+                        RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
+                        param?.forEach {
+                            Log.d("NIM_APP", "从服务器获取用户资料：${it.name}")
+                        }
                     }
                 }
 

@@ -67,6 +67,10 @@ public class OutGoingAVManager extends BaseAVManager {
         super.setAvChatTypeListener(avChatTypeListener);
     }
 
+    public void setAVChatMuteListener(AVChatMuteListener avChatMuteListener) {
+        super.setAVChatMuteListener(avChatMuteListener);
+    }
+
     public void registerOutgoingObserver(boolean register) {
         AVChatManager.getInstance().observeCalleeAckNotification(callAckObserver, register);
         // 注册网络通话对方挂断的通知

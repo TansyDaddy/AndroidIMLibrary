@@ -55,7 +55,7 @@ class ExampleApp : MultiDexApplication() {
             FriendManager.observeFriendChangedNotify()
             // 注册自定义消息类型解析
             MessageManager.registerCustomAttachmentParser()
-            // 音视频通话接听配置
+            // 音频通话接听配置
             if (InitParams.isAgent) {
                 InComingAVManager.inComingAVManager = InComingAVManager()
                 InComingAVManager.inComingAVManager.registerInComingObserver()

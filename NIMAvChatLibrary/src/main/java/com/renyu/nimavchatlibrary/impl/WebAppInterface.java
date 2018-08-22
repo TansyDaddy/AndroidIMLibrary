@@ -47,7 +47,7 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
     }
 
     /**
-     * 音视频功能点击
+     * 音频功能点击
      */
     @JavascriptInterface
     public void avChatClick() {
@@ -55,19 +55,35 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
     }
 
     /**
+     * 切换静音状态
+     */
+    @JavascriptInterface
+    public void avChatMuteClick() {
+        ((BaseAVChatActivity) context).toggleMute();
+    }
+
+    /**
      * 接收自定义消息
      * @param string
      */
     public void receiverMessage(String string) {
-        webView.loadUrl("javascript:changeConOne('"+string+"')");
+        webView.post(() -> webView.loadUrl("javascript:changeConOne('"+string+"')"));
     }
 
     /**
-     * 更新音视频功能状态显示
+     * 更新音频功能状态显示
      * @param string
      */
     public void updateVRStatus(String string) {
-        webView.loadUrl("javascript:changeConTwo('"+string+"')");
+        webView.post(() -> webView.loadUrl("javascript:changeConTwo('"+string+"')"));
+    }
+
+    /**
+     * 更新静音状态
+     * @param string
+     */
+    public void updateMuteStatues(String string) {
+        webView.post(() -> webView.loadUrl("javascript:changeConThree('"+string+"')"));
     }
 
     @Override
