@@ -8,7 +8,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.netease.nimlib.sdk.friend.model.Friend
+import com.netease.nimlib.sdk.friend.model.BlackListChangedNotify
 import com.netease.nimlib.sdk.friend.model.FriendChangedNotify
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
@@ -48,6 +48,10 @@ class ContactFragment : Fragment() {
                     // 发生好友关系变化
                     if (it.type == ObserveResponseType.FriendChangedNotify) {
                         vm!!.updateFriends(it.data as FriendChangedNotify)
+                    }
+                    // 发生黑名单变更通知
+                    if (it.type == ObserveResponseType.BlackListChangedNotify) {
+                        vm!!.updateBlackList(it.data as BlackListChangedNotify)
                     }
                 }
                 .subscribe()
