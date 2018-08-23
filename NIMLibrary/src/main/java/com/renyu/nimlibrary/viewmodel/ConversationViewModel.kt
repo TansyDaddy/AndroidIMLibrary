@@ -204,69 +204,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 准备文字消息
-     */
-    fun prepareText(text: String): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        return MessageManager.sendTextMessage(account, text)
-    }
-
-    /**
-     * 准备图片消息
-     */
-    fun prepareImageFile(file: File): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        return MessageManager.sendImageMessage(account, file)
-    }
-
-    /**
-     * 准备语音消息
-     */
-    fun prepareAudio(file: File, duration: Long): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        return MessageManager.sendAudioMessage(account, file, duration)
-    }
-
-    /**
-     * 准备地理位置消息
-     */
-    fun prepareLocation(latLng: LatLng, address: String): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        return MessageManager.sendLocationMessage(account, latLng.latitude, latLng.longitude, address)
-    }
-
-    /**
-     * 准备贴图消息
-     */
-    fun prepareSticker(stickerItem: StickerItem): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
-        return MessageManager.createCustomMessage(account, "贴图消息", attachment)
-    }
-
-    /**
-     * 准备VR消息
-     */
-    fun prepareVR(vrItem: VRItem): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        val attachment = VRAttachment(vrItem.vrJson)
-        return MessageManager.createCustomMessage(account, "VR", attachment)
-    }
-
-    /**
-     * 消息发送后刷新列表
+     * 消息发送后同步会话列表
      */
     fun refreshSendIMMessage(imMessage: IMMessage) {
         messages.add(imMessage)
@@ -448,13 +386,6 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 复制文字消息
-     */
-    fun copyIMMessage(imMessage: IMMessage) {
-        ClipboardUtils.copyText(imMessage.content)
-    }
-
-    /**
      * 对方撤回消息
      */
     fun receiverRevokeMessage(notification: RevokeMsgNotification) {
@@ -462,6 +393,54 @@ class ConversationViewModel(private val account: String, private val sessionType
             deleteItem(notification.message, false)
             MessageManager.sendRevokeMessage(notification.message, "对方撤回了一条消息")
         }
+    }
+
+    /**
+     * 复制文字消息
+     */
+    fun copyIMMessage(imMessage: IMMessage) {
+        ClipboardUtils.copyText(imMessage.content)
+    }
+
+    /**
+     * 客户前往VR去电页面
+     */
+    override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
+        super.gotoVrOutgoingCall(view, imMessage)
+        try {
+            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+            val vrOutgoingCallFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
+            vrOutgoingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 经纪人前往VR来电页面
+     */
+    override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
+        super.gotoVrInComingCall(view, imMessage)
+        try {
+            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+            val vrIncomingCallFuncMethod = clazz.getDeclaredMethod("vrIncomingCall", String::class.java, String::class.java)
+            vrIncomingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 前往地图预览页面
+     */
+    override fun gotoMapPreview(view: View, imMessage: IMMessage) {
+        super.gotoMapPreview(view, imMessage)
+        val attachment = imMessage.attachment as LocationAttachment
+        val intent = Intent(Utils.getApp(), MapPreviewActivity::class.java)
+        intent.putExtra("address", attachment.address)
+        intent.putExtra("lat", attachment.latitude)
+        intent.putExtra("lng", attachment.longitude)
+        Utils.getApp().startActivity(intent)
     }
 
     /**
@@ -508,6 +487,68 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
+     * 准备文字消息
+     */
+    fun prepareText(text: String): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendTextMessage(account, text)
+    }
+
+    /**
+     * 准备图片消息
+     */
+    fun prepareImageFile(file: File): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendImageMessage(account, file)
+    }
+
+    /**
+     * 准备语音消息
+     */
+    fun prepareAudio(file: File, duration: Long): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendAudioMessage(account, file, duration)
+    }
+
+    /**
+     * 准备地理位置消息
+     */
+    fun prepareLocation(latLng: LatLng, address: String): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendLocationMessage(account, latLng.latitude, latLng.longitude, address)
+    }
+
+    /**
+     * 准备贴图消息
+     */
+    fun prepareSticker(stickerItem: StickerItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
+        return MessageManager.createCustomMessage(account, "贴图消息", attachment)
+    }
+
+    /**
+     * 准备VR消息
+     */
+    fun prepareVR(vrItem: VRItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        val attachment = VRAttachment(vrItem.vrJson)
+        return MessageManager.createCustomMessage(account, "VR", attachment)
+    }
+
+    /**
      * 发送“正在输入”通知
      */
     fun sendTypingCommand() {
@@ -540,48 +581,5 @@ class ConversationViewModel(private val account: String, private val sessionType
     private val comp = Comparator<IMMessage> { o1, o2 ->
         val time = o1!!.time - o2!!.time
         if (time == 0L) 0 else if (time < 0) -1 else 1
-    }
-
-    /**
-     * 客户前往VR去电页面
-     */
-    override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
-        super.gotoVrOutgoingCall(view, imMessage)
-        try {
-            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-            val vrOutgoingCallFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
-            vrOutgoingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /**
-     * 经纪人前往VR来电页面
-     */
-    override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
-        super.gotoVrInComingCall(view, imMessage)
-        try {
-            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-            val vrIncomingCallFuncMethod = clazz.getDeclaredMethod("vrIncomingCall", String::class.java, String::class.java)
-            vrIncomingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /**
-     * 前往地图预览页面
-     */
-    override fun gotoMapPreview(view: View, imMessage: IMMessage) {
-        super.gotoMapPreview(view, imMessage)
-
-        val attachment = imMessage.attachment as LocationAttachment
-
-        val intent = Intent(Utils.getApp(), MapPreviewActivity::class.java)
-        intent.putExtra("address", attachment.address)
-        intent.putExtra("lat", attachment.latitude)
-        intent.putExtra("lng", attachment.longitude)
-        Utils.getApp().startActivity(intent)
     }
 }
