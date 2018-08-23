@@ -52,6 +52,7 @@
                     android:id="@+id/aurora_iv_msgitem_photo"
                     android:layout_width="123dip"
                     android:layout_height="115dip"
+                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
                     fresco:actualImageResource="@drawable/default_grey_avatar"
                     fresco:actualImageScaleType="focusCrop"
                     fresco:placeholderImage="@drawable/default_grey_avatar"

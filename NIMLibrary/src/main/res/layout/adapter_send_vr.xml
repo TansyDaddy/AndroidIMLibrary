@@ -51,6 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
                     android:onClick="@{(view) -> eventImpl.gotoVrOutgoingCall(view, imMessage)}">
                     <com.facebook.drawee.view.SimpleDraweeView
                         xmlns:fresco="http://schemas.android.com/apk/res-auto"

@@ -4,13 +4,21 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
+import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.ui.view.QPopuWindow
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
 class ConversationActivity : BaseActivity(), ConversationFragment.ConversationListener {
+
     private var conversationFragment: ConversationFragment? = null
+
+    private var rawX: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
@@ -71,6 +79,39 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         intent.putExtra("images", images)
         intent.putExtra("index", index)
         startActivityForResult(intent, 1000)
+    }
+
+    /**
+     * 长按列表
+     */
+    override fun longClick(view: View, imMessage: IMMessage, position: Int) {
+        val location = intArrayOf(0, 0)
+        view.getLocationInWindow(location)
+
+        QPopuWindow.getInstance(view.context).builder
+                .bindView(view, position)
+                .setPopupItemList(if (imMessage.msgType == MsgTypeEnum.text) arrayOf("复制", "删除", "撤回") else arrayOf("删除", "撤回"))
+                .setPointers(rawX, location[1])
+                .setOnPopuListItemClickListener { _, _, position ->
+                    if (imMessage.msgType == MsgTypeEnum.text) {
+                        when(position) {
+                            0 -> conversationFragment?.copyIMMessage(imMessage)
+                            1 -> conversationFragment?.deleteIMMessage(imMessage)
+                            2 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+                        }
+                    }
+                    else {
+                        when(position) {
+                            0 -> conversationFragment?.deleteIMMessage(imMessage)
+                            1 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+                        }
+                    }
+                }.show()
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        rawX = ev!!.rawX.toInt()
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -24,8 +24,7 @@
             android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}" />
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}">
+            android:layout_height="wrap_content">
             <com.facebook.drawee.view.SimpleDraweeView
                 xmlns:fresco="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/aurora_iv_msgitem_avatar"
@@ -51,6 +50,7 @@
                 <RelativeLayout
                     android:layout_width="195dp"
                     android:layout_height="105dp"
+                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
                     android:onClick="@{(view) -> eventImpl.gotoMapPreview(view, imMessage)}">
                     <ImageView
                         android:layout_width="match_parent"

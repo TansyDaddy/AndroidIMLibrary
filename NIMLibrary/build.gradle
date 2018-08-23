@@ -79,7 +79,7 @@ dependencies {
     // 华为推送
     api 'com.huawei.android.hms:push:2.6.0.301'
     // 工具类
-    api 'com.blankj:utilcode:1.17.3'
+    api 'com.blankj:utilcode:1.19.0'
     // Fresco
     api 'com.facebook.fresco:fresco:1.10.0'
     api 'com.facebook.fresco:drawee-span:1.10.0'

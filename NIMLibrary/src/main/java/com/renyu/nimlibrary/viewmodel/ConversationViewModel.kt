@@ -32,6 +32,8 @@ import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.activity.MapPreviewActivity
 import com.renyu.nimlibrary.ui.adapter.ConversationAdapter
+import com.renyu.nimlibrary.ui.fragment.ConversationFragment
+import com.renyu.nimlibrary.util.ClipboardUtils
 import com.renyu.nimlibrary.util.RxBus
 import org.json.JSONObject
 import java.io.File
@@ -304,7 +306,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 删除消息
      */
-    private fun deleteIMMessage(imMessage: IMMessage) {
+    fun deleteIMMessage(imMessage: IMMessage) {
         val index = deleteItem(imMessage, true)
         adapter.notifyItemRemoved(index)
         // 重新调整时间
@@ -374,12 +376,9 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 长按消息列表
      */
-    override fun onLongClick(v: View, imMessage: IMMessage): Boolean {
-        // 删除消息
-//        deleteIMMessage(imMessage)
-        // 消息撤回
-        sendRevokeMessage(imMessage)
-        return super.onLongClick(v, imMessage)
+    override fun onLongClick(view: View, imMessage: IMMessage): Boolean {
+        (view.context as ConversationFragment.ConversationListener).longClick(view, imMessage, messages.indexOf(imMessage))
+        return super.onLongClick(view, imMessage)
     }
 
     /**
@@ -426,7 +425,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 消息主动撤回
      */
-    private fun sendRevokeMessage(imMessage: IMMessage) {
+    fun sendRevokeIMMessage(imMessage: IMMessage) {
         MessageManager.revokeMessage(imMessage, object : RequestCallback<Void> {
             override fun onSuccess(param: Void?) {
                 deleteItem(imMessage, false)
@@ -446,6 +445,13 @@ class ConversationViewModel(private val account: String, private val sessionType
 
             }
         })
+    }
+
+    /**
+     * 复制文字消息
+     */
+    fun copyIMMessage(imMessage: IMMessage) {
+        ClipboardUtils.copyText(imMessage.content)
     }
 
     /**

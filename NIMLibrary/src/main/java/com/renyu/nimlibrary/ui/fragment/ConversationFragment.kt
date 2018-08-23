@@ -30,6 +30,7 @@ import com.baidu.mapapi.model.LatLng
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
+import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.*
@@ -96,6 +97,8 @@ class ConversationFragment : Fragment(), EventImpl {
         fun pickPhoto()
         // 浏览大图
         fun showBigImage(images: ArrayList<String>, index: Int)
+        // 长按列表
+        fun longClick(view: View, imMessage: IMMessage, position: Int)
     }
 
     override fun onAttach(context: Context?) {
@@ -430,6 +433,9 @@ class ConversationFragment : Fragment(), EventImpl {
         return lastVisiblePosition >= vm?.adapter?.itemCount!! - 1
     }
 
+    /**
+     * 发送文本
+     */
     private fun sendText() {
         if (TextUtils.isEmpty(edit_conversation.text.toString())) {
             return
@@ -515,6 +521,27 @@ class ConversationFragment : Fragment(), EventImpl {
                 }
             }
         }, 500)
+    }
+
+    /**
+     * 删除消息
+     */
+    fun deleteIMMessage(imMessage: IMMessage) {
+        vm!!.deleteIMMessage(imMessage)
+    }
+
+    /**
+     * 消息撤回
+     */
+    fun sendRevokeIMMessage(imMessage: IMMessage) {
+        vm!!.sendRevokeIMMessage(imMessage)
+    }
+
+    /**
+     * 复制文字消息
+     */
+    fun copyIMMessage(imMessage: IMMessage) {
+        vm!!.copyIMMessage(imMessage)
     }
 
     /**

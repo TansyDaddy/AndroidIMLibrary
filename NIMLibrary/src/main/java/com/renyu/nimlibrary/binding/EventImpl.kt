@@ -16,7 +16,7 @@ interface EventImpl {
     fun resendIMMessage(view: View, uuid: String) {}
 
     // 长按消息列表中的消息
-    fun onLongClick(v: View, imMessage: IMMessage): Boolean {
+    fun onLongClick(view: View, imMessage: IMMessage): Boolean {
         return true
     }
 

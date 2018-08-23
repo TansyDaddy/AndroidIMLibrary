@@ -31,7 +31,7 @@ public class BaseAVManager {
     }
 
     // 当前静音状态
-    AVChatMuteListener avChatMuteListener;
+    private AVChatMuteListener avChatMuteListener;
     public interface AVChatMuteListener {
         void chatMuteChange(boolean mute);
     }
@@ -265,14 +265,6 @@ public class BaseAVManager {
             }
             needRestoreLocalAudio = true;
         }
-    }
-
-    /**
-     * 判断当前是否处于静音状态
-     * @return
-     */
-    public boolean isLocalAudioMuted() {
-        return AVChatManager.getInstance().isLocalAudioMuted();
     }
 
     /**

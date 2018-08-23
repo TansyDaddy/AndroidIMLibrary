@@ -24,7 +24,6 @@
             android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"
             android:layout_gravity="center" />
         <RelativeLayout
-            android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <com.facebook.drawee.view.SimpleDraweeView
