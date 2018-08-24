@@ -2,6 +2,20 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.novoda.bintray-release'
+
+group='com.github.renyu'
+
+publish {
+    userOrg = 'r17171709'
+    groupId = 'com.github.renyu'
+    artifactId = 'AndroidNimAvChatLibrary'
+    publishVersion = '1.0.3'
+    desc = 'Nim AvChat Library'
+    website = 'https://github.com/r17171709'
+    repoName = 'AndroidNimLibrary'
+}
 
 android {
     compileSdkVersion 27

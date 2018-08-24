@@ -11,11 +11,12 @@ publish {
     userOrg = 'r17171709'
     groupId = 'com.github.renyu'
     artifactId = 'AndroidNimLibrary'
-    publishVersion = '1.0.0'
+    publishVersion = '1.0.3'
     desc = 'Nim Library'
     website = 'https://github.com/r17171709'
     repoName = 'AndroidNimLibrary'
 }
+
 android {
     compileSdkVersion 27
     defaultConfig {

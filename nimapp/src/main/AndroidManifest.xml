@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.renyu.nimapp" >
     <application
-        android:name="com.renyu.nimlibrary.app.NimApp"
+        android:name=".ui.app.ExampleApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
