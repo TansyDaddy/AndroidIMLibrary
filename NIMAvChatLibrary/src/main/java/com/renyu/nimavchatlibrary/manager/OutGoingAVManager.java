@@ -6,17 +6,11 @@ import android.widget.Toast;
 import com.blankj.utilcode.util.Utils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
-import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.auth.AuthServiceObserver;
-import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
 import com.netease.nimlib.sdk.avchat.constant.AVChatEventType;
-import com.netease.nimlib.sdk.avchat.constant.AVChatType;
 import com.netease.nimlib.sdk.avchat.model.AVChatCalleeAckEvent;
 import com.netease.nimlib.sdk.avchat.model.AVChatCommonEvent;
-import com.netease.nimlib.sdk.avchat.model.AVChatData;
-import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
-import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
@@ -77,41 +71,5 @@ public class OutGoingAVManager extends BaseAVManager {
         AVChatManager.getInstance().observeHangUpNotification(callHangupObserver, register);
         // 监听踢下线通知
         NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(onlineStatusObserver, register);
-    }
-
-    /**
-     * 主叫拨号
-     * @param account
-     * @param extendMessage
-     */
-    public void call(String account, String extendMessage) {
-        AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
-        initParams();
-        // 添加自定义参数
-        AVChatNotifyOption notifyOption = new AVChatNotifyOption();
-        notifyOption.extendMessage = extendMessage;
-        // 去电
-        AVChatManager.getInstance().call2(account, AVChatType.AUDIO, notifyOption, new AVChatCallback<AVChatData>() {
-            @Override
-            public void onSuccess(AVChatData avChatData) {
-                // 去电成功
-                BaseAVManager.avChatData = avChatData;
-            }
-
-            @Override
-            public void onFailed(int code) {
-                if (code == ResponseCode.RES_FORBIDDEN) {
-                    Toast.makeText(Utils.getApp(), R.string.avchat_no_permission, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(Utils.getApp(), R.string.avchat_call_failed, Toast.LENGTH_SHORT).show();
-                }
-                closeRtc();
-            }
-
-            @Override
-            public void onException(Throwable exception) {
-                closeRtc();
-            }
-        });
     }
 }

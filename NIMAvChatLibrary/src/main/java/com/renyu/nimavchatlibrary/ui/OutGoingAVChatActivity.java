@@ -52,7 +52,7 @@ public class OutGoingAVChatActivity extends BaseAVChatActivity {
 
         // 去电的时候需要判断是不是需要发生去电行为
         if (getIntent().getBooleanExtra("KEY_NEEDCALL", false)) {
-            ((OutGoingAVManager) manager).call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+            manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
         }
     }
 }

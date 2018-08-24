@@ -5,11 +5,14 @@ import android.widget.Toast;
 
 import com.blankj.utilcode.util.Utils;
 import com.netease.nimlib.sdk.Observer;
+import com.netease.nimlib.sdk.ResponseCode;
 import com.netease.nimlib.sdk.StatusCode;
 import com.netease.nimlib.sdk.avchat.AVChatCallback;
 import com.netease.nimlib.sdk.avchat.AVChatManager;
+import com.netease.nimlib.sdk.avchat.constant.AVChatType;
 import com.netease.nimlib.sdk.avchat.model.AVChatCameraCapturer;
 import com.netease.nimlib.sdk.avchat.model.AVChatData;
+import com.netease.nimlib.sdk.avchat.model.AVChatNotifyOption;
 import com.netease.nimlib.sdk.avchat.model.AVChatParameters;
 import com.netease.nimlib.sdk.avchat.model.AVChatVideoCapturerFactory;
 import com.renyu.nimavchatlibrary.R;
@@ -182,6 +185,71 @@ public class BaseAVManager {
             AVChatManager.getInstance().setParameters(avChatConfigs.getAvChatParameters());
         }
         AVChatManager.getInstance().setParameter(AVChatParameters.KEY_VIDEO_FRAME_FILTER, true);
+    }
+
+    /**
+     * 主叫拨号
+     * @param account
+     * @param extendMessage
+     */
+    public void call(String account, String extendMessage) {
+        AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
+        initParams();
+        // 添加自定义参数
+        AVChatNotifyOption notifyOption = new AVChatNotifyOption();
+        notifyOption.extendMessage = extendMessage;
+        // 去电
+        AVChatManager.getInstance().call2(account, AVChatType.AUDIO, notifyOption, new AVChatCallback<AVChatData>() {
+            @Override
+            public void onSuccess(AVChatData avChatData) {
+                // 去电成功
+                BaseAVManager.avChatData = avChatData;
+            }
+
+            @Override
+            public void onFailed(int code) {
+                if (code == ResponseCode.RES_FORBIDDEN) {
+                    Toast.makeText(Utils.getApp(), R.string.avchat_no_permission, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Utils.getApp(), R.string.avchat_call_failed, Toast.LENGTH_SHORT).show();
+                }
+                closeRtc();
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                closeRtc();
+            }
+        });
+    }
+
+    /**
+     * 被叫接听
+     */
+    public void receive() {
+        initParams();
+        AVChatManager.getInstance().accept2(avChatData.getChatId(), new AVChatCallback<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+            }
+
+            @Override
+            public void onFailed(int code) {
+                if (code == -1) {
+                    Toast.makeText(Utils.getApp(), "本地音频启动失败", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Utils.getApp(), "建立连接失败", Toast.LENGTH_SHORT).show();
+                }
+                hangUp(AVChatExitCode.CANCEL);
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                hangUp(AVChatExitCode.CANCEL);
+            }
+        });
+        AVChatSoundPlayer.instance().stop();
     }
 
     /**

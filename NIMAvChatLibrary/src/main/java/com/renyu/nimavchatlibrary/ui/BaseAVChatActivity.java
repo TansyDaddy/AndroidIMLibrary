@@ -42,7 +42,6 @@ import com.renyu.nimavchatlibrary.R;
 import com.renyu.nimavchatlibrary.impl.WebAppImpl;
 import com.renyu.nimavchatlibrary.impl.WebAppInterface;
 import com.renyu.nimavchatlibrary.manager.BaseAVManager;
-import com.renyu.nimavchatlibrary.manager.OutGoingAVManager;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 
@@ -123,82 +122,14 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             e.printStackTrace();
         }
 
-        web_webview = findViewById(R.id.web_webview);
-        web_webview.setSaveEnabled(true);
-        web_webview.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        web_webview.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-                return super.onJsAlert(view, url, message, result);
-            }
-
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-                super.onReceivedTitle(view, title);
-            }
-        });
-        WebSettings settings=web_webview.getSettings();
-        settings.setDomStorageEnabled(true);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-        settings.setDatabaseEnabled(true);
-        settings.setAppCacheEnabled(true);
-        settings.setSavePassword(false);
-        settings.setSaveFormData(false);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
-        settings.setJavaScriptEnabled(true);
-        settings.setAllowContentAccess(true);
-        settings.setAllowFileAccess(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
-        settings.setBuiltInZoomControls(false);
-        impl=getIntent().getParcelableExtra("WebAppImpl");
-        if (impl!=null) {
-            impl.setContext(this);
-            impl.setWebView(web_webview);
-            web_webview.addJavascriptInterface(impl, getIntent().getStringExtra("WebAppImplName"));
-        }
-        web_webview.removeJavascriptInterface("searchBoxJavaBridge_");
-        web_webview.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                // 如果页面在加载完毕之前已经发生状态变化，则忽略
-                if (avChatType != AVChatTypeEnum.UNDEFINE) {
-
-                }
-                else {
-                    // 页面加载完毕之后根据主叫或者被叫区分状态内容
-                    chatTypeChange(AVChatTypeEnum.UNDEFINE);
-                }
-                ((WebAppInterface) impl).updateMuteStatues("非静音");
-            }
-
-            @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                // 接受所有网站的证书
-                handler.proceed();
-                super.onReceivedSslError(view, handler, error);
-            }
-        });
-        // 设置cookies
-        HashMap<String, String> cookies = new HashMap<>();
-        if (getIntent().getStringExtra("cookieUrl") != null) {
-            ArrayList<String> cookieValues = getIntent().getStringArrayListExtra("cookieValues");
-            for (int i = 0; i < cookieValues.size()/2; i++) {
-                cookies.put(cookieValues.get(i*2), cookieValues.get(i*2+1));
-            }
-            // cookies同步方法要在WebView的setting设置完之后调用，否则无效。
-            syncCookie(this, getIntent().getStringExtra("cookieUrl"), cookies);
-        }
-        web_webview.loadUrl("file:///android_asset/index.html");
-
         // 若来电或去电未接通时，点击home。另外一方挂断通话。从最近任务列表恢复，则finish
         if (needFinish) {
             finish();
             return;
         }
+
+        // 加载webview相关
+        initWebView();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
@@ -206,25 +137,48 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 
-        // 开启自定义消息通道
-        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
-
         manager = initBaseAVManager();
+        initAVChatConfig();
+    }
+
+    /**
+     * 初始化音频消息配置
+     */
+    private void initAVChatConfig() {
         manager.setAvChatTypeListener(this);
         manager.setAVChatMuteListener(this);
         // 注册监听
-        registerObserver();
         manager.registerCommonObserver(true);
-
+        registerObserver();
         // 通话状态广播
         IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(receiver, filter);
-
         // 监听音频聊天对方在线情况
         ArrayList<String> accounts = new ArrayList<>();
         accounts.add(getIntent().getStringExtra(KEY_ACCOUNT));
         subscribeEvent(accounts);
+        // 开启自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
+    }
+
+    /**
+     * 终止音频消息配置
+     */
+    private void terminatedAVChatConfig() {
+        // 重置参数
+        manager.reSetParams();
+        // 注销监听
+        manager.setAvChatTypeListener(null);
+        manager.setAVChatMuteListener(null);
+        manager.registerCommonObserver(false);
+        unregisterObserver();
+        // 注销通话状态广播
+        unregisterReceiver(receiver);
+        // 注销音频聊天对方在线情况
+        unsubscribeEvent();
+        // 关闭自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
     }
 
     @Override
@@ -268,20 +222,11 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         if(manager != null){
             //界面销毁时强制尝试挂断，防止出现红米Note 4X等手机在切后台点击杀死程序时，实际没有杀死的情况
             manager.hangUp(AVChatExitCode.HANGUP);
-            // 关闭所有监听
-            unregisterObserver();
-            manager.registerCommonObserver(false);
-            // 重置参数
-            manager.reSetParams();
+
+            terminatedAVChatConfig();
         }
+
         needFinish = true;
-
-        unregisterReceiver(receiver);
-
-        unsubscribeEvent();
-
-        // 关闭自定义消息通道
-        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
     }
 
     @Override
@@ -383,8 +328,21 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
         switch (avChatTypeEnum) {
             case CONN:
-                if (impl != null) {
-                    ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击关闭");
+                // 根据主叫或者被叫区分默认点击功能
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击关闭");
+                        }
+                    } else {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("正在被叫，点击接听");
+                        }
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
                 }
                 break;
             case CONFIG_ERROR:
@@ -423,14 +381,21 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 }
                 break;
             default:
-                if (getIntent().hasExtra("KEY_NEEDCALL")) {
-                    if (impl != null) {
-                        ((WebAppInterface) impl).updateVRStatus("点击呼叫");
+                // 根据主叫或者被叫区分默认点击功能
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("点击呼叫");
+                        }
+                    } else {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("暂无连接，点击关闭");
+                        }
                     }
-                } else {
-                    if (impl != null) {
-                        ((WebAppInterface) impl).updateVRStatus("暂无连接，点击关闭");
-                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
                 }
         }
     }
@@ -441,8 +406,23 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     public void chatTypeChangeClick() {
         switch (avChatType) {
             case CONN:
-                manager.hangUp(AVChatExitCode.CANCEL);
-                finish();
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        if (impl != null) {
+                            manager.hangUp(AVChatExitCode.CANCEL);
+                            finish();
+                        }
+                    } else {
+                        if (impl != null) {
+                            manager.receive();
+                        }
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
+
                 break;
             case CONFIG_ERROR:
                 finish();
@@ -468,10 +448,16 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             default:
                 // 根据主叫或者被叫区分默认点击功能
-                if (getIntent().hasExtra("KEY_NEEDCALL")) {
-                    ((OutGoingAVManager) manager).call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
-                } else {
-                    finish();
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                    } else {
+                        finish();
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
                 }
         }
     }
@@ -484,6 +470,79 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         else {
             ((WebAppInterface) impl).updateMuteStatues("非静音");
         }
+    }
+
+    private void initWebView() {
+        web_webview = findViewById(R.id.web_webview);
+        web_webview.setSaveEnabled(true);
+        web_webview.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        web_webview.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                return super.onJsAlert(view, url, message, result);
+            }
+
+            @Override
+            public void onReceivedTitle(WebView view, String title) {
+                super.onReceivedTitle(view, title);
+            }
+        });
+        WebSettings settings=web_webview.getSettings();
+        settings.setDomStorageEnabled(true);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+        settings.setDatabaseEnabled(true);
+        settings.setAppCacheEnabled(true);
+        settings.setSavePassword(false);
+        settings.setSaveFormData(false);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setBuiltInZoomControls(false);
+        impl=getIntent().getParcelableExtra("WebAppImpl");
+        if (impl!=null) {
+            impl.setContext(this);
+            impl.setWebView(web_webview);
+            web_webview.addJavascriptInterface(impl, getIntent().getStringExtra("WebAppImplName"));
+        }
+        web_webview.removeJavascriptInterface("searchBoxJavaBridge_");
+        web_webview.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                // 如果页面在加载完毕之前已经发生状态变化，则忽略
+                if (avChatType != AVChatTypeEnum.UNDEFINE) {
+
+                }
+                else {
+                    // 页面加载完毕之后根据主叫或者被叫区分状态内容
+                    chatTypeChange(AVChatTypeEnum.UNDEFINE);
+                }
+                ((WebAppInterface) impl).updateMuteStatues("非静音");
+            }
+
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                // 接受所有网站的证书
+                handler.proceed();
+                super.onReceivedSslError(view, handler, error);
+            }
+        });
+        // 设置cookies
+        HashMap<String, String> cookies = new HashMap<>();
+        if (getIntent().getStringExtra("cookieUrl") != null) {
+            ArrayList<String> cookieValues = getIntent().getStringArrayListExtra("cookieValues");
+            for (int i = 0; i < cookieValues.size()/2; i++) {
+                cookies.put(cookieValues.get(i*2), cookieValues.get(i*2+1));
+            }
+            // cookies同步方法要在WebView的setting设置完之后调用，否则无效。
+            syncCookie(this, getIntent().getStringExtra("cookieUrl"), cookies);
+        }
+        web_webview.loadUrl("file:///android_asset/index.html");
     }
 
     /**

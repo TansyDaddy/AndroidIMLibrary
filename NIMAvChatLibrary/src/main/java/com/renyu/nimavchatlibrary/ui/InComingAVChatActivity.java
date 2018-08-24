@@ -50,7 +50,7 @@ public class InComingAVChatActivity extends BaseAVChatActivity{
         // 来电的时候要判断是不是真的是当前会话人在呼叫
         if (BaseAVManager.avChatData != null && BaseAVManager.avChatData.getAccount().equals(getIntent().getStringExtra(KEY_ACCOUNT))) {
             // 接听电话
-            ((InComingAVManager) manager).receive();
+            manager.receive();
         }
     }
 }
