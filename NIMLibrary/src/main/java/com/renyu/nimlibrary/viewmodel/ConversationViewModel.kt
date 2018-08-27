@@ -23,7 +23,9 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
+import com.renyu.nimavchatlibrary.manager.BaseAVManager
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
+import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.extension.StickerAttachment
@@ -408,13 +410,8 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
         super.gotoVrOutgoingCall(view, imMessage)
-        try {
-            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-            val vrOutgoingCallFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
-            vrOutgoingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        // 客户进入VR环节
+        OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
     }
 
     /**
@@ -422,7 +419,12 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
         super.gotoVrInComingCall(view, imMessage)
-        InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
+        // 若收到音频被叫且主叫人为当前页面聊天的对象，则可以点击
+        if (BaseAVManager.avChatData != null &&
+                BaseAVManager.avChatData.account == account &&
+                BaseAVManager.avChatData.extra == (imMessage.attachment as VRAttachment).vrJson) {
+            InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
+        }
     }
 
     /**

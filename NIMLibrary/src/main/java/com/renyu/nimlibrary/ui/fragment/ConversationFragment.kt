@@ -33,6 +33,7 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.*
@@ -47,7 +48,7 @@ import com.renyu.nimlibrary.util.sticker.StickerUtils
 import com.renyu.nimlibrary.viewmodel.ConversationViewModel
 import com.renyu.nimlibrary.viewmodel.ConversationViewModelFactory
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.panel_emoji.*
 import org.json.JSONObject
@@ -75,7 +76,9 @@ class ConversationFragment : Fragment(), EventImpl {
 
     var vm: ConversationViewModel? = null
 
-    private var disposable: Disposable? = null
+    private val disposable: CompositeDisposable by lazy {
+        CompositeDisposable()
+    }
 
     // 面板是否已经收起
     private var isExecuteCollapse = false
@@ -189,7 +192,8 @@ class ConversationFragment : Fragment(), EventImpl {
 
             initUI()
 
-            disposable = RxBus.getDefault()
+            // 添加基础监听
+            disposable.add(RxBus.getDefault()
                     .toObservable(ObserveResponse::class.java)
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnNext {
@@ -252,7 +256,25 @@ class ConversationFragment : Fragment(), EventImpl {
                             sendSticker(it.data as StickerItem)
                         }
                     }
-                    .subscribe()
+                    .subscribe())
+
+            // 添加音频监听
+            disposable.add(RxBus.getDefault()
+                    .toObservable(AVChatTypeEnum::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext {
+                        when(it) {
+                            // 收到客户拨号
+                            AVChatTypeEnum.CALLEE_ACK_REQUEST -> {
+                                // 开启定时器
+                            }
+                            // 其他任何情况
+                            else -> {
+                                // 终止定时器
+                            }
+                        }
+                    }
+                    .subscribe())
 
             // 获取会话列表数据
             Handler().postDelayed({
@@ -283,7 +305,7 @@ class ConversationFragment : Fragment(), EventImpl {
     override fun onDestroyView() {
         super.onDestroyView()
 
-        disposable?.dispose()
+        disposable.dispose()
 
         // 语音处理
         layout_record.onDestroy()
