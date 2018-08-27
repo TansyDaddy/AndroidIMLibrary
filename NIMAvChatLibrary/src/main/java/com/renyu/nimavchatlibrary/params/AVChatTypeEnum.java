@@ -49,4 +49,8 @@ public enum AVChatTypeEnum {
      * 无效的聊天ID
      */
     INVALIDE_CHANNELID,
+    /**
+     * 正在呼叫
+     */
+    CALLEE_ACK_REQUEST,
 }

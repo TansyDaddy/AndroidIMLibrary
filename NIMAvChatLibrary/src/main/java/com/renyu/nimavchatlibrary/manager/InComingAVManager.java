@@ -53,7 +53,7 @@ public class InComingAVManager extends BaseAVManager {
             // 重置参数
             reSetParams();
             if (avChatTypeListener != null) {
-                avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONN);
+                avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REQUEST);
             }
             // 注册来电未接超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true);

@@ -9,7 +9,7 @@ import com.renyu.nimavchatlibrary.impl.WebAppInterface;
 import com.renyu.nimavchatlibrary.manager.BaseAVManager;
 import com.renyu.nimavchatlibrary.manager.InComingAVManager;
 
-public class InComingAVChatActivity extends BaseAVChatActivity{
+public class InComingAVChatActivity extends BaseAVChatActivity {
 
     @Override
     public BaseAVManager initBaseAVManager() {

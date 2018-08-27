@@ -177,7 +177,7 @@ public class BaseAVManager {
         AVChatManager.getInstance().observeAVChatState(avchatStateObserver, register);
     }
 
-    void initParams() {
+    public void initAVChatParams() {
         AVChatManager.getInstance().enableRtc();
         if (mVideoCapturer == null) {
             mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();
@@ -193,8 +193,8 @@ public class BaseAVManager {
      * @param extendMessage
      */
     public void call(String account, String extendMessage) {
+        initAVChatParams();
         AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.CONNECTING);
-        initParams();
         // 添加自定义参数
         AVChatNotifyOption notifyOption = new AVChatNotifyOption();
         notifyOption.extendMessage = extendMessage;
@@ -227,11 +227,11 @@ public class BaseAVManager {
      * 被叫接听
      */
     public void receive() {
-        initParams();
+        initAVChatParams();
         AVChatManager.getInstance().accept2(avChatData.getChatId(), new AVChatCallback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-
+                // 接听成功
             }
 
             @Override
@@ -292,7 +292,7 @@ public class BaseAVManager {
         showQuitToast(type);
     }
 
-    void closeRtc() {
+    private void closeRtc() {
         if (destroyRTC) {
             return;
         }

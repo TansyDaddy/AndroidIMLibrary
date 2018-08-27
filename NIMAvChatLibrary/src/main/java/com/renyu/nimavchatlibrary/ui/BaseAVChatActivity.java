@@ -138,6 +138,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 
         manager = initBaseAVManager();
+
         initAVChatConfig();
     }
 
@@ -145,40 +146,56 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      * 初始化音频消息配置
      */
     private void initAVChatConfig() {
-        manager.setAvChatTypeListener(this);
-        manager.setAVChatMuteListener(this);
-        // 注册监听
-        manager.registerCommonObserver(true);
-        registerObserver();
-        // 通话状态广播
+        // 注册通话状态广播
         IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(receiver, filter);
-        // 监听音频聊天对方在线情况
+        // 注册监听
+        manager.setAvChatTypeListener(this);
+        startAVChatConfig();
+    }
+
+    /**
+     * 在当前页面开启音频消息配置
+     */
+    private void startAVChatConfig() {
+        // 注销音频主叫、被叫公共观察者
+        manager.registerCommonObserver(true);
+        // 注销音频主叫、被叫特定观察者
+        registerObserver();
+        // 监听音频聊天对方在线情况与自定义消息通道
         ArrayList<String> accounts = new ArrayList<>();
         accounts.add(getIntent().getStringExtra(KEY_ACCOUNT));
         subscribeEvent(accounts);
-        // 开启自定义消息通道
-        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
+        // 注册监听
+        manager.setAVChatMuteListener(this);
     }
 
     /**
      * 终止音频消息配置
      */
     private void terminatedAVChatConfig() {
-        // 重置参数
-        manager.reSetParams();
-        // 注销监听
-        manager.setAvChatTypeListener(null);
-        manager.setAVChatMuteListener(null);
-        manager.registerCommonObserver(false);
-        unregisterObserver();
         // 注销通话状态广播
         unregisterReceiver(receiver);
-        // 注销音频聊天对方在线情况
+        endAVChatConfig();
+        // 注销监听
+        manager.setAvChatTypeListener(null);
+    }
+
+    /**
+     * 在当前页面结束音频消息配置
+     */
+    private void endAVChatConfig() {
+        // 重置参数
+        manager.reSetParams();
+        // 注销音频主叫、被叫公共观察者
+        manager.registerCommonObserver(false);
+        // 注销音频主叫、被叫特定观察者
+        unregisterObserver();
+        // 注销音频聊天对方在线情况与自定义消息通道
         unsubscribeEvent();
-        // 关闭自定义消息通道
-        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
+        // 注销监听
+        manager.setAVChatMuteListener(null);
     }
 
     @Override
@@ -200,31 +217,14 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if (web_webview!=null) {
-            ViewParent parent = web_webview.getParent();
-            if (parent != null) {
-                ((ViewGroup) parent).removeView(web_webview);
-            }
-            web_webview.stopLoading();
-            // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
-            web_webview.getSettings().setJavaScriptEnabled(false);
-            web_webview.clearHistory();
-            web_webview.clearView();
-            web_webview.removeAllViews();
-            try {
-                web_webview.destroy();
-            } catch (Throwable ex) {
-
-            }
-        }
-
         if(manager != null){
             //界面销毁时强制尝试挂断，防止出现红米Note 4X等手机在切后台点击杀死程序时，实际没有杀死的情况
             manager.hangUp(AVChatExitCode.HANGUP);
 
             terminatedAVChatConfig();
         }
+
+        destoryWebView();
 
         needFinish = true;
     }
@@ -257,7 +257,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                         }
                     }
                 });
-
         observeEventChanged = (Observer<List<Event>>) events -> {
             for (Event event : events) {
                 if (NimOnlineStateEvent.isOnlineStateEvent(event)) {
@@ -279,11 +278,15 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             }
         };
         NIMClient.getService(EventSubscribeServiceObserver.class).observeEventChanged(observeEventChanged, true);
+        // 开启自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, true);
     }
 
     private void unsubscribeEvent() {
         NIMClient.getService(EventSubscribeService.class).unSubscribeEvent(eventSubscribeRequest);
         NIMClient.getService(EventSubscribeServiceObserver.class).observeEventChanged(observeEventChanged, false);
+        // 关闭自定义消息通道
+        NIMClient.getService(MsgServiceObserve.class).observeCustomNotification(observer, false);
     }
 
     public void sendCustomNotification(String string) {
@@ -316,9 +319,18 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
     @Override
     public void chatTypeChange(AVChatTypeEnum avChatTypeEnum) {
-        this.avChatType = avChatTypeEnum;
-
-        chatTypeChangeUI(avChatTypeEnum);
+        // 该页面来电的时候要判断是不是真的是当前会话人在呼叫
+        if (avChatTypeEnum == AVChatTypeEnum.CALLEE_ACK_REQUEST) {
+            if (BaseAVManager.avChatData != null
+                    && BaseAVManager.avChatData.getAccount().equals(getIntent().getStringExtra(KEY_ACCOUNT))) {
+                this.avChatType = avChatTypeEnum;
+                chatTypeChangeUI(avChatTypeEnum);
+            }
+        }
+        else {
+            this.avChatType = avChatTypeEnum;
+            chatTypeChangeUI(avChatTypeEnum);
+        }
     }
 
     /**
@@ -327,6 +339,13 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      */
     public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
         switch (avChatTypeEnum) {
+            case CALLEE_ACK_REQUEST:
+                if (impl != null) {
+                    // 当前页面收到呼叫，重置各种监听事件
+                    startAVChatConfig();
+                    ((WebAppInterface) impl).updateVRStatus("正在被叫，点击接听");
+                }
+                break;
             case CONN:
                 // 根据主叫或者被叫区分默认点击功能
                 try {
@@ -334,11 +353,11 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击关闭");
+                            ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击挂断");
                         }
                     } else {
                         if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("正在被叫，点击接听");
+                            ((WebAppInterface) impl).updateVRStatus("正在被叫，点击挂断");
                         }
                     }
                 } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
@@ -351,8 +370,22 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 }
                 break;
             case PEER_HANG_UP:
-                if (impl != null) {
-                    ((WebAppInterface) impl).updateVRStatus("已挂断，点击关闭");
+                // 根据主叫或者被叫区分默认点击功能
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
+                        }
+                    } else {
+                        if (impl != null) {
+                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
+                        }
+                        endAVChatConfig();
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
                 }
                 break;
             case PEER_NO_RESPONSE:
@@ -405,24 +438,16 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      */
     public void chatTypeChangeClick() {
         switch (avChatType) {
-            case CONN:
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        if (impl != null) {
-                            manager.hangUp(AVChatExitCode.CANCEL);
-                            finish();
-                        }
-                    } else {
-                        if (impl != null) {
-                            manager.receive();
-                        }
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+            case CALLEE_ACK_REQUEST:
+                if (impl != null) {
+                    manager.receive();
                 }
-
+                break;
+            case CONN:
+                if (impl != null) {
+                    manager.hangUp(AVChatExitCode.CANCEL);
+                    finish();
+                }
                 break;
             case CONFIG_ERROR:
                 finish();
@@ -543,6 +568,26 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             syncCookie(this, getIntent().getStringExtra("cookieUrl"), cookies);
         }
         web_webview.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void destoryWebView() {
+        if (web_webview!=null) {
+            ViewParent parent = web_webview.getParent();
+            if (parent != null) {
+                ((ViewGroup) parent).removeView(web_webview);
+            }
+            web_webview.stopLoading();
+            // 退出时调用此方法，移除绑定的服务，否则某些特定系统会报错
+            web_webview.getSettings().setJavaScriptEnabled(false);
+            web_webview.clearHistory();
+            web_webview.clearView();
+            web_webview.removeAllViews();
+            try {
+                web_webview.destroy();
+            } catch (Throwable ex) {
+
+            }
+        }
     }
 
     /**
