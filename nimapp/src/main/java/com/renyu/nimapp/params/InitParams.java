@@ -1,9 +1,6 @@
 package com.renyu.nimapp.params;
 
-import com.blankj.utilcode.util.Utils;
 import com.renyu.nimapp.R;
-import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity;
-import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity;
 import com.renyu.nimlibrary.bean.ObserveResponse;
 import com.renyu.nimlibrary.bean.ObserveResponseType;
 import com.renyu.nimlibrary.util.RxBus;
@@ -37,23 +34,6 @@ public class InitParams {
         RxBus.getDefault().post(new ObserveResponse("", ObserveResponseType.Kickout));
     }
 
-    /**
-     * 客户进入VR页面
-     * @param account
-     * @param extendMessage
-     * @param needCall
-     */
-    public static void vrOutgoingCall(String account, String extendMessage, boolean needCall) {
-        OutGoingAVChatActivity.outgoingCall(Utils.getApp(), account, extendMessage, needCall);
-    }
-
-    /**
-     * 经纪人进入VR看房
-     */
-    public static void vrIncomingCall(String account, String extendMessage) {
-        InComingAVChatActivity.incomingCall(Utils.getApp(), account, extendMessage);
-    }
-
     // ***********************************  Demo配置使用，不是必须实现内容  ***********************************
 
     // app页面回收处理使用
@@ -70,5 +50,4 @@ public class InitParams {
     public static final int SIGNINBACK = 3;
     // 去主页
     public static final int MAIN = 4;
-
 }

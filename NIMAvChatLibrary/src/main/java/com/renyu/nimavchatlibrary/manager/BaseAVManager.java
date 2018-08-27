@@ -177,7 +177,7 @@ public class BaseAVManager {
         AVChatManager.getInstance().observeAVChatState(avchatStateObserver, register);
     }
 
-    public void initAVChatParams() {
+    private void initAVChatParams() {
         AVChatManager.getInstance().enableRtc();
         if (mVideoCapturer == null) {
             mVideoCapturer = AVChatVideoCapturerFactory.createCameraCapturer();

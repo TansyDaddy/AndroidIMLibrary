@@ -69,8 +69,6 @@ dependencies {
     api 'com.netease.nimlib:nrtc:5.4.0'
     // 音视频需要
     api 'com.netease.nimlib:avchat:5.4.0'
-    // 聊天室需要
-    api 'com.netease.nimlib:chatroom:5.4.0'
     // 互动白板服务需要
     api 'com.netease.nimlib:rts:5.4.0'
     // 全文检索服务需要
@@ -92,4 +90,5 @@ dependencies {
     api 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.3.0'
     // JKeyboardPanelSwitch  For resolve the layout conflict when keybord & panel are switching (Android键盘面板冲突 布局闪动处理方案)
     api 'cn.dreamtobe.kpswitch:library:1.6.1'
+    api project(':NIMAvChatLibrary')
 }

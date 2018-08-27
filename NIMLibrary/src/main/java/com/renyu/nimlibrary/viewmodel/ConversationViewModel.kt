@@ -23,6 +23,7 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
+import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.extension.StickerAttachment
@@ -421,13 +422,7 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
         super.gotoVrInComingCall(view, imMessage)
-        try {
-            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-            val vrIncomingCallFuncMethod = clazz.getDeclaredMethod("vrIncomingCall", String::class.java, String::class.java)
-            vrIncomingCallFuncMethod.invoke(clazz.newInstance(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
     }
 
     /**

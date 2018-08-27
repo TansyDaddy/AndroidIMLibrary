@@ -27,11 +27,13 @@ import android.widget.LinearLayout
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
+import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
+import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
@@ -511,14 +513,8 @@ class ConversationFragment : Fragment(), EventImpl {
                 vm!!.refreshSendIMMessage(imMessage)
                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
 
-                try {
-                    // 客户进入VR环节
-                    val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
-                    val kickoutFuncMethod = clazz.getDeclaredMethod("vrOutgoingCall", String::class.java, String::class.java, Boolean::class.java)
-                    kickoutFuncMethod.invoke(clazz.newInstance(), arguments?.getString("account")!!, vrItem.vrJson, true)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                // 客户进入VR环节
+                OutGoingAVChatActivity.outgoingCall(Utils.getApp(), arguments?.getString("account")!!, vrItem.vrJson, true)
             }
         }, 500)
     }

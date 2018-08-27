@@ -53,6 +53,7 @@ object BindingAdapters {
         manager.isAutoMeasureEnabled = true
         recyclerView.layoutManager = manager
         recyclerView.isNestedScrollingEnabled = false
+        recyclerView.setItemViewCacheSize(20)
         recyclerView.adapter = adapter
     }
 
