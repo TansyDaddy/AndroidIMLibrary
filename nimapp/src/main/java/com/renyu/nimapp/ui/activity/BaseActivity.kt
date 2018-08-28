@@ -32,7 +32,7 @@ abstract class BaseActivity : AppCompatActivity() {
         disposable?.dispose()
     }
 
-    fun jumpToSignIn() {
+    private fun jumpToSignIn() {
         val intent = Intent(this, SplashActivity::class.java)
         intent.putExtra(InitParams.TYPE, InitParams.KICKOUT)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)

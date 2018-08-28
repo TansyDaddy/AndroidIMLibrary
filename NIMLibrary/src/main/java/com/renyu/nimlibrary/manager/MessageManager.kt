@@ -346,7 +346,7 @@ object MessageManager {
     /**
      * 发送自定义Message
      */
-    fun createCustomMessage(account: String, content: String, attachment: MsgAttachment): IMMessage {
+    fun sendCustomMessage(account: String, content: String, attachment: MsgAttachment): IMMessage {
         val message = MessageBuilder.createCustomMessage(account, SessionTypeEnum.P2P, content, attachment)
         sendMessage(message, false)
         return message

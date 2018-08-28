@@ -34,8 +34,15 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
      * 加载Fragment
      */
     private fun loadFragment(intent: Intent) {
-        conversationFragment = ConversationFragment.getInstance(intent.getStringExtra("account"),
-                intent.getBooleanExtra("isGroup", false))
+        // 区分是否已经发送过VR卡片的场景
+        conversationFragment = if (intent.getStringExtra("uuid") != null) {
+            ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
+                    intent.getStringExtra("uuid"),
+                    intent.getBooleanExtra("isGroup", false))
+        } else {
+            ConversationFragment.getInstance(intent.getStringExtra("account"),
+                    intent.getBooleanExtra("isGroup", false))
+        }
         supportFragmentManager.beginTransaction()
                 .replace(R.id.layout_conversation, conversationFragment)
                 .commitAllowingStateLoss()

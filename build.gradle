@@ -42,5 +42,5 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-//tasks.getByPath(":需要升级的module:bintrayUpload").enabled = true
-//tasks.getByPath(":不需要升级的module:bintrayUpload").enabled = false
+//tasks.getByPath(":NIMAvChatLibrary:bintrayUpload").enabled = false
+//tasks.getByPath(":NIMLibrary:bintrayUpload").enabled = true

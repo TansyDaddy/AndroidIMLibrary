@@ -27,16 +27,17 @@ import android.widget.LinearLayout
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
-import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
-import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.R
-import com.renyu.nimlibrary.bean.*
+import com.renyu.nimlibrary.bean.ObserveResponse
+import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Status
+import com.renyu.nimlibrary.bean.StickerItem
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
 import com.renyu.nimlibrary.manager.MessageManager
@@ -62,6 +63,22 @@ import kotlin.collections.ArrayList
 class ConversationFragment : Fragment(), EventImpl {
 
     companion object {
+        /**
+         * 发送VR卡片后打开详情
+         */
+        fun getInstanceWithVRCard(account: String, uuid: String, isGroup: Boolean): ConversationFragment {
+            val fragment = ConversationFragment()
+            val bundle = Bundle()
+            bundle.putString("account", account)
+            bundle.putString("uuid", uuid)
+            bundle.putBoolean("isGroup", isGroup)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        /**
+         * 直接打开会话详情
+         */
         fun getInstance(account: String, isGroup: Boolean): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
@@ -121,7 +138,8 @@ class ConversationFragment : Fragment(), EventImpl {
         viewDataBinding.also {
             vm = ViewModelProviders.of(this,
                     ConversationViewModelFactory(arguments!!.getString("account"),
-                            if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P))
+                            if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P,
+                    if (arguments!!.getString("uuid") != null) arguments!!.getString("uuid") else ""))
                     .get(ConversationViewModel::class.java)
             vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
@@ -429,14 +447,8 @@ class ConversationFragment : Fragment(), EventImpl {
                 // 发送文本
                 sendText()
             }
-            R.id.iv_vr -> {
-                // 发送VR信息
-                sendVR(VRItem(
-                        "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
-                        "明华清园 3室2厅 690万",
-                        "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
-            }
             R.id.iv_map -> {
+                // 发送位置信息
                 startActivityForResult(Intent(activity, MapActivity::class.java), 2000)
             }
         }
@@ -521,22 +533,6 @@ class ConversationFragment : Fragment(), EventImpl {
             if (imMessage != null) {
                 vm!!.refreshSendIMMessage(imMessage)
                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
-            }
-        }, 500)
-    }
-
-    /**
-     * 发送VR消息
-     */
-    private fun sendVR(vrItem: VRItem) {
-        Handler().postDelayed({
-            val imMessage = vm!!.prepareVR(vrItem)
-            if (imMessage != null) {
-                vm!!.refreshSendIMMessage(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
-
-                // 客户进入VR环节
-                OutGoingAVChatActivity.outgoingCall(Utils.getApp(), arguments?.getString("account")!!, vrItem.vrJson, true)
             }
         }, 500)
     }

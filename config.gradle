@@ -1,7 +1,8 @@
 ext {
     app = [
             compileSdkVersion : 27,
-            applicationId     : "com.netease.nim.demo",
+            applicationId     : "com.netease.nim.demo",  // 公共demo账号
+//            applicationId     : "com.renyu.nimapp",  // 个人测试账号
             minSdkVersion     : 19,
             targetSdkVersion  : 27,
 
@@ -11,10 +12,9 @@ ext {
 
     dependencies = [
             supportLibraryVersion : "27.1.1",
-            // 云信版本
-            nimlib                : "5.4.0",
             // 云信key
-            nim_appKey            : "45c6af3c98409b18a84451215d0bdd6e",
+            nim_appKey            : "45c6af3c98409b18a84451215d0bdd6e",  // 公共demo账号
+//            nim_appKey            : "62dc70a4106624228d5bb0e1b7afccdb",  // 个人测试账号
             // 华为推送key
             huaweipush_appKey     : "100373793",
             // 百度地图key

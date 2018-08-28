@@ -4,11 +4,11 @@ import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 
-class ConversationViewModelFactory(private val account: String, private val sessionType: SessionTypeEnum) : ViewModelProvider.NewInstanceFactory() {
+class ConversationViewModelFactory(private val account: String, private val sessionType: SessionTypeEnum, private val uuid: String) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (ViewModel::class.java.isAssignableFrom(modelClass)) {
             try {
-                return ConversationViewModel(account, sessionType) as T
+                return ConversationViewModel(account, sessionType, uuid) as T
             } catch (e: Exception) {
                 e.printStackTrace()
             }

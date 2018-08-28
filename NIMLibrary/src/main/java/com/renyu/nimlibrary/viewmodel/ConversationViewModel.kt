@@ -26,7 +26,10 @@ import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.manager.BaseAVManager
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
-import com.renyu.nimlibrary.bean.*
+import com.renyu.nimlibrary.bean.ObserveResponse
+import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.StickerItem
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
@@ -43,7 +46,7 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ConversationViewModel(private val account: String, private val sessionType: SessionTypeEnum) : ViewModel(), EventImpl {
+class ConversationViewModel(private val account: String, private val sessionType: SessionTypeEnum, private val uuid: String) : ViewModel(), EventImpl {
 
     private val messages: ArrayList<IMMessage> by lazy {
         ArrayList<IMMessage>()
@@ -410,19 +413,23 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
         super.gotoVrOutgoingCall(view, imMessage)
-        // 客户进入VR环节
-        OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, false)
+        // 只有当前发送的卡片才能重复点击
+        if (uuid == imMessage.uuid) {
+            // 客户进入VR环节
+            OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, uuid, true)
+        }
     }
+
 
     /**
      * 经纪人前往VR来电页面
      */
     override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
         super.gotoVrInComingCall(view, imMessage)
-        // 若收到音频被叫且主叫人为当前页面聊天的对象，则可以点击
+        // 若收到音频被叫且主叫人为当前页面聊天的对象，客户触发的卡片与经纪人点击的卡片相同，则判断通过
         if (BaseAVManager.avChatData != null &&
                 BaseAVManager.avChatData.account == account &&
-                BaseAVManager.avChatData.extra == (imMessage.attachment as VRAttachment).vrJson) {
+                BaseAVManager.avChatData.extra == imMessage.uuid) {
             InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
         }
     }
@@ -531,18 +538,7 @@ class ConversationViewModel(private val account: String, private val sessionType
             return null
         }
         val attachment = StickerAttachment(stickerItem.category, stickerItem.name)
-        return MessageManager.createCustomMessage(account, "贴图消息", attachment)
-    }
-
-    /**
-     * 准备VR消息
-     */
-    fun prepareVR(vrItem: VRItem): IMMessage? {
-        if (isAsync) {
-            return null
-        }
-        val attachment = VRAttachment(vrItem.vrJson)
-        return MessageManager.createCustomMessage(account, "VR", attachment)
+        return MessageManager.sendCustomMessage(account, "贴图消息", attachment)
     }
 
     /**

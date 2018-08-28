@@ -31,9 +31,14 @@ class ChatListActivity : BaseActivity() {
 //            jumpToSignIn()
 //        }
 
-        tv_nav_right.text = "好友列表"
+//        tv_nav_right.text = "好友列表"
+//        tv_nav_right.setOnClickListener {
+//            startActivity(Intent(this, ContactActivity::class.java))
+//        }
+
+        tv_nav_right.text = "详情"
         tv_nav_right.setOnClickListener {
-            startActivity(Intent(this, ContactActivity::class.java))
+            startActivity(Intent(this, DetailActivity::class.java))
         }
 
         conversationFragment = ChatListFragment()

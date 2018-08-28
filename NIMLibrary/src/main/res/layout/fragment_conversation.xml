@@ -84,13 +84,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"/>
                 <ImageView
-                    android:id="@+id/iv_vr"
-                    android:src="@mipmap/ic_conversation_vr"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="@{(view) -> eventImpl.click(view)}"/>
-                <ImageView
                     android:id="@+id/iv_map"
                     android:src="@mipmap/ic_conversation_map"
                     android:layout_width="0dp"

@@ -13,6 +13,9 @@ object UserManager {
      * 从本地数据库中批量获取用户资料
      */
     fun getUserInfoList(accounts: List<String>): List<NimUserInfo> {
+        if (accounts.isEmpty()) {
+            return ArrayList()
+        }
         return NIMClient.getService(UserService::class.java).getUserInfoList(accounts)
 
     }
