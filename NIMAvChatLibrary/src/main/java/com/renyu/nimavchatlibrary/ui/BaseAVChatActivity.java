@@ -376,7 +376,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
+                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击呼叫");
                         }
                     } else {
                         if (impl != null) {
@@ -453,7 +453,17 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 finish();
                 break;
             case PEER_HANG_UP:
-                finish();
+                try {
+                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
+                    if (!isAgent) {
+                        manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                    } else {
+                        finish();
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
+                    e.printStackTrace();
+                }
                 break;
             case PEER_NO_RESPONSE:
                 finish();
