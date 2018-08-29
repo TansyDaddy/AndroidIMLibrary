@@ -10,6 +10,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.android.databinding.library.baseAdapters.BR
 import com.blankj.utilcode.util.ScreenUtils
+import com.facebook.drawee.view.SimpleDraweeView
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
@@ -123,6 +124,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             }
             2, 3 -> {
                 initViewDataBinding((holder as ImageViewHolder).ivDataBinding, holder.layoutPosition)
+                calculateBubbleSize(messages[holder.layoutPosition], holder.ivDataBinding.root.findViewById<SimpleDraweeView>(R.id.aurora_iv_msgitem_photo))
             }
             4, 5 -> {
                 initViewDataBinding((holder as AudioViewHolder).audioDataBinding, holder.layoutPosition)
@@ -359,7 +361,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
     }
 
     /**
-     * 获取气泡的宽度
+     * 设置音频气泡的宽度
      */
     private fun calculateBubbleWidth(duration: Long, view: View) {
         val seconds = OtherUtils.getSecondsByMilliseconds(duration)
@@ -381,5 +383,16 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         val layoutParams = view.layoutParams
         layoutParams.width = currentBubbleWidth
         view.layoutParams = layoutParams
+    }
+
+    /**
+     * 设置图片的宽高
+     */
+    private fun calculateBubbleSize(imMessage: IMMessage, view: View) {
+        val imageSize = OtherUtils.getImageSize(imMessage)
+        val maskParams = view.layoutParams
+        maskParams.width = imageSize.width
+        maskParams.height = imageSize.height
+        view.layoutParams = maskParams
     }
 }

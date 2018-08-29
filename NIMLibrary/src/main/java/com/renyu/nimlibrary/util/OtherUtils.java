@@ -5,7 +5,10 @@ import android.view.View;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.blankj.utilcode.constant.TimeConstants;
+import com.blankj.utilcode.util.ScreenUtils;
 import com.blankj.utilcode.util.TimeUtils;
+import com.netease.nimlib.sdk.msg.attachment.ImageAttachment;
+import com.netease.nimlib.sdk.msg.model.IMMessage;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -143,5 +146,92 @@ public class OtherUtils {
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
         view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
         return BitmapDescriptorFactory.fromView(view);
+    }
+
+    /**
+     * 获取会话列表图片显示的宽高
+     * @param imMessage
+     * @return
+     */
+    public static ImageSize getImageSize(IMMessage imMessage) {
+        ImageAttachment attachment = (ImageAttachment) imMessage.getAttachment();
+        int[] bounds = new int[]{attachment.getWidth(), attachment.getHeight()};
+        return getThumbnailDisplaySize(bounds[0], bounds[1], getImageMaxEdge(), getImageMinEdge());
+    }
+
+    private static int getImageMaxEdge() {
+        return (int) (165.0 / 320.0 * ScreenUtils.getScreenWidth());
+    }
+
+    private static int getImageMinEdge() {
+        return (int) (76.0 / 320.0 * ScreenUtils.getScreenWidth());
+    }
+
+    private static ImageSize getThumbnailDisplaySize(float srcWidth, float srcHeight, float dstMaxWH, float dstMinWH) {
+        if (srcWidth <= 0 || srcHeight <= 0) { // bounds check
+            return new ImageSize((int) dstMinWH, (int) dstMinWH);
+        }
+
+        float shorter;
+        float longer;
+        boolean widthIsShorter;
+
+        //store
+        if (srcHeight < srcWidth) {
+            shorter = srcHeight;
+            longer = srcWidth;
+            widthIsShorter = false;
+        } else {
+            shorter = srcWidth;
+            longer = srcHeight;
+            widthIsShorter = true;
+        }
+
+        if (shorter < dstMinWH) {
+            float scale = dstMinWH / shorter;
+            shorter = dstMinWH;
+            if (longer * scale > dstMaxWH) {
+                longer = dstMaxWH;
+            } else {
+                longer *= scale;
+            }
+        } else if (longer > dstMaxWH) {
+            float scale = dstMaxWH / longer;
+            longer = dstMaxWH;
+            if (shorter * scale < dstMinWH) {
+                shorter = dstMinWH;
+            } else {
+                shorter *= scale;
+            }
+        }
+
+        //restore
+        if (widthIsShorter) {
+            srcWidth = shorter;
+            srcHeight = longer;
+        } else {
+            srcWidth = longer;
+            srcHeight = shorter;
+        }
+
+        return new ImageSize((int) srcWidth, (int) srcHeight);
+    }
+
+    public static class ImageSize {
+        int width;
+        int height;
+
+        ImageSize(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
     }
 }
