@@ -29,12 +29,14 @@ import android.widget.TextView
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
+import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.SizeUtils
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
+import com.netease.nimlib.sdk.msg.model.MessageReceipt
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimlibrary.R
@@ -266,6 +268,10 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 收到已读回执
                         if (it.type == ObserveResponseType.MessageReceipt) {
+                            // 自己判断最后一条已读消息回执时间
+                            (it.data as ArrayList<MessageReceipt>).forEach {
+                                SPUtils.getInstance().put(it.sessionId, it.time)
+                            }
                             vm!!.receiverMsgReceipt()
                         }
                         // 在线状态
@@ -280,10 +286,14 @@ class ConversationFragment : Fragment(), EventImpl {
                             // 判断属于当前会话中的用户
                             if ((it.data as CustomNotification).sessionId == arguments!!.getString("account")) {
                                 val content = (it.data as CustomNotification).content
-                                val type = JSONObject(content).getString(CommonParams.TYPE)
-                                if (type == CommonParams.COMMAND_INPUT) {
-                                    conversationListener?.titleChange(false)
-                                    titleChangeHandler.postDelayed(titleChangeRunnable, 4000)
+                                try {
+                                    val type = JSONObject(content).getString(CommonParams.TYPE)
+                                    if (type == CommonParams.COMMAND_INPUT) {
+                                        conversationListener?.titleChange(false)
+                                        titleChangeHandler.postDelayed(titleChangeRunnable, 4000)
+                                    }
+                                } catch (e: Exception) {
+
                                 }
                             }
                         }

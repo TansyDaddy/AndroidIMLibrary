@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.SizeUtils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.span.SimpleDraweeSpanTextView
@@ -187,11 +188,13 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["read"])
     fun changeReadedVisibility(textView: TextView, imMessage: IMMessage) {
+        // 获取当前会话联系人最后一条已读回执时间
+        val lastReceiptTime = SPUtils.getInstance().getLong(imMessage.sessionId)
         if (imMessage.sessionType == SessionTypeEnum.P2P
                 && imMessage.direct == MsgDirectionEnum.Out
                 && imMessage.msgType != MsgTypeEnum.tip
                 && imMessage.msgType != MsgTypeEnum.notification
-                && imMessage.isRemoteRead) {
+                && imMessage.time <= lastReceiptTime) {
             textView.visibility = View.VISIBLE
             textView.text = "已读"
         }

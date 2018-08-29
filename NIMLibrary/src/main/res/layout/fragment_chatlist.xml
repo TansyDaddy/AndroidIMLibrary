@@ -8,25 +8,22 @@
 
         </variable>
     </data>
-    <android.support.v4.widget.NestedScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <LinearLayout
+        <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <LinearLayout
-                android:id="@+id/layout_conversationlist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-            </LinearLayout>
-            <android.support.v7.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:adapter="@{adapter}">
+            android:layout_height="match_parent"
+            app:adapter="@{adapter}">
 
-            </android.support.v7.widget.RecyclerView>
-        </LinearLayout>
-    </android.support.v4.widget.NestedScrollView>
+        </android.support.v7.widget.RecyclerView>
+        <TextView
+            android:id="@+id/tv_chatlist_tip"
+            android:layout_width="match_parent"
+            android:layout_height="30dip"
+            android:visibility="gone"
+            android:textColor="@android:color/holo_red_dark"
+            android:background="@android:color/holo_red_light"
+            android:gravity="center_vertical"/>
+    </RelativeLayout>
 </layout>

@@ -81,7 +81,6 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
         loadFragment(intent)
-
     }
 
     /**

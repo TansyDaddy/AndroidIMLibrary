@@ -22,6 +22,7 @@ import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.viewmodel.ChatListViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.fragment_chatlist.*
 
 
 class ChatListFragment : Fragment() {
@@ -74,9 +75,19 @@ class ChatListFragment : Fragment() {
                 .doOnNext {
                     // 在线状态
                     if (it.type == ObserveResponseType.OnlineStatus) {
-                        // 如果用户登录成功，则同步数据
-                        if (it.data is StatusCode && (it.data as StatusCode) == StatusCode.LOGINED) {
-
+                        if (it.data is StatusCode) {
+                            when(it.data) {
+                                // 如果用户登录成功，则同步数据
+                                StatusCode.LOGINED -> { updateTip("登录成功", false) }
+                                StatusCode.UNLOGIN -> { updateTip("未登录", true) }
+                                StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true) }
+                                StatusCode.CONNECTING -> { updateTip("正在连接服务器", true) }
+                                StatusCode.LOGINING -> { updateTip("正在登录中", true) }
+                                StatusCode.FORBIDDEN -> { updateTip("被服务器禁止登录", true) }
+                                StatusCode.VER_ERROR -> { updateTip("客户端版本错误", true) }
+                                StatusCode.PWD_ERROR -> { updateTip("用户名或密码错误", true) }
+                                else -> { updateTip("", false) }
+                            }
                         }
                     }
                     // 最近会话列表变更通知
@@ -109,7 +120,14 @@ class ChatListFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         disposable?.dispose()
+    }
+
+    /**
+     * 更新提示消息
+     */
+    fun updateTip(text: String, visibility: Boolean) {
+        tv_chatlist_tip.text = text
+        tv_chatlist_tip.visibility = if (visibility) View.VISIBLE else View.GONE
     }
 }
