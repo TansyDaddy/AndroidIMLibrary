@@ -193,9 +193,15 @@ object BindingAdapters {
                 && imMessage.msgType != MsgTypeEnum.notification
                 && imMessage.isRemoteRead) {
             textView.visibility = View.VISIBLE
+            textView.text = "已读"
         }
         else {
-            textView.visibility = View.GONE
+            textView.visibility = if (imMessage.status == MsgStatusEnum.success) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            textView.text = "未读"
         }
     }
 

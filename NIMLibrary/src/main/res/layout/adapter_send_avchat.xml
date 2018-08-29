@@ -87,7 +87,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:layout_marginBottom="3dip"
-                android:text="已读"
                 android:layout_marginEnd="12dip"
                 android:layout_alignBottom="@id/bubble_avchat"
                 android:layout_toStartOf="@id/bubble_avchat"
