@@ -14,6 +14,7 @@ import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.ResponseCode
 import com.netease.nimlib.sdk.msg.MessageBuilder
+import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
@@ -445,6 +446,41 @@ class ConversationViewModel(private val account: String, private val sessionType
         intent.putExtra("lat", attachment.latitude)
         intent.putExtra("lng", attachment.longitude)
         Utils.getApp().startActivity(intent)
+    }
+
+    /**
+     * 前往个人详情
+     */
+    override fun gotoUserInfo(view: View, account: String) {
+        super.gotoUserInfo(view, account)
+        (view.context as ConversationFragment.ConversationListener).gotoUserInfo(account)
+    }
+
+    /**
+     * 打开大图
+     */
+    override fun openBigImageViewActivity(view: View) {
+        super.openBigImageViewActivity(view)
+
+        val temp = ArrayList<String>()
+        var index = -1
+        messages.filter {
+            it.attachment is ImageAttachment
+        }.forEach {
+            val imageAttachment = it.attachment as ImageAttachment
+            if (imageAttachment.path != null) {
+                val file = File(imageAttachment.path)
+                if (file.exists()) {
+                    temp.add(imageAttachment.path)
+                    index++
+                }
+            }
+            else {
+                temp.add(imageAttachment.url)
+                index++
+            }
+        }
+        (view.context as ConversationFragment.ConversationListener).showBigImage(temp, index)
     }
 
     /**

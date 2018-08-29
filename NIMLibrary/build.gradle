@@ -57,6 +57,7 @@ dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:gridlayout-v7:27.1.1'
     api 'android.arch.lifecycle:extensions:1.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -91,5 +92,5 @@ dependencies {
     // JKeyboardPanelSwitch  For resolve the layout conflict when keybord & panel are switching (Android键盘面板冲突 布局闪动处理方案)
     api 'cn.dreamtobe.kpswitch:library:1.6.1'
     api project(':NIMAvChatLibrary')
-//    api 'com.github.renyu:AndroidNimAvChatLibrary:1.0.4'
+    //    api 'com.github.renyu:AndroidNimAvChatLibrary:1.0.4'
 }

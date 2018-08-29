@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="adapter"
             type="com.renyu.nimlibrary.ui.adapter.ConversationAdapter">
         </variable>
+
         <variable
             name="eventImpl"
-            type="com.renyu.nimlibrary.binding.EventImpl"></variable>
+            type="com.renyu.nimlibrary.binding.EventImpl" />
     </data>
     <cn.dreamtobe.kpswitch.widget.KPSwitchRootRelativeLayout
         android:orientation="vertical" android:layout_width="match_parent"
@@ -23,74 +25,10 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="8dip" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="33dp"
-                android:layout_marginStart="7dp"
-                android:layout_marginEnd="7dp"
-                android:orientation="horizontal">
-                <com.renyu.nimlibrary.ui.view.DetectDelEventEditText
-                    android:id="@+id/edit_conversation"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:lineSpacingExtra="5dip"
-                    android:background="@android:color/white"
-                    android:gravity="center|start"
-                    android:padding="5dip"
-                    android:textColor="#333333"
-                    android:textSize="14sp" />
-                <TextView
-                    android:id="@+id/btn_send_conversation"
-                    android:layout_width="47dp"
-                    android:layout_height="match_parent"
-                    android:background="#dddee2"
-                    android:gravity="center"
-                    android:text="发送"
-                    android:layout_marginStart="5dip"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"
-                    android:onClick="@{(view) -> eventImpl.click(view)}"/>
-            </LinearLayout>
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:gravity="center"
-                android:layout_height="44dp">
-                <ImageView
-                    android:id="@+id/iv_sendvoice"
-                    android:src="@mipmap/ic_conversation_voice"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-                <ImageView
-                    android:id="@+id/iv_image"
-                    android:src="@mipmap/ic_conversation_image"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="@{(view) -> eventImpl.click(view)}"/>
-                <ImageView
-                    android:id="@+id/iv_camera"
-                    android:src="@mipmap/ic_conversation_camera"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="@{(view) -> eventImpl.click(view)}"/>
-                <ImageView
-                    android:id="@+id/iv_emoji"
-                    android:src="@mipmap/ic_conversation_emoji"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
-                <ImageView
-                    android:id="@+id/iv_map"
-                    android:src="@mipmap/ic_conversation_map"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:onClick="@{(view) -> eventImpl.click(view)}"/>
-            </LinearLayout>
+            <include
+                android:id="@+id/layout_conversation_text_layout"
+                layout="@layout/nim_message_activity_text_layout"
+                bind:eventImpl="@{eventImpl}" />
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.5dip"
@@ -102,14 +40,11 @@
                 android:background="#fefefe"
                 android:visibility="gone">
                 <include
-                    android:id="@+id/layout_imagechoice"
+                    android:id="@+id/layout_content"
                     layout="@layout/panel_content" />
                 <include
                     android:id="@+id/layout_emojichoice"
                     layout="@layout/panel_emoji" />
-                <include
-                    android:id="@+id/layout_voicechoice"
-                    layout="@layout/panel_recordvoice" />
             </cn.dreamtobe.kpswitch.widget.KPSwitchPanelRelativeLayout>
         </LinearLayout>
         <android.support.v7.widget.RecyclerView

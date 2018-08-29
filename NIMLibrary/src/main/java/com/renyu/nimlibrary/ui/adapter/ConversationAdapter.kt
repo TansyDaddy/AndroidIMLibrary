@@ -10,9 +10,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.android.databinding.library.baseAdapters.BR
 import com.blankj.utilcode.util.ScreenUtils
-import com.facebook.drawee.view.SimpleDraweeView
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
-import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
@@ -21,11 +19,9 @@ import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.*
 import com.renyu.nimlibrary.extension.CustomAttachment
 import com.renyu.nimlibrary.extension.CustomAttachmentType
-import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import com.renyu.nimlibrary.ui.viewholder.*
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
-import java.io.File
 
 class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventImpl: EventImpl) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -127,7 +123,6 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             }
             2, 3 -> {
                 initViewDataBinding((holder as ImageViewHolder).ivDataBinding, holder.layoutPosition)
-                openBigImageViewActivity(holder.ivDataBinding.root)
             }
             4, 5 -> {
                 initViewDataBinding((holder as AudioViewHolder).audioDataBinding, holder.layoutPosition)
@@ -264,33 +259,6 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         }
         else {
             viewDataBinding.root.findViewById<TextView>(R.id.aurora_tv_msgitem_date).visibility = View.GONE
-        }
-    }
-
-    /**
-     * 打开大图浏览
-     */
-    private fun openBigImageViewActivity(view: View) {
-        view.findViewById<SimpleDraweeView>(R.id.aurora_iv_msgitem_photo).setOnClickListener {
-            val temp = ArrayList<String>()
-            var index = -1
-            messages.filter {
-                it.attachment is ImageAttachment
-            }.forEach {
-                val imageAttachment = it.attachment as ImageAttachment
-                if (imageAttachment.path != null) {
-                    val file = File(imageAttachment.path)
-                    if (file.exists()) {
-                        temp.add(imageAttachment.path)
-                        index++
-                    }
-                }
-                else {
-                    temp.add(imageAttachment.url)
-                    index++
-                }
-            }
-            (view.context as ConversationFragment.ConversationListener).showBigImage(temp, index)
         }
     }
 

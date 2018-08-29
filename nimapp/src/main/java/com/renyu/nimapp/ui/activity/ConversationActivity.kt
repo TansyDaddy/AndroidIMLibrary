@@ -1,24 +1,77 @@
 package com.renyu.nimapp.ui.activity
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import com.blankj.utilcode.util.BarUtils
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
+import com.renyu.nimlibrary.bean.VRItem
+import com.renyu.nimlibrary.extension.VRAttachment
+import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
 class ConversationActivity : BaseActivity(), ConversationFragment.ConversationListener {
 
+    // 进入会话详情的类型
+    enum class CONVERSATIONTYPE {
+        // VR带看
+        VR
+    }
+
     private var conversationFragment: ConversationFragment? = null
 
     private var rawX: Int = 0
+
+    companion object {
+        /**
+         * 普通场景
+         */
+        @JvmStatic
+        fun gotoConversationActivity(context: Context) {
+            val intent = Intent(context, ConversationActivity::class.java)
+            intent.putExtra("account", "r17171709")
+            intent.putExtra("isGroup", false)
+            context.startActivity(intent)
+        }
+
+        /**
+         * 进入VR带看流程
+         */
+        @JvmStatic
+        fun gotoConversationActivityWithVR(context: Context) {
+            // 发送VR信息
+            val uuid = sendVR(VRItem(
+                    "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
+                    "明华清园 3室2厅 690万",
+                    "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
+
+            val intent = Intent(context, ConversationActivity::class.java)
+            intent.putExtra("account", "r17171709")
+            intent.putExtra("isGroup", false)
+            intent.putExtra("type", CONVERSATIONTYPE.VR)
+            // 发送当前VR卡片的uuid作为可判断点击
+            intent.putExtra("uuid", uuid)
+            context.startActivity(intent)
+        }
+
+        /**
+         * 发送VR消息
+         */
+        private fun sendVR(vrItem: VRItem): String {
+            val attachment = VRAttachment(vrItem.vrJson)
+            val imMessage = MessageManager.sendCustomMessage("r17171709", "VR", attachment)
+            return imMessage.uuid
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
@@ -28,20 +81,35 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_conversation)
         loadFragment(intent)
+
     }
 
     /**
      * 加载Fragment
      */
     private fun loadFragment(intent: Intent) {
+        val cards = if (InitParams.isAgent) {
+            arrayOf(ConversationFragment.ConversationCard.ALUMNI,
+                    ConversationFragment.ConversationCard.CAMERA,
+                    ConversationFragment.ConversationCard.HOUSE,
+                    ConversationFragment.ConversationCard.LOCATION,
+                    ConversationFragment.ConversationCard.EVALUATE)
+        } else {
+            arrayOf(ConversationFragment.ConversationCard.ALUMNI,
+                    ConversationFragment.ConversationCard.CAMERA,
+                    ConversationFragment.ConversationCard.HOUSE,
+                    ConversationFragment.ConversationCard.LOCATION)
+        }
         // 区分是否已经发送过VR卡片的场景
-        conversationFragment = if (intent.getStringExtra("uuid") != null) {
+        conversationFragment = if (intent.getSerializableExtra("type") == CONVERSATIONTYPE.VR) {
             ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
                     intent.getStringExtra("uuid"),
-                    intent.getBooleanExtra("isGroup", false))
+                    intent.getBooleanExtra("isGroup", false),
+                    cards)
         } else {
             ConversationFragment.getInstance(intent.getStringExtra("account"),
-                    intent.getBooleanExtra("isGroup", false))
+                    intent.getBooleanExtra("isGroup", false),
+                    cards)
         }
         supportFragmentManager.beginTransaction()
                 .replace(R.id.layout_conversation, conversationFragment)
@@ -89,16 +157,37 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
     }
 
     /**
+     * 发送房源
+     */
+    override fun choiceHouse() {
+
+    }
+
+    /**
+     * 发起评价
+     */
+    override fun evaluate() {
+
+    }
+
+    /**
+     * 打开个人详情
+     */
+    override fun gotoUserInfo(account: String) {
+
+    }
+
+    /**
      * 长按列表
      */
-    override fun longClick(view: View, imMessage: IMMessage, position: Int) {
+    override fun longClick(view: View, imMessage: IMMessage, choicePosition: Int) {
         val location = intArrayOf(0, 0)
         view.getLocationInWindow(location)
 
         QPopuWindow.getInstance(view.context).builder
-                .bindView(view, position)
+                .bindView(view, choicePosition)
                 .setPopupItemList(if (imMessage.msgType == MsgTypeEnum.text) arrayOf("复制", "删除", "撤回") else arrayOf("删除", "撤回"))
-                .setPointers(rawX, location[1])
+                .setPointers(rawX, location[1] + BarUtils.getStatusBarHeight())
                 .setOnPopuListItemClickListener { _, _, position ->
                     if (imMessage.msgType == MsgTypeEnum.text) {
                         when(position) {

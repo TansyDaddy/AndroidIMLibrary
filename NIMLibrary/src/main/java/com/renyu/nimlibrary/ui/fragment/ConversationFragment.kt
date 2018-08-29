@@ -6,7 +6,6 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
-import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
@@ -23,10 +22,15 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
+import com.blankj.utilcode.util.ScreenUtils
+import com.blankj.utilcode.util.SizeUtils
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
@@ -51,6 +55,8 @@ import com.renyu.nimlibrary.viewmodel.ConversationViewModelFactory
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_conversation.*
+import kotlinx.android.synthetic.main.nim_message_activity_text_layout.*
+import kotlinx.android.synthetic.main.panel_content.*
 import kotlinx.android.synthetic.main.panel_emoji.*
 import org.json.JSONObject
 import java.io.File
@@ -62,16 +68,26 @@ import kotlin.collections.ArrayList
  */
 class ConversationFragment : Fragment(), EventImpl {
 
+    // 卡片类型
+    enum class ConversationCard {
+        ALUMNI,
+        CAMERA,
+        HOUSE,
+        LOCATION,
+        EVALUATE
+    }
+
     companion object {
         /**
          * 发送VR卡片后打开详情
          */
-        fun getInstanceWithVRCard(account: String, uuid: String, isGroup: Boolean): ConversationFragment {
+        fun getInstanceWithVRCard(account: String, uuid: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
             bundle.putString("uuid", uuid)
             bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
             fragment.arguments = bundle
             return fragment
         }
@@ -79,11 +95,12 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 直接打开会话详情
          */
-        fun getInstance(account: String, isGroup: Boolean): ConversationFragment {
+        fun getInstance(account: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
             bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
             fragment.arguments = bundle
             return fragment
         }
@@ -117,10 +134,16 @@ class ConversationFragment : Fragment(), EventImpl {
         fun takePhoto()
         // 选择相册
         fun pickPhoto()
+        // 选择楼盘
+        fun choiceHouse()
+        // 评价
+        fun evaluate()
+        // 打开个人详情
+        fun gotoUserInfo(account: String)
         // 浏览大图
         fun showBigImage(images: ArrayList<String>, index: Int)
         // 长按列表
-        fun longClick(view: View, imMessage: IMMessage, position: Int)
+        fun longClick(view: View, imMessage: IMMessage, choicePosition: Int)
     }
 
     override fun onAttach(context: Context?) {
@@ -266,8 +289,8 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 收到Emoji
                         if (it.type == ObserveResponseType.Emoji) {
-                            val currentPosition = edit_conversation.selectionStart
-                            edit_conversation.text.insert(currentPosition, it.data as SpannableString)
+                            val currentPosition = editTextMessage.selectionStart
+                            editTextMessage.text.insert(currentPosition, it.data as SpannableString)
                         }
                         // 收到Sticker
                         if (it.type == ObserveResponseType.Sticker) {
@@ -337,25 +360,100 @@ class ConversationFragment : Fragment(), EventImpl {
     }
 
     private fun initUI() {
-        edit_conversation.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+        // ***********************************  Emoji配置  ***********************************
+        val vpFragments = ArrayList<Fragment>()
+        vpFragments.add(EmojiFragment())
+        val count = StickerUtils.getCategories().size
+        for (i in 0 until count) {
+            vpFragments.add(StickerFragment.getInstance(StickerUtils.getCategories()[i]))
+        }
+        val vpAdapter = VpAdapter(childFragmentManager, vpFragments)
+        vp_panel_content.adapter = vpAdapter
+        // ***********************************  Emoji配置  ***********************************
 
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-
-            }
-
-            override fun afterTextChanged(s: Editable) {
-                if (TextUtils.isEmpty(s.toString())) {
-                    btn_send_conversation.setBackgroundColor(Color.parseColor("#dddee2"))
-                } else {
-                    btn_send_conversation.setBackgroundColor(Color.parseColor("#0099ff"))
+        // ***********************************  更多菜单配置 ***************************************
+        val width = ScreenUtils.getScreenWidth()/4
+        val params = LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val cards = arguments!!.getSerializable("cards") as Array<ConversationCard>
+        for (i in 0 until cards.size) {
+            val view = LayoutInflater.from(activity).inflate(R.layout.view_grid_panel_content_item, null, false)
+            val itemIv = view.findViewById<ImageView>(R.id.iv_view_grid_panel_content_item)
+            val itemTv= view.findViewById<TextView>(R.id.tv_view_grid_panel_content_item)
+            when (cards[i]) {
+                // 选择相册
+                ConversationCard.ALUMNI -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_image)
+                    itemTv.text = "相册"
+                    view.setOnClickListener { conversationListener?.pickPhoto() }
                 }
-                // 发送"正在输入"提示
-                vm!!.sendTypingCommand()
+                ConversationCard.CAMERA -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_camera)
+                    itemTv.text = "拍照"
+                    view.setOnClickListener { conversationListener?.takePhoto() }
+                }
+                ConversationCard.HOUSE -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_house)
+                    itemTv.text = "楼盘"
+                    view.setOnClickListener { conversationListener?.choiceHouse() }
+                }
+                ConversationCard.LOCATION -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_map)
+                    itemTv.text = "位置"
+                    view.setOnClickListener { startActivityForResult(Intent(activity, MapActivity::class.java), 2000) }
+                }
+                ConversationCard.EVALUATE -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_evaluate)
+                    itemTv.text = "评价"
+                    view.setOnClickListener { conversationListener?.evaluate() }
+                }
             }
-        })
+            grid_panel_content.addView(view, params)
+        }
+        // ***********************************  更多菜单配置 ***************************************
+
+        // ***********************************  JKeyboardPanelSwitch配置  ***********************************
+        layout_record.setIAudioRecordCallback { audioFile, audioLength, _ ->
+            // 发送语音
+            sendAudio(audioFile, audioLength)
+        }
+        KeyboardUtil.attach(context as Activity, kp_panel_root) { isShowing ->
+            if (isShowing) {
+                rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
+            }
+        }
+        KPSwitchConflictUtil.attach(kp_panel_root, editTextMessage, KPSwitchConflictUtil.SwitchClickListener { switchToPanel ->
+            // 点击切换功能时恢复到文本框显示状态
+            audioRecord.visibility = View.GONE
+            editTextMessage.visibility = View.VISIBLE
+            buttonTextMessage.visibility = View.GONE
+            buttonAudioMessage.visibility = View.VISIBLE
+
+            if (switchToPanel) {
+                editTextMessage.clearFocus()
+                rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
+            } else {
+                editTextMessage.requestFocus()
+            }
+        }, KPSwitchConflictUtil.SubPanelAndTrigger(layout_emojichoice, emoji_button),
+                KPSwitchConflictUtil.SubPanelAndTrigger(layout_content, buttonMoreFuntionInText))
+        editTextMessage.setOnTouchListener { _, motionEvent ->
+            if (motionEvent.action == MotionEvent.ACTION_UP) {
+                KPSwitchConflictUtil.showKeyboard(kp_panel_root, editTextMessage)
+            }
+            false
+        }
+        kp_panel_root.post {
+            val layoutParams = kp_panel_root.layoutParams as LinearLayout.LayoutParams
+            // 如果卡片类型小于4种，就按照固定高度来处理，反之则使用键盘高度
+            layoutParams.height = if ((arguments!!.getSerializable("cards") as Array<ConversationCard>).size > 4) {
+                KeyboardUtil.getKeyboardHeight(context)
+            } else {
+                SizeUtils.dp2px(140f)
+            }
+            kp_panel_root.layoutParams = layoutParams
+        }
+        // ***********************************  JKeyboardPanelSwitch配置  ***********************************
+
         // 触摸到RecyclerView之后自动收起面板
         rv_conversation.setOnTouchListener { _, motionEvent ->
             if (motionEvent.action == MotionEvent.ACTION_DOWN) {
@@ -379,77 +477,81 @@ class ConversationFragment : Fragment(), EventImpl {
                 }
             }
         })
-
-        // ***********************************  Emoji配置  ***********************************
-
-        val vpFragments = ArrayList<Fragment>()
-        vpFragments.add(EmojiFragment())
-        val count = StickerUtils.getCategories().size
-        for (i in 0 until count) {
-            vpFragments.add(StickerFragment.getInstance(StickerUtils.getCategories()[i]))
-        }
-        val vpAdapter = VpAdapter(childFragmentManager, vpFragments)
-        vp_panel_content.adapter = vpAdapter
-
-        // ***********************************  Emoji配置  ***********************************
-
-        // ***********************************  JKeyboardPanelSwitch配置  ***********************************
-        layout_record.setIAudioRecordCallback { audioFile, audioLength, _ ->
-            // 发送语音
-            sendAudio(audioFile, audioLength)
-        }
-        layout_voicechoice.setOnTouchListener { v, event ->
+        audioRecord.setOnTouchListener { v, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 // 停止语音播放
                 MessageAudioControl.getInstance().stopAudio()
             }
             layout_record.onPressToSpeakBtnTouch(v, event)
+            return@setOnTouchListener false
         }
-        KeyboardUtil.attach(context as Activity, kp_panel_root) { isShowing ->
-            if (isShowing) {
-                rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
+        // 点击键盘按键
+        buttonTextMessage.setOnClickListener {
+            audioRecord.visibility = View.GONE
+            editTextMessage.visibility = View.VISIBLE
+            editTextMessage.requestFocus()
+            buttonTextMessage.visibility = View.GONE
+            buttonAudioMessage.visibility = View.VISIBLE
+
+            KPSwitchConflictUtil.showKeyboard(kp_panel_root, editTextMessage)
+        }
+        // 点击显示录音按钮
+        buttonAudioMessage.setOnClickListener {
+            KPSwitchConflictUtil.hidePanelAndKeyboard(kp_panel_root)
+
+            audioRecord.visibility = View.VISIBLE
+            editTextMessage.visibility = View.GONE
+            buttonTextMessage.visibility = View.VISIBLE
+            buttonAudioMessage.visibility = View.GONE
+        }
+        editTextMessage.setOnFocusChangeListener { _, _ ->
+            editTextMessage.hint = ""
+            checkSendButtonEnable(editTextMessage)
+        }
+        editTextMessage.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+
             }
-        }
-        KPSwitchConflictUtil.attach(kp_panel_root, edit_conversation, KPSwitchConflictUtil.SwitchClickListener { switchToPanel ->
-            if (switchToPanel) {
-                edit_conversation.clearFocus()
-                rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
-            } else {
-                edit_conversation.requestFocus()
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+
             }
-        }, KPSwitchConflictUtil.SubPanelAndTrigger(layout_emojichoice, iv_emoji), KPSwitchConflictUtil.SubPanelAndTrigger(layout_voicechoice, iv_sendvoice))
-        edit_conversation.setOnTouchListener { _, motionEvent ->
-            if (motionEvent.action == MotionEvent.ACTION_UP) {
-                KPSwitchConflictUtil.showKeyboard(kp_panel_root, edit_conversation)
+
+            override fun afterTextChanged(s: Editable) {
+                checkSendButtonEnable(editTextMessage)
+                // 发送"正在输入"提示
+                vm!!.sendTypingCommand()
             }
-            false
+        })
+        // 显示录音按钮
+        buttonTextMessage.visibility = View.GONE
+        buttonAudioMessage.visibility = View.VISIBLE
+        // 显示更多按钮
+        checkSendButtonEnable(editTextMessage)
+    }
+
+    /**
+     * 显示发送或更多
+     *
+     * @param editText
+     */
+    private fun checkSendButtonEnable(editText: EditText) {
+        val textMessage = editText.text.toString()
+        if (!TextUtils.isEmpty(textMessage) && editText.hasFocus()) {
+            buttonMoreFuntionInText.visibility = View.GONE
+            buttonSendMessage.visibility = View.VISIBLE
+        } else {
+            buttonSendMessage.visibility = View.GONE
+            buttonMoreFuntionInText.visibility = View.VISIBLE
         }
-        kp_panel_root.post {
-            val height = KeyboardUtil.getKeyboardHeight(context)
-            val params = kp_panel_root.layoutParams as LinearLayout.LayoutParams
-            params.height = height
-            kp_panel_root.layoutParams = params
-        }
-        // ***********************************  JKeyboardPanelSwitch配置  ***********************************
     }
 
     override fun click(view: View) {
         super.click(view)
         when(view.id) {
-            R.id.iv_image -> {
-                // 选择图片
-                conversationListener?.pickPhoto()}
-            R.id.iv_camera -> {
-                // 拍照
-                conversationListener?.takePhoto()
-            }
-            R.id.btn_send_conversation -> {
+            R.id.buttonSendMessage -> {
                 // 发送文本
                 sendText()
-            }
-            R.id.iv_map -> {
-                // 发送位置信息
-                startActivityForResult(Intent(activity, MapActivity::class.java), 2000)
             }
         }
     }
@@ -473,14 +575,14 @@ class ConversationFragment : Fragment(), EventImpl {
      * 发送文本
      */
     private fun sendText() {
-        if (TextUtils.isEmpty(edit_conversation.text.toString())) {
+        if (TextUtils.isEmpty(editTextMessage.text.toString())) {
             return
         }
-        val imMessage = vm!!.prepareText(edit_conversation.text.toString())
+        val imMessage = vm!!.prepareText(editTextMessage.text.toString())
         if (imMessage != null) {
             vm!!.refreshSendIMMessage(imMessage)
             // 重置文本框
-            edit_conversation.setText("")
+            editTextMessage.setText("")
             rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
         }
     }

@@ -28,4 +28,10 @@ interface EventImpl {
 
     // 前往地图预览页面
     fun gotoMapPreview(view: View, imMessage: IMMessage) {}
+
+    // 前往个人详情
+    fun gotoUserInfo(view: View, account: String) {}
+
+    // 打开大图
+    fun openBigImageViewActivity(view: View) {}
 }

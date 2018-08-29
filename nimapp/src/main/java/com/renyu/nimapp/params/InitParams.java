@@ -27,7 +27,7 @@ public class InitParams {
     public static String hwCertificateName = "nimhuawei";
 
     // 是否为经纪人（区分租售宝和淘房）
-    public static boolean isAgent = false;
+    public static boolean isAgent = true;
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {
