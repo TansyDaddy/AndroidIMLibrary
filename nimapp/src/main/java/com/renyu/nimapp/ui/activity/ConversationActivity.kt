@@ -13,18 +13,19 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
+import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem
-import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
 class ConversationActivity : BaseActivity(), ConversationFragment.ConversationListener {
-
     // 进入会话详情的类型
     enum class CONVERSATIONTYPE {
         // VR带看
-        VR
+        VR,
+        // UNSPECIFIED
+        UNSPECIFIED
     }
 
     private var conversationFragment: ConversationFragment? = null
@@ -33,13 +34,66 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
 
     companion object {
         /**
-         * 普通场景
+         * 基本场景
          */
         @JvmStatic
-        fun gotoConversationActivity(context: Context) {
+        fun gotoConversationActivity(context: Context, account: String) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", "r17171709")
+            intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
+            intent.putExtra("type", CONVERSATIONTYPE.UNSPECIFIED)
+            context.startActivity(intent)
+        }
+
+        /**
+         * 发送卡片和文字
+         */
+        fun gotoConversationActivityWithTextAndCard(context: Context, account: String, text: String) {
+            // 发送文字
+            MessageManager.sendTextMessage(account, text)
+            // 发送楼盘卡片
+            MessageManager.sendHouseCardMessage(HouseItem(
+                    "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
+                    "明华清园 3室2厅 690万",
+                    "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg",
+                    "1"), "楼盘卡片")
+
+            val intent = Intent(context, ConversationActivity::class.java)
+            intent.putExtra("account", account)
+            intent.putExtra("isGroup", false)
+            intent.putExtra("type", CONVERSATIONTYPE.UNSPECIFIED)
+            context.startActivity(intent)
+        }
+
+        /**
+         * 发送卡片
+         */
+        fun gotoConversationActivityWithCard(context: Context, account: String) {
+            // 发送楼盘卡片
+            MessageManager.sendHouseCardMessage(HouseItem(
+                    "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
+                    "明华清园 3室2厅 690万",
+                    "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg",
+                    "1"), "楼盘卡片")
+
+            val intent = Intent(context, ConversationActivity::class.java)
+            intent.putExtra("account", account)
+            intent.putExtra("isGroup", false)
+            intent.putExtra("type", CONVERSATIONTYPE.UNSPECIFIED)
+            context.startActivity(intent)
+        }
+
+        /**
+         * 发送文字
+         */
+        fun gotoConversationActivityWithText(context: Context, account: String, text: String) {
+            // 发送文字
+            MessageManager.sendTextMessage(account, text)
+
+            val intent = Intent(context, ConversationActivity::class.java)
+            intent.putExtra("account", account)
+            intent.putExtra("isGroup", false)
+            intent.putExtra("type", CONVERSATIONTYPE.UNSPECIFIED)
             context.startActivity(intent)
         }
 
@@ -47,29 +101,20 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
          * 进入VR带看流程
          */
         @JvmStatic
-        fun gotoConversationActivityWithVR(context: Context) {
-            // 发送VR信息
-            val uuid = sendVR(VRItem(
+        fun gotoConversationActivityWithVR(context: Context, account: String) {
+            // 发送VR卡片
+            val uuid = MessageManager.sendVRCardMessage(VRItem(
                     "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
                     "明华清园 3室2厅 690万",
                     "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
 
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", "r17171709")
+            intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
             intent.putExtra("type", CONVERSATIONTYPE.VR)
             // 发送当前VR卡片的uuid作为可判断点击
             intent.putExtra("uuid", uuid)
             context.startActivity(intent)
-        }
-
-        /**
-         * 发送VR消息
-         */
-        private fun sendVR(vrItem: VRItem): String {
-            val attachment = VRAttachment(vrItem.vrJson)
-            val imMessage = MessageManager.sendCustomMessage("r17171709", "VR", attachment)
-            return imMessage.uuid
         }
     }
 
@@ -97,7 +142,8 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
             arrayOf(ConversationFragment.ConversationCard.ALUMNI,
                     ConversationFragment.ConversationCard.CAMERA,
                     ConversationFragment.ConversationCard.HOUSE,
-                    ConversationFragment.ConversationCard.LOCATION)
+                    ConversationFragment.ConversationCard.LOCATION,
+                    ConversationFragment.ConversationCard.TIPOFFS)
         }
         // 区分是否已经发送过VR卡片的场景
         conversationFragment = if (intent.getSerializableExtra("type") == CONVERSATIONTYPE.VR) {
@@ -173,6 +219,20 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
      * 打开个人详情
      */
     override fun gotoUserInfo(account: String) {
+
+    }
+
+    /**
+     * 打开楼盘卡片
+     */
+    override fun openHouseCard(imMessage: IMMessage) {
+
+    }
+
+    /**
+     * 举报
+     */
+    override fun tipOffs() {
 
     }
 

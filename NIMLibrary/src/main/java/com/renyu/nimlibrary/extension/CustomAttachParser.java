@@ -41,6 +41,9 @@ public class CustomAttachParser implements MsgAttachmentParser {
                 case CustomAttachmentType.VR:
                     attachment = new VRAttachment();
                     break;
+                case CustomAttachmentType.HOUSE:
+                    attachment = new HouseAttachment();
+                    break;
                 default:
                     attachment = new DefaultCustomAttachment();
                     break;
@@ -50,7 +53,7 @@ public class CustomAttachParser implements MsgAttachmentParser {
                 attachment.fromJson(data);
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         return attachment;

@@ -22,11 +22,9 @@ public class OtherUtils {
         // 获取当天00:00
         long wee = (now / TimeConstants.DAY) * TimeConstants.DAY - 8 * TimeConstants.HOUR;
         if (millis >= wee+1000*3600*12) {
-            return String.format("下午%tR", millis);
+            return String.format("%tR", millis);
         } else if (millis >= wee) {
-            return String.format("上午%tR", millis);
-        } else if (millis >= wee - TimeConstants.DAY) {
-            return String.format("昨天", millis);
+            return String.format("%tR", millis);
         } else {
             if (isSameDate(now, millis)) {
                 return TimeUtils.getChineseWeek(millis);
@@ -42,11 +40,9 @@ public class OtherUtils {
         // 获取当天00:00
         long wee = (now / TimeConstants.DAY) * TimeConstants.DAY - 8 * TimeConstants.HOUR;
         if (millis >= wee+1000*3600*12) {
-            return String.format("下午 %tR", millis);
+            return String.format("%tR", millis);
         } else if (millis >= wee) {
-            return String.format("上午 %tR", millis);
-        } else if (millis >= wee - TimeConstants.DAY) {
-            return String.format("昨天 %tR", millis);
+            return String.format("%tR", millis);
         } else {
             if (isSameDate(now, millis)) {
                 return String.format(TimeUtils.getChineseWeek(millis)+" %tR", millis);

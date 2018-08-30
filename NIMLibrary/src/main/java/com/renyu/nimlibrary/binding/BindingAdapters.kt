@@ -2,7 +2,6 @@ package com.renyu.nimlibrary.binding
 
 import android.databinding.BindingAdapter
 import android.net.Uri
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.util.Log
@@ -33,9 +32,11 @@ import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.extension.HouseAttachment
 import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.UserManager
+import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
@@ -48,7 +49,7 @@ object BindingAdapters {
     @BindingAdapter(value = ["adapter"])
     fun <T: RecyclerView.ViewHolder> setAdapter(recyclerView: RecyclerView, adapter: RecyclerView.Adapter<T>) {
         recyclerView.setHasFixedSize(true)
-        val manager = LinearLayoutManager(recyclerView.context)
+        val manager = WrapContentLinearLayoutManager(recyclerView.context)
         manager.isSmoothScrollbarEnabled = true
         manager.isAutoMeasureEnabled = true
         recyclerView.layoutManager = manager
@@ -147,7 +148,13 @@ object BindingAdapters {
         }
         // 如果是自定义消息中的VR消息
         if (attachment != null && attachment is VRAttachment) {
-            textView.text = "[VR]"
+            textView.text = "[VR带看]"
+            return
+        }
+        // 如果是自定义消息中的VR消息
+        if (attachment != null && attachment is HouseAttachment) {
+            val jsonObject = JSONObject(attachment.houseJson)
+            textView.text = "[${jsonObject.getString("houseTitle")}]"
             return
         }
         EmojiUtils.replaceFaceMsgByFresco(textView, text)
@@ -330,6 +337,44 @@ object BindingAdapters {
         val vrJson = attachment.vrJson
         try {
             val jsonObject = JSONObject(vrJson)
+            textView.text = jsonObject.getString("houseTitle")
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListHouseCardImage"])
+    fun loadChatListHouseCardImage(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as HouseAttachment
+        val houseJson = attachment.houseJson
+        try {
+            val jsonObject = JSONObject(houseJson)
+            if (simpleDraweeView.tag !=null &&
+                    !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
+                    simpleDraweeView.tag.toString() == jsonObject.getString("coverPic")) {
+                // 什么都不做，防止Fresco闪烁
+            }
+            else {
+                val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(jsonObject.getString("coverPic")))
+                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+                val draweeController = Fresco.newDraweeControllerBuilder()
+                        .setImageRequest(request).setAutoPlayAnimations(true).build()
+                simpleDraweeView.controller = draweeController
+                simpleDraweeView.tag = jsonObject.getString("coverPic")
+            }
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListHouseCardTitle"])
+    fun loadChatListHouseCardTitle(textView: TextView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as HouseAttachment
+        val houseJson = attachment.houseJson
+        try {
+            val jsonObject = JSONObject(houseJson)
             textView.text = jsonObject.getString("houseTitle")
         } catch (e: Exception) {
 

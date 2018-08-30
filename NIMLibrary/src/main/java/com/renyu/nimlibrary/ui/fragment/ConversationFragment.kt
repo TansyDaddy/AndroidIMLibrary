@@ -12,7 +12,6 @@ import android.os.Message
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.SpannableString
@@ -48,6 +47,7 @@ import com.renyu.nimlibrary.databinding.FragmentConversationBinding
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.activity.MapActivity
+import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
 import com.renyu.nimlibrary.util.sticker.StickerUtils
@@ -75,7 +75,8 @@ class ConversationFragment : Fragment(), EventImpl {
         CAMERA,
         HOUSE,
         LOCATION,
-        EVALUATE
+        EVALUATE,
+        TIPOFFS
     }
 
     companion object {
@@ -145,6 +146,10 @@ class ConversationFragment : Fragment(), EventImpl {
         fun showBigImage(images: ArrayList<String>, index: Int)
         // 长按列表
         fun longClick(view: View, imMessage: IMMessage, choicePosition: Int)
+        // 打开楼盘卡片
+        fun openHouseCard(imMessage: IMMessage)
+        // 举报
+        fun tipOffs()
     }
 
     override fun onAttach(context: Context?) {
@@ -205,7 +210,7 @@ class ConversationFragment : Fragment(), EventImpl {
                             var temp = it.data!!
                             Collections.reverse(temp)
                             vm!!.addOldIMMessages(temp, true)
-                            val linearManager = rv_conversation.layoutManager as LinearLayoutManager
+                            val linearManager = rv_conversation.layoutManager as WrapContentLinearLayoutManager
                             val firstItemPosition = linearManager.findFirstVisibleItemPosition()
                             if (firstItemPosition == 0) {
                                 rv_conversation.scrollToPosition(it.data.size - 1)
@@ -416,6 +421,11 @@ class ConversationFragment : Fragment(), EventImpl {
                     itemTv.text = "评价"
                     view.setOnClickListener { conversationListener?.evaluate() }
                 }
+                ConversationCard.TIPOFFS -> {
+                    itemIv.setImageResource(R.mipmap.ic_conversation_tipoffs)
+                    itemTv.text = "举报"
+                    view.setOnClickListener { conversationListener?.tipOffs() }
+                }
             }
             grid_panel_content.addView(view, params)
         }
@@ -576,7 +586,7 @@ class ConversationFragment : Fragment(), EventImpl {
      * 判断当前显示的是不是最后一条
      */
     private fun isLastMessageVisible(): Boolean {
-        val layoutManager = rv_conversation.layoutManager as LinearLayoutManager
+        val layoutManager = rv_conversation.layoutManager as WrapContentLinearLayoutManager
         val lastVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition()
         return lastVisiblePosition >= vm?.adapter?.itemCount!! - 1
     }

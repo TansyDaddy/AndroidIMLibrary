@@ -34,4 +34,7 @@ interface EventImpl {
 
     // 打开大图
     fun openBigImageViewActivity(view: View) {}
+
+    // 打开房源卡片
+    fun openHouseCard(view: View, imMessage: IMMessage) {}
 }

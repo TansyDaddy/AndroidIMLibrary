@@ -11,7 +11,7 @@ class DetailActivity : BaseActivity() {
 
         // 客户从VR看房模块进入IM，需要发送卡片
         if (!InitParams.isAgent) {
-            ConversationActivity.gotoConversationActivityWithVR(this)
+            ConversationActivity.gotoConversationActivityWithCard(this, "r17171709")
         }
     }
 }

@@ -103,6 +103,16 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_send_vr, parent,
                             false))
+            22 -> return HouseCardViewHolder(
+                    DataBindingUtil.inflate<AdapterReceiveHousecardBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_receive_housecard, parent,
+                            false))
+            23 -> return HouseCardViewHolder(
+                    DataBindingUtil.inflate<AdapterSendHousecardBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_send_housecard, parent,
+                            false))
         }
         throw Throwable("对指定viewType类型缺少判断")
     }
@@ -151,10 +161,11 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                     }
                 }
             }
-            20, 21 -> {
+            20, 21, 22, 23 -> {
                 if (messages[holder.layoutPosition].attachment != null) {
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
                         CustomAttachmentType.VR -> initViewDataBinding((holder as VRViewHolder).ivDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.HOUSE -> initViewDataBinding((holder as HouseCardViewHolder).ivDataBinding, holder.layoutPosition)
                     }
                 }
             }
@@ -240,6 +251,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 when((messages[position].attachment as CustomAttachment).type) {
                     CustomAttachmentType.Sticker -> return 18
                     CustomAttachmentType.VR -> return 20
+                    CustomAttachmentType.HOUSE -> return 22
                 }
             }
         }
@@ -249,6 +261,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                 when((messages[position].attachment as CustomAttachment).type) {
                     CustomAttachmentType.Sticker -> return 19
                     CustomAttachmentType.VR -> return 21
+                    CustomAttachmentType.HOUSE -> return 23
                 }
             }
         }

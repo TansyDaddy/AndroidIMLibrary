@@ -391,7 +391,6 @@ class ConversationViewModel(private val account: String, private val sessionType
         }
     }
 
-
     /**
      * 经纪人前往VR来电页面
      */
@@ -451,6 +450,14 @@ class ConversationViewModel(private val account: String, private val sessionType
             }
         }
         (view.context as ConversationFragment.ConversationListener).showBigImage(temp, index)
+    }
+
+    /**
+     * 打开房源卡片
+     */
+    override fun openHouseCard(view: View, imMessage: IMMessage) {
+        super.openHouseCard(view, imMessage)
+        (view.context as ConversationFragment.ConversationListener).openHouseCard(imMessage)
     }
 
     /**

@@ -16,9 +16,13 @@ import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.*
+import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.VRItem
 import com.renyu.nimlibrary.extension.CustomAttachParser
+import com.renyu.nimlibrary.extension.HouseAttachment
+import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.util.RxBus
 import java.io.File
 
@@ -328,6 +332,24 @@ object MessageManager {
         config.enableUnreadCount = false
         imMessage.config = config
         NIMClient.getService(MsgService::class.java).saveMessageToLocal(imMessage, true)
+    }
+
+
+    /**
+     * 发送VR消息
+     */
+    fun sendVRCardMessage(vrItem: VRItem): String {
+        val attachment = VRAttachment(vrItem.vrJson)
+        val imMessage = MessageManager.sendCustomMessage("r17171709", "VR", attachment)
+        return imMessage.uuid
+    }
+
+    /**
+     * 发送楼盘卡片
+     */
+    fun sendHouseCardMessage(houseItem: HouseItem, content: String) {
+        val attachment = HouseAttachment(houseItem.houseJson)
+        MessageManager.sendCustomMessage("r17171709", content, attachment)
     }
 
     /**

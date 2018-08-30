@@ -12,4 +12,5 @@ public interface CustomAttachmentType {
     int RedPacket = 5;
     int OpenedRedPacket = 6;
     int VR = 7;
+    int HOUSE = 8;
 }
