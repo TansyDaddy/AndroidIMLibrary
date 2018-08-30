@@ -1,7 +1,6 @@
 package com.renyu.nimlibrary.manager
 
 import android.util.Log
-import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.auth.AuthServiceObserver
@@ -58,8 +57,7 @@ object StatueManager {
                     if (it.wontAutoLogin()) {
                         Log.d("NIM_APP", "被踢下线")
 
-                        SPUtils.getInstance().remove(CommonParams.SP_UNAME)
-                        SPUtils.getInstance().remove(CommonParams.SP_PWD)
+                        AuthManager.setUserAccount(null, null)
 
                         CommonParams.isKickout = true
 
@@ -104,7 +102,8 @@ object StatueManager {
 
                         }
                         LoginSyncStatus.SYNC_COMPLETED -> {
-
+                            // 消息同步完成
+                            RxBus.getDefault().post(ObserveResponse(t, ObserveResponseType.ObserveLoginSyncDataStatus))
                         }
                     }
                 }, true)

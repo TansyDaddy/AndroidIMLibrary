@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimlibrary.bean.Resource
@@ -61,12 +62,14 @@ class ChatListFragment : Fragment() {
                     }
                 }
             })
-
             viewDataBinding?.adapter = vm?.adapter
 
-            Handler().postDelayed({
-                vm?.queryRecentContacts()
-            }, 250)
+            // 如果当前IM已经连接，则直接获取最近会话列表
+            if (NIMClient.getStatus() == StatusCode.LOGINED) {
+                Handler().postDelayed({
+                    vm?.queryRecentContacts()
+                }, 250)
+            }
         }
 
         disposable = RxBus.getDefault()
@@ -76,19 +79,14 @@ class ChatListFragment : Fragment() {
                     // 在线状态
                     if (it.type == ObserveResponseType.OnlineStatus) {
                         if (it.data is StatusCode) {
-                            when(it.data) {
-                                // 如果用户登录成功，则同步数据
-                                StatusCode.LOGINED -> { updateTip("登录成功", false) }
-                                StatusCode.UNLOGIN -> { updateTip("未登录", true) }
-                                StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true) }
-                                StatusCode.CONNECTING -> { updateTip("正在连接服务器", true) }
-                                StatusCode.LOGINING -> { updateTip("正在登录中", true) }
-                                StatusCode.FORBIDDEN -> { updateTip("被服务器禁止登录", true) }
-                                StatusCode.VER_ERROR -> { updateTip("客户端版本错误", true) }
-                                StatusCode.PWD_ERROR -> { updateTip("用户名或密码错误", true) }
-                                else -> { updateTip("", false) }
-                            }
+                            refreshClientStatus(it.data as StatusCode)
                         }
+                    }
+                    if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
+                        // 消息同步完成重新获取最近会话列表
+                        Handler().postDelayed({
+                            vm?.queryRecentContacts()
+                        }, 250)
                     }
                     // 最近会话列表变更通知
                     if (it.type == ObserveResponseType.ObserveRecentContact) {
@@ -110,6 +108,12 @@ class ChatListFragment : Fragment() {
         super.onResume()
         // 不需要通知显示
         MessageManager.enableMsgNotification(false)
+
+        // 每次恢复Activity的时候都要刷新当前连接状态
+        refreshClientStatus(NIMClient.getStatus())
+
+        // 判断是否登录，没有登录自动执行登录
+        vm!!.signIn()
     }
 
     override fun onPause() {
@@ -121,6 +125,21 @@ class ChatListFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposable?.dispose()
+    }
+
+    private fun refreshClientStatus(statusCode: StatusCode) {
+        when(statusCode) {
+            // 如果用户登录成功，则同步数据
+            StatusCode.LOGINED -> { updateTip("登录成功", false) }
+            StatusCode.UNLOGIN -> { updateTip("未登录", true) }
+            StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true) }
+            StatusCode.CONNECTING -> { updateTip("正在连接服务器", true) }
+            StatusCode.LOGINING -> { updateTip("正在登录中", true) }
+            StatusCode.FORBIDDEN -> { updateTip("被服务器禁止登录", true) }
+            StatusCode.VER_ERROR -> { updateTip("客户端版本错误", true) }
+            StatusCode.PWD_ERROR -> { updateTip("用户名或密码错误", true) }
+            else -> { updateTip("", false) }
+        }
     }
 
     /**

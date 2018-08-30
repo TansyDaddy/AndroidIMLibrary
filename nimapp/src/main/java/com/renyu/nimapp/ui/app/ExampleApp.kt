@@ -37,7 +37,7 @@ class ExampleApp : MultiDexApplication() {
                 InComingAVManager.inComingAVManager.registerInComingObserver()
             }
             // 假登录获取本地数据
-            AuthManager.fakeLogin()
+//            AuthManager.fakeLogin()
         }
     }
 }

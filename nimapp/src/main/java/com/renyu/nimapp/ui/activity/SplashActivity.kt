@@ -4,9 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
-import com.blankj.utilcode.util.SPUtils
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.InitParams
+import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.params.CommonParams
 
 class SplashActivity : AppCompatActivity() {
@@ -30,10 +30,10 @@ class SplashActivity : AppCompatActivity() {
             return
         }
 
-        val name = SPUtils.getInstance().getString(CommonParams.SP_UNAME)
-        val password = SPUtils.getInstance().getString(CommonParams.SP_PWD)
+        val accid = AuthManager.getUserAccount().first
+        val token = AuthManager.getUserAccount().second
         // 登录成功跳转首页
-        if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(password)) {
+        if (!TextUtils.isEmpty(accid) && !TextUtils.isEmpty(token)) {
             startActivity(Intent(this@SplashActivity, ChatListActivity::class.java))
         }
         // 没有用户信息则执行登录操作

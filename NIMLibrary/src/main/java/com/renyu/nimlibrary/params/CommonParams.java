@@ -10,8 +10,8 @@ import java.io.File;
 
 public class CommonParams {
     // 用户登录、密码信息
-    public static final String SP_UNAME = "sp_uname";
-    public static final String SP_PWD = "sp_pwd";
+    public static final String SP_ACCID = "sp_accid";
+    public static final String SP_TOKEN = "sp_token";
 
     // SDK根目录路径
     public static final String SDKROOT = Environment.getExternalStorageDirectory().getPath() + File.separator + "example";

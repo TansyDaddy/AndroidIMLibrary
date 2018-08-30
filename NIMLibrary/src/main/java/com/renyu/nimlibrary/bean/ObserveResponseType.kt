@@ -5,6 +5,8 @@ enum class ObserveResponseType {
     ObserveRecentContact,
     // 新消息接收
     ObserveReceiveMessage,
+    // 消息同步完成
+    ObserveLoginSyncDataStatus,
     // 用户资料刷新
     UserInfoUpdate,
     // 从服务器获取用户资料

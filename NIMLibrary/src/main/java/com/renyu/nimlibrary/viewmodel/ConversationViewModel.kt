@@ -9,10 +9,10 @@ import android.os.Handler
 import android.view.View
 import android.widget.Toast
 import com.baidu.mapapi.model.LatLng
-import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.ResponseCode
+import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.MessageBuilder
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
@@ -28,12 +28,12 @@ import com.renyu.nimavchatlibrary.manager.BaseAVManager
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.StickerItem
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
+import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
@@ -41,7 +41,6 @@ import com.renyu.nimlibrary.ui.activity.MapPreviewActivity
 import com.renyu.nimlibrary.ui.adapter.ConversationAdapter
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import com.renyu.nimlibrary.util.ClipboardUtils
-import com.renyu.nimlibrary.util.RxBus
 import org.json.JSONObject
 import java.io.File
 import java.util.*
@@ -90,6 +89,16 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
+     * 每个页面都要判断登录状态
+     */
+    fun signIn() {
+        if (AuthManager.getStatus() != StatusCode.LOGINED) {
+            AuthManager.login(AuthManager.getUserAccount().first,
+                    AuthManager.getUserAccount().second)
+        }
+    }
+
+    /**
      * 获取会话详情列表
      */
     fun queryMessageLists(imMessage: IMMessage?) {
@@ -103,11 +112,8 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 加载更多消息或同步消息
      */
-    fun loadMoreLocalMessage(isFirst: Boolean) {
+    fun pullMessageHistory(isFirst: Boolean) {
         val temp = if (isFirst) {
-            // 开启同步
-            isAsync = true
-
             MessageBuilder.createEmptyMessage(account, sessionType, 0)
         }
         else {
@@ -121,11 +127,11 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     fun compareData(remoteMessages: List<IMMessage>?) {
         if (remoteMessages == null) {
-            // 同步结束
-            isAsync = false
             return
         }
-        // 如果消息没有找到，记录索引位置
+        // 开启同步
+        isAsync = true
+        // 第一条产生差别的消息索引位置
         var notFindIndex = -1
         for ((withIndex, value) in remoteMessages.withIndex()) {
             var find = false
@@ -145,18 +151,24 @@ class ConversationViewModel(private val account: String, private val sessionType
         }
 
         if (notFindIndex != -1) {
-            // 找到最后一条消息
+            // 找到最后一条相同的消息
             val lastSameIndex = notFindIndex - 1
-            val lastSameMessage = remoteMessages[lastSameIndex]
-            // 去除时间早的消息
-            val temp: ArrayList<IMMessage> = ArrayList()
-            messages.filter {
-                it.time < lastSameMessage.time
-            }.forEach {
-                temp.add(it)
+            // 一开始消息就不同
+            if (lastSameIndex == -1) {
+                messages.clear()
             }
-            messages.removeAll(temp)
-
+            else {
+                val lastSameMessage = remoteMessages[lastSameIndex]
+                // 从最后一条相同的消息开始，去除时间比之早的消息
+                val temp: ArrayList<IMMessage> = ArrayList()
+                messages.filter {
+                    it.time < lastSameMessage.time
+                }.forEach {
+                    temp.add(it)
+                }
+                messages.removeAll(temp)
+            }
+            // 补足之后的消息
             var temp2: ArrayList<IMMessage> = ArrayList()
             for (i in notFindIndex until remoteMessages.size) {
                 temp2.add(remoteMessages[i])
@@ -166,7 +178,7 @@ class ConversationViewModel(private val account: String, private val sessionType
             // 添加同步过来的额外新数据
             messages.addAll(0, temp2)
 
-            adapter.updateShowTimeItem(messages, true, false)
+            adapter.updateShowTimeItem(messages, true, true)
             adapter.notifyDataSetChanged()
         }
         // 同步结束
@@ -174,14 +186,18 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 添加历史消息数据
+     * 添加更多历史消息数据
      */
-    fun addOldIMMessages(imMessages: List<IMMessage>) {
+    fun addOldIMMessages(imMessages: List<IMMessage>, isLoadmore: Boolean) {
         if (imMessages.isEmpty()) {
             return
         }
+        // 不是添加下拉获取到的更多消息，则直接清空
+        if (!isLoadmore) {
+            messages.clear()
+        }
         messages.addAll(0, imMessages)
-        adapter.updateShowTimeItem(messages, true, false)
+        adapter.updateShowTimeItem(messages, true, !isLoadmore)
         // 添加新数据
         adapter.notifyItemRangeInserted(0, imMessages.size)
         // 根据时间变化刷新之前的列表
@@ -224,11 +240,9 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     override fun resendIMMessage(view: View, uuid: String) {
         super.resendIMMessage(view, uuid)
-
         if (isAsync) {
             return
         }
-
         // 找到重发的那条消息
         val imMessages = messages.filter {
             it.uuid == uuid
@@ -255,7 +269,7 @@ class ConversationViewModel(private val account: String, private val sessionType
         val index = deleteItem(imMessage, true)
         adapter.notifyItemRemoved(index)
         // 重新调整时间
-        adapter.updateShowTimeItem(messages, false, true)
+        adapter.updateShowTimeItem(messages, true, false)
         adapter.notifyDataSetChanged()
     }
 
@@ -272,50 +286,6 @@ class ConversationViewModel(private val account: String, private val sessionType
                 }, 250)
             }
         }
-    }
-
-    /**
-     * 同步当前页面重连成功后的新数据
-     */
-    fun syncNewData(imMessage: IMMessage?, receiverData: ArrayList<IMMessage>) {
-        isAsync = true
-
-        // 向下同步数据anchor
-        // 如果是首次向下同步数据，则使用默认值或者最后一条消息时间
-        val tempAsynAnchor = imMessage ?: if (messages.size == 0) {
-            MessageBuilder.createEmptyMessage(account, sessionType, 0)
-        } else {
-            messages[messages.size - 1]
-        }
-
-        MessageManager.pullMessageHistoryEx(tempAsynAnchor, object : RequestCallback<List<IMMessage>> {
-            override fun onSuccess(param: List<IMMessage>?) {
-                if (param!!.isNotEmpty()) {
-                    receiverData.addAll(param)
-                    // 判断是否要继续翻页
-                    if (param.size == 100) {
-                        syncNewData(param[99], receiverData)
-                    }
-                    else {
-                        isAsync = false
-                        // 获取新数据结束，通知前台刷新
-                        RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
-                    }
-                }
-            }
-
-            override fun onFailed(code: Int) {
-                isAsync = false
-                // 获取新数据结束，通知前台刷新
-                RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
-            }
-
-            override fun onException(exception: Throwable?) {
-                isAsync = false
-                // 获取新数据结束，通知前台刷新
-                RxBus.getDefault().post(ObserveResponse(receiverData, ObserveResponseType.ReceiveMessage))
-            }
-        })
     }
 
     /**
@@ -374,7 +344,7 @@ class ConversationViewModel(private val account: String, private val sessionType
         MessageManager.revokeMessage(imMessage, object : RequestCallback<Void> {
             override fun onSuccess(param: Void?) {
                 deleteItem(imMessage, false)
-                val revokeNick = if (imMessage.fromAccount == SPUtils.getInstance().getString(CommonParams.SP_UNAME)) "你" else "对方"
+                val revokeNick = if (imMessage.fromAccount == AuthManager.getUserAccount().first) "你" else "对方"
                 MessageManager.sendRevokeMessage(imMessage, revokeNick + "撤回了一条消息")
             }
 

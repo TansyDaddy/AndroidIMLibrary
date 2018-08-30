@@ -29,14 +29,13 @@ import android.widget.TextView
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
-import com.blankj.utilcode.util.SPUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.SizeUtils
+import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
-import com.netease.nimlib.sdk.msg.model.MessageReceipt
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimlibrary.R
@@ -169,13 +168,13 @@ class ConversationFragment : Fragment(), EventImpl {
             vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
                     Status.SUCESS -> {
-                        vm!!.addOldIMMessages(it.data!!)
+                        vm!!.addOldIMMessages(it.data!!, false)
 
                         // 首次加载完成滚动到最底部
                         rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
 
-                        // 加载远程数据
-                        vm!!.loadMoreLocalMessage(true)
+                        // 加载远程数据进行同步
+                        vm!!.pullMessageHistory(true)
                     }
                     Status.FAIL -> {
 
@@ -205,7 +204,7 @@ class ConversationFragment : Fragment(), EventImpl {
                         else {
                             var temp = it.data!!
                             Collections.reverse(temp)
-                            vm!!.addOldIMMessages(temp)
+                            vm!!.addOldIMMessages(temp, true)
                             val linearManager = rv_conversation.layoutManager as LinearLayoutManager
                             val firstItemPosition = linearManager.findFirstVisibleItemPosition()
                             if (firstItemPosition == 0) {
@@ -268,18 +267,14 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 收到已读回执
                         if (it.type == ObserveResponseType.MessageReceipt) {
-                            // 自己判断最后一条已读消息回执时间
-                            (it.data as ArrayList<MessageReceipt>).forEach {
-                                SPUtils.getInstance().put(it.sessionId, it.time)
-                            }
                             vm!!.receiverMsgReceipt()
                         }
-                        // 在线状态
-                        if (it.type == ObserveResponseType.OnlineStatus) {
-                            // 如果用户登录成功，则向后同步数据
-                            if (it.data is StatusCode && (it.data as StatusCode) == StatusCode.LOGINED) {
-                                vm?.syncNewData(null, ArrayList())
-                            }
+                        // 消息同步完成
+                        if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
+                            // 获取会话列表数据
+                            Handler().postDelayed({
+                                vm!!.queryMessageLists(null)
+                            }, 250)
                         }
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {
@@ -327,10 +322,12 @@ class ConversationFragment : Fragment(), EventImpl {
                     }
                     .subscribe())
 
-            // 获取会话列表数据
-            Handler().postDelayed({
-                vm!!.queryMessageLists(null)
-            }, 250)
+            if (NIMClient.getStatus() == StatusCode.LOGINED) {
+                // 获取会话列表数据
+                Handler().postDelayed({
+                    vm!!.queryMessageLists(null)
+                }, 250)
+            }
         }
     }
 
@@ -339,6 +336,9 @@ class ConversationFragment : Fragment(), EventImpl {
         // 消息提醒场景设置，设置为当前正在聊天的对象，当前正在聊天的对象没有通知显示，其余有
         MessageManager.setChattingAccount(arguments!!.getString("account"),
                 if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P)
+
+        // 判断是否登录，没有登录自动执行登录
+        vm!!.signIn()
     }
 
     override fun onPause() {
@@ -483,7 +483,7 @@ class ConversationFragment : Fragment(), EventImpl {
                 // 上拉加载更多
                 val canScrollDown = rv_conversation.canScrollVertically(-1)
                 if (!canScrollDown) {
-                    vm!!.loadMoreLocalMessage(false)
+                    vm!!.pullMessageHistory(false)
                 }
             }
         })

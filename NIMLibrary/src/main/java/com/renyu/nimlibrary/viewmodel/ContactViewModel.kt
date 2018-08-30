@@ -1,16 +1,15 @@
 package com.renyu.nimlibrary.viewmodel
 
 import android.arch.lifecycle.ViewModel
-import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.friend.model.BlackListChangedNotify
 import com.netease.nimlib.sdk.friend.model.FriendChangedNotify
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.FriendManager
 import com.renyu.nimlibrary.manager.UserManager
-import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.adapter.ContactAdapter
 import com.renyu.nimlibrary.util.RxBus
 
@@ -33,7 +32,7 @@ class ContactViewModel : ViewModel() {
         // 去除黑名单用户
         accounts.removeAll(blacks)
         // 去除自己
-        accounts.remove(SPUtils.getInstance().getString(CommonParams.SP_UNAME))
+        accounts.remove(AuthManager.getUserAccount().first)
         userInfos.clear()
         userInfos.addAll(UserManager.getUserInfoList(accounts))
         adapter.notifyDataSetChanged()

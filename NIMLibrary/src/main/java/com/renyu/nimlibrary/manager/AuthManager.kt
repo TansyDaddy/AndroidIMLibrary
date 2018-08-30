@@ -11,8 +11,6 @@ import com.netease.nimlib.sdk.auth.AuthService
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.netease.nimlib.sdk.mixpush.MixPushConfig
 import com.renyu.nimlibrary.params.CommonParams
-import com.netease.nimlib.sdk.NIMClient
-
 
 
 object AuthManager {
@@ -106,7 +104,7 @@ object AuthManager {
      * 假登录获取本地数据
      */
     fun fakeLogin() {
-        val account = SPUtils.getInstance().getString(CommonParams.SP_UNAME)
+        val account = getUserAccount().first
         if (!TextUtils.isEmpty(account)) {
             NIMClient.getService(AuthService::class.java).openLocalCache(account)
         }
@@ -186,9 +184,32 @@ object AuthManager {
      */
     fun logout() {
         // 清除用户登录信息
-        SPUtils.getInstance().remove(CommonParams.SP_UNAME)
-        SPUtils.getInstance().remove(CommonParams.SP_PWD)
+        setUserAccount(null, null)
 
         NIMClient.getService(AuthService::class.java).logout()
+    }
+
+    /**
+     * 设置用户信息
+     */
+    fun setUserAccount(accid: String?, token: String?) {
+        if (TextUtils.isEmpty(accid) || TextUtils.isEmpty(token)) {
+            // 清除用户登录信息
+            SPUtils.getInstance().remove(CommonParams.SP_ACCID)
+            SPUtils.getInstance().remove(CommonParams.SP_TOKEN)
+        }
+        else {
+            SPUtils.getInstance().put(CommonParams.SP_ACCID, accid)
+            SPUtils.getInstance().put(CommonParams.SP_TOKEN, token)
+        }
+    }
+
+    /**
+     * 获取用户信息
+     */
+    fun getUserAccount(): Pair<String, String> {
+        val accid = SPUtils.getInstance().getString(CommonParams.SP_ACCID)
+        val token = SPUtils.getInstance().getString(CommonParams.SP_TOKEN)
+        return Pair(accid, token)
     }
 }

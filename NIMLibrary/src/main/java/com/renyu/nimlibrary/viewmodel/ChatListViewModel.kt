@@ -6,10 +6,12 @@ import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.content.Intent
 import android.view.View
+import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.binding.EventImpl
+import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
@@ -42,6 +44,16 @@ class ChatListViewModel : ViewModel(), EventImpl {
             else {
                 Repos.queryRecentContacts()
             }
+        }
+    }
+
+    /**
+     * 每个页面都要判断登录状态
+     */
+    fun signIn() {
+        if (AuthManager.getStatus() != StatusCode.LOGINED) {
+            AuthManager.login(AuthManager.getUserAccount().first,
+                    AuthManager.getUserAccount().second)
         }
     }
 

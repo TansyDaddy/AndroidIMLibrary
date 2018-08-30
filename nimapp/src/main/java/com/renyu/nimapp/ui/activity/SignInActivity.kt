@@ -8,18 +8,17 @@ import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import com.blankj.utilcode.util.SPUtils
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.renyu.nimapp.R
-import com.renyu.nimlibrary.bean.Resource
-import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimapp.databinding.ActivitySigninBinding
 import com.renyu.nimapp.params.InitParams
 import com.renyu.nimapp.util.string.MD5
 import com.renyu.nimapp.viewmodel.SignInViewModel
 import com.renyu.nimlibrary.BR
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.binding.EventImpl
-import com.renyu.nimlibrary.params.CommonParams
+import com.renyu.nimlibrary.manager.AuthManager
 import kotlinx.android.synthetic.main.activity_signin.*
 import org.jetbrains.anko.toast
 
@@ -43,8 +42,7 @@ class SignInActivity : AppCompatActivity(), EventImpl {
                     }
                     Status.SUCESS -> {
                         // 用户登录信息
-                        SPUtils.getInstance().put(CommonParams.SP_UNAME, t.data?.account)
-                        SPUtils.getInstance().put(CommonParams.SP_PWD, t.data?.token)
+                        AuthManager.setUserAccount(t.data?.account, t.data?.token)
 
                         // 登录成功跳转首页
                         val intent = Intent(this@SignInActivity, SplashActivity::class.java)
@@ -62,8 +60,8 @@ class SignInActivity : AppCompatActivity(), EventImpl {
                 }
             })
 
-            ed_username.setText(SPUtils.getInstance().getString(CommonParams.SP_UNAME))
-            ed_pwd.setText(SPUtils.getInstance().getString(CommonParams.SP_PWD))
+            ed_username.setText(AuthManager.getUserAccount().first)
+            ed_pwd.setText(AuthManager.getUserAccount().second)
         }
     }
 
