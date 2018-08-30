@@ -152,6 +152,7 @@ object AuthManager {
      * 登录
      */
     fun login(account: String, token: String, requestCallback: RequestCallback<LoginInfo>): AbortableFuture<out Any> {
+        NIMClient.getService(AuthService::class.java).logout()
         val loginRequest = NIMClient.getService(AuthService::class.java)
                 .login(LoginInfo(account, token))
         loginRequest.setCallback(requestCallback)
@@ -162,6 +163,7 @@ object AuthManager {
      * 登录
      */
     fun login(account: String, token: String) {
+        NIMClient.getService(AuthService::class.java).logout()
         NIMClient.getService(AuthService::class.java).login(LoginInfo(account, token))
     }
 
