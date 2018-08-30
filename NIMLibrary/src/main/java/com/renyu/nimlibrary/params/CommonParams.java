@@ -23,4 +23,6 @@ public class CommonParams {
 
     // 发出"正在输入提示"指令
     public static final String COMMAND_INPUT = "command_input";
+    // 发出用户来源信息
+    public static final String COMMAND_USERFROM = "command_userfrom";
 }

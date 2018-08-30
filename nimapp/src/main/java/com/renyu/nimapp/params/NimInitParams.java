@@ -8,7 +8,7 @@ import com.renyu.nimlibrary.util.RxBus;
 /**
  * 参数配置位置，因为通过反射，所以一定要类名位置写对
  */
-public class InitParams {
+public class NimInitParams {
     // 自定义的会话详情activity
     public static String ConversationActivityName = "com.renyu.nimapp.ui.activity.ConversationActivity";
     // 自定义的通知处理activity

@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.netease.nimlib.sdk.NimIntent
 import com.netease.nimlib.sdk.msg.model.IMMessage
-import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.params.NimInitParams
 import java.util.*
 
 class NotificationActivity : AppCompatActivity() {
@@ -22,7 +22,7 @@ class NotificationActivity : AppCompatActivity() {
         else {
             if (messages is ArrayList<*> && messages.size>0 && messages[0] is IMMessage) {
                 // 如果App没有退出
-                if (InitParams.isFirst) {
+                if (NimInitParams.isFirst) {
                     // 跳转到会话详情
                     val conversationIntent = Intent(this, ConversationActivity::class.java)
                     conversationIntent.putExtra("account", (messages[0] as IMMessage).sessionId)

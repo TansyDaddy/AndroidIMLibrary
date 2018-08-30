@@ -349,7 +349,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             case CONN:
                 // 根据主叫或者被叫区分默认点击功能
                 try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         if (impl != null) {
@@ -372,7 +372,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             case PEER_HANG_UP:
                 // 根据主叫或者被叫区分默认点击功能
                 try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         if (impl != null) {
@@ -416,7 +416,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             default:
                 // 根据主叫或者被叫区分默认点击功能
                 try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         if (impl != null) {
@@ -454,7 +454,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case PEER_HANG_UP:
                 try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
@@ -484,7 +484,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             default:
                 // 根据主叫或者被叫区分默认点击功能
                 try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.InitParams");
+                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
                     boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
                     if (!isAgent) {
                         manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));

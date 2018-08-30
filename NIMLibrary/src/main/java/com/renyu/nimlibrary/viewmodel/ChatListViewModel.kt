@@ -120,7 +120,7 @@ class ChatListViewModel : ViewModel(), EventImpl {
     override fun gotoConversationActivity(view: View, account: String) {
         super.gotoConversationActivity(view, account)
         try {
-            val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+            val clazz = Class.forName("com.renyu.nimapp.params.NimInitParams")
             val conversationActivityName = clazz.getField("ConversationActivityName").get(clazz).toString()
             val conversationClass = Class.forName(conversationActivityName)
 

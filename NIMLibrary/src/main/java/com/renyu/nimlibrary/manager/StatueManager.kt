@@ -62,7 +62,7 @@ object StatueManager {
                         CommonParams.isKickout = true
 
                         // 第三方框架自行处理踢下线方法
-                        val clazz = Class.forName("com.renyu.nimapp.params.InitParams")
+                        val clazz = Class.forName("com.renyu.nimapp.params.NimInitParams")
                         val kickoutFuncMethod = clazz.getDeclaredMethod("kickoutFunc")
                         kickoutFuncMethod.invoke(null)
                     }

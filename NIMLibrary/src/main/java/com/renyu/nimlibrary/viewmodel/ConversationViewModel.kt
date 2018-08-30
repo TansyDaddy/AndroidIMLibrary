@@ -576,6 +576,24 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
+     * 发送用户来源信息
+     */
+    fun sendUserInfoCommand() {
+        val command = CustomNotification()
+        command.sessionId = account
+        command.sessionType = sessionType
+        command.isSendToOnlineUserOnly = false
+        val config = CustomNotificationConfig()
+        config.enablePush = false
+        config.enableUnreadCount = false
+        command.config = config
+        val json = JSONObject()
+        json.put(CommonParams.TYPE, CommonParams.COMMAND_USERFROM)
+        command.content = json.toString()
+        MessageManager.sendCustomNotification(command)
+    }
+
+    /**
      * 消息排序
      */
     private fun sortMessages(list: List<IMMessage>) {

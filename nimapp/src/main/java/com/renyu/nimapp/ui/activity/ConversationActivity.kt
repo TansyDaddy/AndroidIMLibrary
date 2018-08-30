@@ -11,7 +11,7 @@ import com.blankj.utilcode.util.BarUtils
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
 import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem
@@ -120,7 +120,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
-            InitParams.isRestore = true
+            NimInitParams.isRestore = true
         }
 
         super.onCreate(savedInstanceState)
@@ -132,7 +132,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
      * 加载Fragment
      */
     private fun loadFragment(intent: Intent) {
-        val cards = if (InitParams.isAgent) {
+        val cards = if (NimInitParams.isAgent) {
             arrayOf(ConversationFragment.ConversationCard.ALUMNI,
                     ConversationFragment.ConversationCard.CAMERA,
                     ConversationFragment.ConversationCard.HOUSE,

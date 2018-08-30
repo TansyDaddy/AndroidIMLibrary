@@ -3,7 +3,7 @@ package com.renyu.nimapp.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.util.RxBus
@@ -34,7 +34,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun jumpToSignIn() {
         val intent = Intent(this, SplashActivity::class.java)
-        intent.putExtra(InitParams.TYPE, InitParams.KICKOUT)
+        intent.putExtra(NimInitParams.TYPE, NimInitParams.KICKOUT)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         startActivity(intent)
         finish()

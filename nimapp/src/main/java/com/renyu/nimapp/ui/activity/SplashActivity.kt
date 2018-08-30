@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.InitParams
+import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.params.CommonParams
 
@@ -15,17 +15,17 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        InitParams.isFirst = true
+        NimInitParams.isFirst = true
 
         if (CommonParams.isKickout) {
             CommonParams.isKickout = false
             // 重置回收标志位
-            InitParams.isRestore = false
+            NimInitParams.isRestore = false
         }
 
         // 发生回收，若执行返回操作则执行页面关闭
-        if (InitParams.isRestore) {
-            InitParams.isFirst = false
+        if (NimInitParams.isRestore) {
+            NimInitParams.isFirst = false
             finish()
             return
         }
@@ -45,24 +45,24 @@ class SplashActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         // 重置回收标志位
-        InitParams.isRestore = false
+        NimInitParams.isRestore = false
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.FINISH) {
-            InitParams.isFirst = false
+        if (intent.getIntExtra(NimInitParams.TYPE, -1) == NimInitParams.FINISH) {
+            NimInitParams.isFirst = false
             finish()
         }
-        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.KICKOUT) {
+        if (intent.getIntExtra(NimInitParams.TYPE, -1) == NimInitParams.KICKOUT) {
             CommonParams.isKickout = false
             startActivity(Intent(this@SplashActivity, SignInActivity::class.java))
         }
-        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.SIGNINBACK) {
-            InitParams.isFirst = false
+        if (intent.getIntExtra(NimInitParams.TYPE, -1) == NimInitParams.SIGNINBACK) {
+            NimInitParams.isFirst = false
             finish()
         }
-        if (intent.getIntExtra(InitParams.TYPE, -1) == InitParams.MAIN) {
+        if (intent.getIntExtra(NimInitParams.TYPE, -1) == NimInitParams.MAIN) {
             startActivity(Intent(this@SplashActivity, ChatListActivity::class.java))
         }
     }
