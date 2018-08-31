@@ -17,6 +17,7 @@ import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
+import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -129,6 +130,7 @@ class ChatListViewModel : ViewModel(), EventImpl {
             val intent = Intent(view.context, conversationClass)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
+            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.UNSPECIFIED)
             view.context.startActivity(intent)
         }
         catch (e:ClassNotFoundException) {

@@ -16,12 +16,10 @@ import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.*
-import com.renyu.nimlibrary.bean.HouseItem
-import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.ObserveResponseType
-import com.renyu.nimlibrary.bean.VRItem
+import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.extension.CustomAttachParser
 import com.renyu.nimlibrary.extension.HouseAttachment
+import com.renyu.nimlibrary.extension.UserInfoAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.util.RxBus
 import java.io.File
@@ -334,7 +332,6 @@ object MessageManager {
         NIMClient.getService(MsgService::class.java).saveMessageToLocal(imMessage, true)
     }
 
-
     /**
      * 发送VR消息
      */
@@ -347,9 +344,26 @@ object MessageManager {
     /**
      * 发送楼盘卡片
      */
-    fun sendHouseCardMessage(houseItem: HouseItem, content: String) {
+    fun sendHouseCardMessage(houseItem: HouseItem, content: String): IMMessage {
         val attachment = HouseAttachment(houseItem.houseJson)
-        MessageManager.sendCustomMessage("r17171709", content, attachment)
+        return MessageManager.sendCustomMessage("r17171709", content, attachment)
+    }
+
+    /**
+     * 发送用户信息卡片
+     */
+    fun sendUserInfoMessage(userInfoItem: UserInfoItem, content: String): IMMessage {
+        val attachment = UserInfoAttachment(userInfoItem.userInfoJson)
+        return MessageManager.sendCustomMessage("r17171709", content, attachment)
+    }
+
+    /**
+     * 发送自定义Message
+     */
+    fun sendCustomMessage(account: String, content: String, attachment: MsgAttachment): IMMessage {
+        val message = MessageBuilder.createCustomMessage(account, SessionTypeEnum.P2P, content, attachment)
+        sendMessage(message, false)
+        return message
     }
 
     /**
@@ -363,15 +377,6 @@ object MessageManager {
         config.enableUnreadCount = false
         message.config = config
         NIMClient.getService(MsgService::class.java).saveMessageToLocalEx(message, true, imMessage.time)
-    }
-
-    /**
-     * 发送自定义Message
-     */
-    fun sendCustomMessage(account: String, content: String, attachment: MsgAttachment): IMMessage {
-        val message = MessageBuilder.createCustomMessage(account, SessionTypeEnum.P2P, content, attachment)
-        sendMessage(message, false)
-        return message
     }
 
     /**

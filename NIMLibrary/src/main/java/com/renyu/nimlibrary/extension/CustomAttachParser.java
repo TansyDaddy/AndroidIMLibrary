@@ -44,6 +44,9 @@ public class CustomAttachParser implements MsgAttachmentParser {
                 case CustomAttachmentType.HOUSE:
                     attachment = new HouseAttachment();
                     break;
+                case CustomAttachmentType.USERINFO:
+                    attachment = new UserInfoAttachment();
+                    break;
                 default:
                     attachment = new DefaultCustomAttachment();
                     break;

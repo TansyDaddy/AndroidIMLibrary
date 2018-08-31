@@ -11,8 +11,11 @@ class DetailActivity : BaseActivity() {
 
         // 客户从VR看房模块进入IM，需要发送卡片
         if (!NimInitParams.isAgent) {
-//            ConversationActivity.gotoConversationActivityWithCard(this, "r17171709")
-            ConversationActivity.gotoConversationActivityWithVR(this, "r17171709")
+//            ConversationActivity.gotoConversationActivityWithVR(this, "r17171709")
+//            ConversationActivity.gotoConversationActivityWithTip(this, "r17171709", "r17171709正在为您服务")
+//            ConversationActivity.gotoConversationActivityWithCard(this, "r17171709", "r17171709正在为您服务")
+            ConversationActivity.gotoConversationActivityWithUserInfo(this, "r17171709", "r17171709正在为您服务")
         }
+        finish()
     }
 }

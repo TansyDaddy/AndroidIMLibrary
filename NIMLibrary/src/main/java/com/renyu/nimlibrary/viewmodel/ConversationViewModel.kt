@@ -28,6 +28,7 @@ import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.manager.BaseAVManager
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
+import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.StickerItem
@@ -231,8 +232,8 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 消息发送后同步会话列表
      */
-    fun refreshSendIMMessage(imMessage: IMMessage) {
-        messages.add(imMessage)
+    fun refreshSendIMMessage(vararg imMessages: IMMessage) {
+        messages.addAll(imMessages)
         adapter.updateShowTimeItem(messages, false, true)
         adapter.notifyItemInserted(messages.size - 1)
     }
@@ -557,6 +558,16 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
+     * 准备楼盘卡片消息
+     */
+    fun prepareHouseCard(houseItem: HouseItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendHouseCardMessage(houseItem, houseItem.houseJson)
+    }
+
+    /**
      * 发送“正在输入”通知
      */
     fun sendTypingCommand() {
@@ -575,24 +586,6 @@ class ConversationViewModel(private val account: String, private val sessionType
             command.content = json.toString()
             MessageManager.sendCustomNotification(command)
         }
-    }
-
-    /**
-     * 发送用户来源信息
-     */
-    fun sendUserInfoCommand() {
-        val command = CustomNotification()
-        command.sessionId = account
-        command.sessionType = sessionType
-        command.isSendToOnlineUserOnly = false
-        val config = CustomNotificationConfig()
-        config.enablePush = false
-        config.enableUnreadCount = false
-        command.config = config
-        val json = JSONObject()
-        json.put(CommonParams.TYPE, CommonParams.COMMAND_USERFROM)
-        command.content = json.toString()
-        MessageManager.sendCustomNotification(command)
     }
 
     /**

@@ -28,12 +28,14 @@ import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
+import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.extension.HouseAttachment
 import com.renyu.nimlibrary.extension.StickerAttachment
+import com.renyu.nimlibrary.extension.UserInfoAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
@@ -139,25 +141,31 @@ object BindingAdapters {
     }
 
     @JvmStatic
-    @BindingAdapter(value = ["emojiTextWithAttachment", "attachment"])
-    fun loadEmojiTextWithAttachment(textView: SimpleDraweeSpanTextView, text: String, attachment: MsgAttachment?) {
+    @BindingAdapter(value = ["recentContact"])
+    fun loadEmojiTextWithAttachment(textView: SimpleDraweeSpanTextView, recentContact: RecentContact) {
         // 如果是自定义消息中的贴图消息
-        if (attachment != null && attachment is StickerAttachment) {
+        if (recentContact.attachment != null && recentContact.attachment is StickerAttachment) {
             textView.text = "[贴图]"
             return
         }
         // 如果是自定义消息中的VR消息
-        if (attachment != null && attachment is VRAttachment) {
+        if (recentContact.attachment != null && recentContact.attachment is VRAttachment) {
             textView.text = "[VR带看]"
             return
         }
-        // 如果是自定义消息中的VR消息
-        if (attachment != null && attachment is HouseAttachment) {
-            val jsonObject = JSONObject(attachment.houseJson)
+        // 如果是自定义消息中的楼盘卡片消息
+        if (recentContact.attachment != null && recentContact.attachment is HouseAttachment) {
+            val jsonObject = JSONObject((recentContact.attachment as HouseAttachment).houseJson)
             textView.text = "[${jsonObject.getString("houseTitle")}]"
             return
         }
-        EmojiUtils.replaceFaceMsgByFresco(textView, text)
+        // 如果是自定义消息中的用户信息
+        if (recentContact.attachment != null && recentContact.attachment is UserInfoAttachment) {
+            val jsonObject = JSONObject((recentContact.attachment as UserInfoAttachment).userInfoJson)
+            textView.text = "${jsonObject.getString("userInfo")}"
+            return
+        }
+        EmojiUtils.replaceFaceMsgByFresco(textView, recentContact.content)
     }
 
     @JvmStatic
@@ -376,6 +384,19 @@ object BindingAdapters {
         try {
             val jsonObject = JSONObject(houseJson)
             textView.text = jsonObject.getString("houseTitle")
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListUserInfoTitle"])
+    fun loadChatListUserInfoTitle(textView: TextView, imMessage: IMMessage) {
+        val attachment = imMessage.attachment as UserInfoAttachment
+        val userInfoJson = attachment.userInfoJson
+        try {
+            val jsonObject = JSONObject(userInfoJson)
+            textView.text = jsonObject.getString("userInfo")
         } catch (e: Exception) {
 
         }
