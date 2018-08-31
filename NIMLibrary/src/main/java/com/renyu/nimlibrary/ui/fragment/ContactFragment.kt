@@ -1,15 +1,16 @@
 package com.renyu.nimlibrary.ui.fragment
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.netease.nimlib.sdk.friend.model.BlackListChangedNotify
 import com.netease.nimlib.sdk.friend.model.FriendChangedNotify
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
@@ -26,6 +27,20 @@ class ContactFragment : Fragment() {
     var vm: ContactViewModel? = null
 
     private var disposable: Disposable? = null
+
+    private var contactListener: ContactListener? = null
+    // 使用到的相关接口
+    interface ContactListener {
+        // 打开个人详情
+        fun gotoUserInfo(account: String)
+        // 联系人列表点击
+        fun clickContact(nimUserInfo: NimUserInfo)
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        contactListener = context as ContactListener
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewDataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_contact, container, false)
@@ -55,14 +70,8 @@ class ContactFragment : Fragment() {
                     }
                 }
                 .subscribe()
-    }
 
-    override fun onResume() {
-        super.onResume()
-
-        Handler().postDelayed({
-            vm!!.getUserInfoOfMyFriends()
-        }, 250)
+        vm!!.getUserInfoOfMyFriends()
     }
 
     override fun onDestroyView() {

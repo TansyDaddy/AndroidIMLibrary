@@ -1,26 +1,29 @@
 package com.renyu.nimlibrary.viewmodel
 
 import android.arch.lifecycle.ViewModel
+import android.view.View
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.friend.model.BlackListChangedNotify
 import com.netease.nimlib.sdk.friend.model.FriendChangedNotify
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.FriendManager
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.ui.adapter.ContactAdapter
+import com.renyu.nimlibrary.ui.fragment.ContactFragment
 import com.renyu.nimlibrary.util.RxBus
 
-class ContactViewModel : ViewModel() {
+class ContactViewModel : ViewModel(), EventImpl {
 
-    private val userInfos: ArrayList<NimUserInfo> by lazy {
-        ArrayList<NimUserInfo>()
+    private val userInfos: ArrayList<Any> by lazy {
+        ArrayList<Any>()
     }
 
     val adapter: ContactAdapter by lazy {
-        ContactAdapter(userInfos)
+        ContactAdapter(userInfos, this)
     }
 
     /**
@@ -34,8 +37,31 @@ class ContactViewModel : ViewModel() {
         // 去除自己
         accounts.remove(AuthManager.getUserAccount().first)
         userInfos.clear()
-        userInfos.addAll(UserManager.getUserInfoList(accounts))
+        prepareData(UserManager.getUserInfoList(accounts))
         adapter.notifyDataSetChanged()
+    }
+
+    /**
+     * 数据排序
+     */
+    private fun prepareData(nimUserInfos: List<NimUserInfo>) {
+        // 找到所有描述内容
+        val desp: ArrayList<String> = ArrayList()
+        nimUserInfos.forEach {
+            if (!desp.contains(it.account[0].toString())) {
+                desp.add(it.account[0].toString())
+            }
+        }
+        // 排序
+        desp.forEach {
+            val de = it
+            userInfos.add(it)
+            nimUserInfos.filter {
+                it.account[0].toString() == de
+            }.forEach {
+                userInfos.add(it)
+            }
+        }
     }
 
     /**
@@ -47,37 +73,49 @@ class ContactViewModel : ViewModel() {
         // 返回被删除的的好友关系
         val deletedFriendAccounts = notify.deletedFriends
 
+        val temp: ArrayList<NimUserInfo> = ArrayList()
+        userInfos.filter {
+            it is NimUserInfo
+        }.forEach {
+            temp.add(it as NimUserInfo)
+        }
+
         // 删除不是好友的账号
         val deleteFriends = ArrayList<NimUserInfo>()
-        userInfos.forEach {
+        temp.forEach {
             if (deletedFriendAccounts.contains(it.account)) {
                 deleteFriends.add(it)
             }
         }
-        userInfos.removeAll(deleteFriends)
+        temp.removeAll(deleteFriends)
 
         // 去除需要更新的老账号
         val sameFriends = ArrayList<NimUserInfo>()
         addedOrUpdatedFriends.forEach {
-            userInfos.forEach find@ { userInfo ->
+            temp.forEach find@ { userInfo ->
                 if (userInfo.account == it.account) {
                     sameFriends.add(userInfo)
                     return@find
                 }
             }
         }
-        userInfos.removeAll(sameFriends)
+        temp.removeAll(sameFriends)
+
         // 添加新好友
         addedOrUpdatedFriends.forEach {
             val userInfo = UserManager.getUserInfo(it.account)
             // 本地缓存中有好友信息，则直接获取，否则从云端获取
             if (userInfo != null) {
-                userInfos.add(userInfo)
+                temp.add(userInfo)
             }
             else {
                 addNewFriendInfoByNetWork(it.account)
             }
         }
+
+        userInfos.clear()
+        prepareData(temp)
+
         adapter.notifyDataSetChanged()
     }
 
@@ -90,26 +128,37 @@ class ContactViewModel : ViewModel() {
         // 移出黑名单的用户账号
         val removedAccounts = notify.removedAccounts
 
+        val temp: ArrayList<NimUserInfo> = ArrayList()
+        userInfos.filter {
+            it is NimUserInfo
+        }.forEach {
+            temp.add(it as NimUserInfo)
+        }
+
         // 删除添加到黑名单的账号
         val deleteFriends = ArrayList<NimUserInfo>()
-        userInfos.filter {
+        temp.filter {
             addedAccounts.contains(it.account)
         }.forEach {
             deleteFriends.add(it)
         }
-        userInfos.removeAll(deleteFriends)
+        temp.removeAll(deleteFriends)
 
         // 添加移出黑名单的账号
         removedAccounts.forEach {
             val userInfo = UserManager.getUserInfo(it)
             // 本地缓存中有好友信息，则直接获取，否则从云端获取
             if (userInfo != null) {
-                userInfos.add(userInfo)
+                temp.add(userInfo)
             }
             else {
                 addNewFriendInfoByNetWork(it)
             }
         }
+
+        userInfos.clear()
+        prepareData(temp)
+
         adapter.notifyDataSetChanged()
     }
 
@@ -122,9 +171,19 @@ class ContactViewModel : ViewModel() {
         UserManager.fetchUserInfo(arrayList, object : RequestCallback<List<NimUserInfo>> {
             override fun onSuccess(param: List<NimUserInfo>?) {
                 if (param?.size != 0) {
-                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfoByContact))
+                    RxBus.getDefault().post(ObserveResponse(param, ObserveResponseType.FetchUserInfo))
                     if (param != null) {
-                        userInfos.addAll(param)
+                        val temp: ArrayList<NimUserInfo> = ArrayList()
+                        userInfos.filter {
+                            it is NimUserInfo
+                        }.forEach {
+                            temp.add(it as NimUserInfo)
+                        }
+                        temp.addAll(param)
+
+                        userInfos.clear()
+                        prepareData(temp)
+
                         adapter.notifyDataSetChanged()
                     }
                 }
@@ -138,5 +197,21 @@ class ContactViewModel : ViewModel() {
 
             }
         })
+    }
+
+    /**
+     * 打开个人详情
+     */
+    override fun gotoUserInfo(view: View, account: String) {
+        super.gotoUserInfo(view, account)
+        (view.context as ContactFragment.ContactListener).gotoUserInfo(account)
+    }
+
+    /**
+     * 联系人列表点击
+     */
+    override fun clickContact(view: View, nimUserInfo: NimUserInfo) {
+        super.clickContact(view, nimUserInfo)
+        (view.context as ContactFragment.ContactListener).clickContact(nimUserInfo)
     }
 }

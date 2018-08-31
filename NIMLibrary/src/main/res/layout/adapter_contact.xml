@@ -4,7 +4,10 @@
     <data>
         <variable
             name="nimUserInfo"
-            type="com.netease.nimlib.sdk.uinfo.model.NimUserInfo"></variable>
+            type="com.netease.nimlib.sdk.uinfo.model.NimUserInfo" />
+        <variable
+            name="eventImpl"
+            type="com.renyu.nimlibrary.binding.EventImpl" />
     </data>
     <LinearLayout
         android:orientation="vertical"
@@ -17,12 +20,14 @@
             android:layout_height="55dip"
             android:background="@android:color/white"
             android:gravity="center_vertical"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:onClick="@{(view) -> eventImpl.clickContact(view, nimUserInfo)}">
             <RelativeLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dip"
-                android:layout_marginEnd="10dip">
+                android:layout_marginEnd="10dip"
+                android:onClick="@{(view) -> eventImpl.gotoUserInfo(view, nimUserInfo.getAccount())}">
                 <com.facebook.drawee.view.SimpleDraweeView xmlns:fresco="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/iv_adapter_friendlist"
                     android:layout_width="40dip"

@@ -2,6 +2,7 @@ package com.renyu.nimlibrary.binding
 
 import android.view.View
 import com.netease.nimlib.sdk.msg.model.IMMessage
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 
 interface EventImpl {
     fun click(view: View) {}
@@ -37,4 +38,7 @@ interface EventImpl {
 
     // 打开房源卡片
     fun openHouseCard(view: View, imMessage: IMMessage) {}
+
+    // 点击联系人列表
+    fun clickContact(view: View, nimUserInfo: NimUserInfo) {}
 }

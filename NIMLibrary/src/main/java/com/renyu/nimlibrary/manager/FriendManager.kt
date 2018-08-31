@@ -1,5 +1,6 @@
 package com.renyu.nimlibrary.manager
 
+import android.util.Log
 import android.widget.Toast
 import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.NIMClient
@@ -15,12 +16,16 @@ import com.renyu.nimlibrary.util.RxBus
 
 
 object FriendManager {
+
+    /**
+     * 添加黑名单
+     */
     fun addToBlackList(account: String) {
         NIMClient.getService(FriendService::class.java)
                 .addToBlackList(account)
                 .setCallback(object : RequestCallback<Void> {
                     override fun onSuccess(param: Void?) {
-
+                        Log.d("NIM_APP", "${account}已被添加到黑名单")
                     }
 
                     override fun onFailed(code: Int) {
@@ -33,12 +38,15 @@ object FriendManager {
                 })
     }
 
+    /**
+     * 移除黑名单
+     */
     fun removeFromBlackList(account: String) {
         NIMClient.getService(FriendService::class.java)
                 .removeFromBlackList(account)
                 .setCallback(object : RequestCallback<Void> {
                     override fun onSuccess(param: Void?) {
-
+                        Log.d("NIM_APP", "${account}已从黑名单中移除")
                     }
 
                     override fun onFailed(code: Int) {

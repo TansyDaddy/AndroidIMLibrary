@@ -11,7 +11,6 @@ enum class ObserveResponseType {
     UserInfoUpdate,
     // 从服务器获取用户资料
     FetchUserInfo,
-    FetchUserInfoByContact,
     // 用户发送的消息状态
     MsgStatus,
     // 用户收到的消息
