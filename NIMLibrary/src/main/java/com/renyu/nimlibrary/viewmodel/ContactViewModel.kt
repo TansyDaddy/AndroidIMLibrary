@@ -35,7 +35,7 @@ class ContactViewModel : ViewModel(), EventImpl {
         // 去除黑名单用户
         accounts.removeAll(blacks)
         // 去除自己
-        accounts.remove(AuthManager.getUserAccount().first)
+        accounts.remove(UserManager.getUserAccount().first)
         userInfos.clear()
         prepareData(UserManager.getUserInfoList(accounts))
         adapter.notifyDataSetChanged()

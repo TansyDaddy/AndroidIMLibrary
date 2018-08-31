@@ -48,11 +48,15 @@ import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import kotlin.Triple;
 
 public abstract class BaseAVChatActivity extends AppCompatActivity implements BaseAVManager.AVChatTypeListener, BaseAVManager.AVChatMuteListener {
 
@@ -338,6 +342,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      * @param avChatTypeEnum
      */
     public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
+        boolean isAgent = getUserRole() == 1;
         switch (avChatTypeEnum) {
             case CALLEE_ACK_REQUEST:
                 if (impl != null) {
@@ -348,20 +353,14 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case CONN:
                 // 根据主叫或者被叫区分默认点击功能
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击挂断");
-                        }
-                    } else {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("正在被叫，点击挂断");
-                        }
+                if (!isAgent) {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击挂断");
                     }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                } else {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("正在被叫，点击挂断");
+                    }
                 }
                 break;
             case CONFIG_ERROR:
@@ -371,21 +370,15 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case PEER_HANG_UP:
                 // 根据主叫或者被叫区分默认点击功能
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击呼叫");
-                        }
-                    } else {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
-                        }
-                        endAVChatConfig();
+                if (!isAgent) {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击呼叫");
                     }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                } else {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
+                    }
+                    endAVChatConfig();
                 }
                 break;
             case PEER_NO_RESPONSE:
@@ -415,20 +408,14 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             default:
                 // 根据主叫或者被叫区分默认点击功能
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("点击呼叫");
-                        }
-                    } else {
-                        if (impl != null) {
-                            ((WebAppInterface) impl).updateVRStatus("暂无连接，点击关闭");
-                        }
+                if (!isAgent) {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("点击呼叫");
                     }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                } else {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("暂无连接，点击关闭");
+                    }
                 }
         }
     }
@@ -437,6 +424,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      * 根据状态刷新点击事件
      */
     public void chatTypeChangeClick() {
+        boolean isAgent = getUserRole() == 1;
         switch (avChatType) {
             case CALLEE_ACK_REQUEST:
                 if (impl != null) {
@@ -453,16 +441,10 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 finish();
                 break;
             case PEER_HANG_UP:
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
-                    } else {
-                        finish();
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                if (!isAgent) {
+                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                } else {
+                    finish();
                 }
                 break;
             case PEER_NO_RESPONSE:
@@ -483,16 +465,10 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             default:
                 // 根据主叫或者被叫区分默认点击功能
-                try {
-                    Class clazz = Class.forName("com.renyu.nimapp.params.NimInitParams");
-                    boolean isAgent = Boolean.parseBoolean(clazz.getField("isAgent").get(clazz).toString());
-                    if (!isAgent) {
-                        manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
-                    } else {
-                        finish();
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
+                if (!isAgent) {
+                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                } else {
+                    finish();
                 }
         }
     }
@@ -621,5 +597,37 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         }
         // 如果API是21以下的话,在for循环结束后加
         CookieSyncManager.getInstance().sync();
+    }
+
+    /**
+     * 获取当前登录用户角色
+     * @return
+     */
+    public Integer getUserRole() {
+        try {
+            Class userManager = Class.forName("com.renyu.nimlibrary.manager.UserManager");
+            Method getUserAccount = userManager.getDeclaredMethod("getUserAccount");
+            getUserAccount.setAccessible(true);
+            Triple triple = (Triple) getUserAccount.invoke(userManager);
+            triple.getThird();
+
+            Class userRole = Class.forName("com.renyu.nimlibrary.manager.UserManager$UserRole");
+            Method getRole = userRole.getDeclaredMethod("getRole");
+            getRole.setAccessible(true);
+            Integer integer = (Integer) getRole.invoke(triple.getThird());
+            if (integer == 0) {
+                Log.d("NIM_AV_APP", "未知");
+            }
+            if (integer == 1) {
+                Log.d("NIM_AV_APP", "经纪人");
+            }
+            if (integer == 2) {
+                Log.d("NIM_AV_APP", "客户");
+            }
+            return integer;
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

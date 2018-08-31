@@ -1,9 +1,13 @@
 package com.renyu.nimapp.params;
 
+import android.os.Environment;
+
 import com.renyu.nimapp.R;
 import com.renyu.nimlibrary.bean.ObserveResponse;
 import com.renyu.nimlibrary.bean.ObserveResponseType;
 import com.renyu.nimlibrary.util.RxBus;
+
+import java.io.File;
 
 /**
  * 参数配置位置，因为通过反射，所以一定要类名位置写对
@@ -26,8 +30,9 @@ public class NimInitParams {
     // 华为参数配置
     public static String hwCertificateName = "nimhuawei";
 
-    // 是否为经纪人（区分租售宝和淘房）
-    public static boolean isAgent = true;
+    // SDK根目录路径
+    public static final String SDKROOT = Environment.getExternalStorageDirectory().getPath() + File.separator + "example";
+    public static final String databaseEncryptKey = "house365";
 
     // 自定义的踢下线逻辑
     public static void kickoutFunc() {
@@ -50,4 +55,7 @@ public class NimInitParams {
     public static final int SIGNINBACK = 3;
     // 去主页
     public static final int MAIN = 4;
+
+    // 是否为经纪人（区分租售宝和淘房）
+    public static boolean isAgent = false;
 }

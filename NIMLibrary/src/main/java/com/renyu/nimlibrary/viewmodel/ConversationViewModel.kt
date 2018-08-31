@@ -36,6 +36,7 @@ import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
+import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.activity.MapPreviewActivity
@@ -94,8 +95,8 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     fun signIn() {
         if (AuthManager.getStatus() != StatusCode.LOGINED && NetworkUtils.isConnected()) {
-            AuthManager.login(AuthManager.getUserAccount().first,
-                    AuthManager.getUserAccount().second)
+            AuthManager.login(UserManager.getUserAccount().first,
+                    UserManager.getUserAccount().second)
         }
     }
 
@@ -345,7 +346,7 @@ class ConversationViewModel(private val account: String, private val sessionType
         MessageManager.revokeMessage(imMessage, object : RequestCallback<Void> {
             override fun onSuccess(param: Void?) {
                 deleteItem(imMessage, false)
-                val revokeNick = if (imMessage.fromAccount == AuthManager.getUserAccount().first) "你" else "对方"
+                val revokeNick = if (imMessage.fromAccount == UserManager.getUserAccount().first) "你" else "对方"
                 MessageManager.sendRevokeMessage(imMessage, revokeNick + "撤回了一条消息")
             }
 

@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.NimInitParams
-import com.renyu.nimlibrary.manager.AuthManager
+import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.params.CommonParams
 
 class SplashActivity : AppCompatActivity() {
@@ -30,8 +30,8 @@ class SplashActivity : AppCompatActivity() {
             return
         }
 
-        val accid = AuthManager.getUserAccount().first
-        val token = AuthManager.getUserAccount().second
+        val accid = UserManager.getUserAccount().first
+        val token = UserManager.getUserAccount().second
         // 登录成功跳转首页
         if (!TextUtils.isEmpty(accid) && !TextUtils.isEmpty(token)) {
             startActivity(Intent(this@SplashActivity, ChatListActivity::class.java))

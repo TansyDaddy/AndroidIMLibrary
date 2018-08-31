@@ -1,20 +1,14 @@
 package com.renyu.nimlibrary.params;
 
-import android.os.Environment;
-
-import java.io.File;
-
 /**
  * Created by Administrator on 2018/3/21 0021.
  */
 
 public class CommonParams {
-    // 用户登录、密码信息
+    // 用户登录、密码信息、用户角色
     public static final String SP_ACCID = "sp_accid";
     public static final String SP_TOKEN = "sp_token";
-
-    // SDK根目录路径
-    public static final String SDKROOT = Environment.getExternalStorageDirectory().getPath() + File.separator + "example";
+    public static final String SP_USERROLE = "sp_userrole";
 
     // 是否被踢下线
     public static boolean isKickout = false;

@@ -57,7 +57,7 @@ object StatueManager {
                     if (it.wontAutoLogin()) {
                         Log.d("NIM_APP", "被踢下线")
 
-                        AuthManager.setUserAccount(null, null)
+                        UserManager.setUserAccount(null, null)
 
                         CommonParams.isKickout = true
 

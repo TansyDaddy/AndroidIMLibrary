@@ -14,6 +14,7 @@ import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.MessageManager
+import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
 import java.util.*
@@ -53,8 +54,8 @@ class ChatListViewModel : ViewModel(), EventImpl {
      */
     fun signIn() {
         if (AuthManager.getStatus() != StatusCode.LOGINED && NetworkUtils.isConnected()) {
-            AuthManager.login(AuthManager.getUserAccount().first,
-                    AuthManager.getUserAccount().second)
+            AuthManager.login(UserManager.getUserAccount().first,
+                    UserManager.getUserAccount().second)
         }
     }
 

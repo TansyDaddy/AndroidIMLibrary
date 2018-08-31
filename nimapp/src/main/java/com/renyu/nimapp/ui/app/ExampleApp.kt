@@ -9,7 +9,6 @@ import com.netease.nimlib.sdk.util.NIMUtil
 import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimavchatlibrary.manager.InComingAVManager
 import com.renyu.nimlibrary.manager.AuthManager
-import com.renyu.nimlibrary.params.CommonParams
 
 class ExampleApp : MultiDexApplication() {
     override fun onCreate() {
@@ -26,7 +25,7 @@ class ExampleApp : MultiDexApplication() {
         SDKInitializer.setCoordType(CoordType.BD09LL)
 
         // 初始化云信
-        AuthManager.init(CommonParams.SDKROOT, "house365")
+        AuthManager.init(NimInitParams.SDKROOT, NimInitParams.databaseEncryptKey)
 
         if (NIMUtil.isMainProcess(this)) {
             // 配置基础监听

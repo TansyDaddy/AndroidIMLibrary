@@ -18,7 +18,7 @@ import com.renyu.nimlibrary.BR
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.binding.EventImpl
-import com.renyu.nimlibrary.manager.AuthManager
+import com.renyu.nimlibrary.manager.UserManager
 import kotlinx.android.synthetic.main.activity_signin.*
 import org.jetbrains.anko.toast
 
@@ -42,7 +42,7 @@ class SignInActivity : AppCompatActivity(), EventImpl {
                     }
                     Status.SUCESS -> {
                         // 用户登录信息
-                        AuthManager.setUserAccount(t.data?.account, t.data?.token)
+                        UserManager.setUserAccount(t.data?.account, t.data?.token, if (NimInitParams.isAgent) UserManager.UserRole.AGENT else UserManager.UserRole.CUSTOMER)
 
                         // 登录成功跳转首页
                         val intent = Intent(this@SignInActivity, SplashActivity::class.java)
@@ -60,8 +60,8 @@ class SignInActivity : AppCompatActivity(), EventImpl {
                 }
             })
 
-            ed_username.setText(AuthManager.getUserAccount().first)
-            ed_pwd.setText(AuthManager.getUserAccount().second)
+            ed_username.setText(UserManager.getUserAccount().first)
+            ed_pwd.setText(UserManager.getUserAccount().second)
         }
     }
 
