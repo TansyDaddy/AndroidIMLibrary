@@ -30,8 +30,6 @@ import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.SizeUtils
-import com.netease.nimlib.sdk.NIMClient
-import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
@@ -276,10 +274,8 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 消息同步完成
                         if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
-                            // 获取会话列表数据
-                            Handler().postDelayed({
-                                vm!!.queryMessageLists(null)
-                            }, 250)
+                            // 消息同步完成后重新获取会话列表数据
+                            vm!!.queryMessageLists(null)
                         }
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {
@@ -327,12 +323,8 @@ class ConversationFragment : Fragment(), EventImpl {
                     }
                     .subscribe())
 
-            if (NIMClient.getStatus() == StatusCode.LOGINED) {
-                // 获取会话列表数据
-                Handler().postDelayed({
-                    vm!!.queryMessageLists(null)
-                }, 250)
-            }
+            // 获取会话列表数据
+            vm!!.queryMessageLists(null)
         }
     }
 

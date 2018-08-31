@@ -6,6 +6,7 @@ import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.content.Intent
 import android.view.View
+import com.blankj.utilcode.util.NetworkUtils
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimlibrary.bean.ObserveResponse
@@ -51,7 +52,7 @@ class ChatListViewModel : ViewModel(), EventImpl {
      * 每个页面都要判断登录状态
      */
     fun signIn() {
-        if (AuthManager.getStatus() != StatusCode.LOGINED) {
+        if (AuthManager.getStatus() != StatusCode.LOGINED && NetworkUtils.isConnected()) {
             AuthManager.login(AuthManager.getUserAccount().first,
                     AuthManager.getUserAccount().second)
         }

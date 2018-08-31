@@ -9,6 +9,7 @@ import android.os.Handler
 import android.view.View
 import android.widget.Toast
 import com.baidu.mapapi.model.LatLng
+import com.blankj.utilcode.util.NetworkUtils
 import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.ResponseCode
@@ -92,7 +93,7 @@ class ConversationViewModel(private val account: String, private val sessionType
      * 每个页面都要判断登录状态
      */
     fun signIn() {
-        if (AuthManager.getStatus() != StatusCode.LOGINED) {
+        if (AuthManager.getStatus() != StatusCode.LOGINED && NetworkUtils.isConnected()) {
             AuthManager.login(AuthManager.getUserAccount().first,
                     AuthManager.getUserAccount().second)
         }

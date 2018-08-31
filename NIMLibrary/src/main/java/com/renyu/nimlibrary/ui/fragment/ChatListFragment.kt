@@ -12,11 +12,11 @@ import android.view.ViewGroup
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
 import com.netease.nimlib.sdk.msg.model.RecentContact
-import com.renyu.nimlibrary.bean.Resource
-import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
+import com.renyu.nimlibrary.bean.Resource
+import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.databinding.FragmentChatlistBinding
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.util.RxBus
@@ -64,44 +64,39 @@ class ChatListFragment : Fragment() {
             })
             viewDataBinding?.adapter = vm?.adapter
 
-            // 如果当前IM已经连接，则直接获取最近会话列表
-            if (NIMClient.getStatus() == StatusCode.LOGINED) {
-                Handler().postDelayed({
-                    vm?.queryRecentContacts()
-                }, 250)
-            }
-        }
 
-        disposable = RxBus.getDefault()
-                .toObservable(ObserveResponse::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext {
-                    // 在线状态
-                    if (it.type == ObserveResponseType.OnlineStatus) {
-                        if (it.data is StatusCode) {
-                            refreshClientStatus(it.data as StatusCode)
+            disposable = RxBus.getDefault()
+                    .toObservable(ObserveResponse::class.java)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext {
+                        // 在线状态
+                        if (it.type == ObserveResponseType.OnlineStatus) {
+                            if (it.data is StatusCode) {
+                                refreshClientStatus(it.data as StatusCode)
+                            }
+                        }
+                        if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
+                            // 消息同步完成重新获取最近会话列表
+                            vm?.queryRecentContacts()
+                        }
+                        // 最近会话列表变更通知
+                        if (it.type == ObserveResponseType.ObserveRecentContact) {
+                            vm!!.updateRecentContact(it)
+                        }
+                        // 用户资料变更
+                        if (it.type == ObserveResponseType.UserInfoUpdate) {
+                            vm!!.adapter.notifyDataSetChanged()
+                        }
+                        // 从服务器获取用户资料
+                        if (it.type == ObserveResponseType.FetchUserInfo) {
+                            vm!!.adapter.notifyDataSetChanged()
                         }
                     }
-                    if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
-                        // 消息同步完成重新获取最近会话列表
-                        Handler().postDelayed({
-                            vm?.queryRecentContacts()
-                        }, 250)
-                    }
-                    // 最近会话列表变更通知
-                    if (it.type == ObserveResponseType.ObserveRecentContact) {
-                        vm!!.updateRecentContact(it)
-                    }
-                    // 用户资料变更
-                    if (it.type == ObserveResponseType.UserInfoUpdate) {
-                        vm!!.adapter.notifyDataSetChanged()
-                    }
-                    // 从服务器获取用户资料
-                    if (it.type == ObserveResponseType.FetchUserInfo) {
-                        vm!!.adapter.notifyDataSetChanged()
-                    }
-                }
-                .subscribe()
+                    .subscribe()
+
+            // 获取最近会话列表
+            vm!!.queryRecentContacts()
+        }
     }
 
     override fun onResume() {
