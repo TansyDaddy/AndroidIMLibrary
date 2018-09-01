@@ -32,10 +32,7 @@ import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
-import com.renyu.nimlibrary.extension.HouseAttachment
-import com.renyu.nimlibrary.extension.StickerAttachment
-import com.renyu.nimlibrary.extension.UserInfoAttachment
-import com.renyu.nimlibrary.extension.VRAttachment
+import com.renyu.nimlibrary.extension.*
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
 import com.renyu.nimlibrary.util.OtherUtils
@@ -168,6 +165,11 @@ object BindingAdapters {
             else {
                 textView.text = "${jsonObject.getString("lastMessages")}"
             }
+            return
+        }
+        // 未知类型卡片
+        if (recentContact.attachment != null && recentContact.attachment is DefaultCustomAttachment) {
+            textView.text = "收到了一个不支持的消息，请升级淘房App之后查看"
             return
         }
         // 语音消息

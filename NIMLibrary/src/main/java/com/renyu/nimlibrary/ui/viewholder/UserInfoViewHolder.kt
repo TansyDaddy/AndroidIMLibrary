@@ -5,5 +5,5 @@ import android.support.v7.widget.RecyclerView
 
 
 class UserInfoViewHolder(viewDataBinding: ViewDataBinding): RecyclerView.ViewHolder(viewDataBinding.root) {
-    val ivDataBinding = viewDataBinding
+    val userInfoDataBinding = viewDataBinding
 }

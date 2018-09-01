@@ -15,6 +15,7 @@ import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
 import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem
+import com.renyu.nimlibrary.extension.HouseAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
@@ -241,25 +242,34 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         val location = intArrayOf(0, 0)
         view.getLocationInWindow(location)
 
-        QPopuWindow.getInstance(view.context).builder
-                .bindView(view, choicePosition)
-                .setPopupItemList(if (imMessage.msgType == MsgTypeEnum.text) arrayOf("复制", "删除", "撤回") else arrayOf("删除", "撤回"))
-                .setPointers(rawX, location[1] + BarUtils.getStatusBarHeight())
-                .setOnPopuListItemClickListener { _, _, position ->
-                    if (imMessage.msgType == MsgTypeEnum.text) {
-                        when(position) {
-                            0 -> conversationFragment?.copyIMMessage(imMessage)
-                            1 -> conversationFragment?.deleteIMMessage(imMessage)
-                            2 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+        // 只有文本消息、图片消息、语音消息、楼盘消息才能出现功能按键
+        if (imMessage.msgType == MsgTypeEnum.text ||
+                imMessage.msgType == MsgTypeEnum.image ||
+                imMessage.msgType == MsgTypeEnum.audio ||
+                (imMessage.msgType == MsgTypeEnum.custom && imMessage.attachment is HouseAttachment)) {
+            QPopuWindow.getInstance(view.context).builder
+                    .bindView(view, choicePosition)
+                    .setPopupItemList(
+                            if (imMessage.msgType == MsgTypeEnum.text) arrayOf("复制", "删除", "撤回")
+                            else if (imMessage.msgType == MsgTypeEnum.custom && imMessage.attachment is HouseAttachment) arrayOf("删除")
+                            else arrayOf("删除", "撤回"))
+                    .setPointers(rawX, location[1] + BarUtils.getStatusBarHeight())
+                    .setOnPopuListItemClickListener { _, _, position ->
+                        if (imMessage.msgType == MsgTypeEnum.text) {
+                            when(position) {
+                                0 -> conversationFragment?.copyIMMessage(imMessage)
+                                1 -> conversationFragment?.deleteIMMessage(imMessage)
+                                2 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+                            }
                         }
-                    }
-                    else {
-                        when(position) {
-                            0 -> conversationFragment?.deleteIMMessage(imMessage)
-                            1 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+                        else {
+                            when(position) {
+                                0 -> conversationFragment?.deleteIMMessage(imMessage)
+                                1 -> conversationFragment?.sendRevokeIMMessage(imMessage)
+                            }
                         }
-                    }
-                }.show()
+                    }.show()
+        }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {

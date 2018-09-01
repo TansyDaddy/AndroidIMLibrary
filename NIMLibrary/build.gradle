@@ -65,17 +65,17 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.anko:anko:$anko_version"
     // 基础功能 (必需)
-    api 'com.netease.nimlib:basesdk:5.4.0'
+    api 'com.netease.nimlib:basesdk:5.5.0'
     // 音视频和互动白板服务需要
-    api 'com.netease.nimlib:nrtc:5.4.0'
+    api 'com.netease.nimlib:nrtc:5.5.0'
     // 音视频需要
-    api 'com.netease.nimlib:avchat:5.4.0'
+    api 'com.netease.nimlib:avchat:5.5.0'
     // 互动白板服务需要
-    api 'com.netease.nimlib:rts:5.4.0'
+    api 'com.netease.nimlib:rts:5.5.0'
     // 全文检索服务需要
-    api 'com.netease.nimlib:lucene:5.4.0'
+    api 'com.netease.nimlib:lucene:5.5.0'
     // 小米、华为、魅族、fcm 推送
-    api 'com.netease.nimlib:push:5.4.0'
+    api 'com.netease.nimlib:push:5.5.0'
     // 华为推送
     api 'com.huawei.android.hms:push:2.6.0.301'
     // 工具类

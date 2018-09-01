@@ -123,6 +123,16 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             LayoutInflater.from(parent.context),
                             R.layout.adapter_send_userinfo, parent,
                             false))
+            26 -> return UnknowAttachmentHolder(
+                    DataBindingUtil.inflate<AdapterUnknowAttachmentBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_unknow_attachment, parent,
+                            false))
+            27 -> return UnknowAttachmentHolder(
+                    DataBindingUtil.inflate<AdapterUnknowAttachmentBinding>(
+                            LayoutInflater.from(parent.context),
+                            R.layout.adapter_unknow_attachment, parent,
+                            false))
         }
         throw Throwable("对指定viewType类型缺少判断")
     }
@@ -167,16 +177,17 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             18, 19 -> {
                 if (messages[holder.layoutPosition].attachment != null) {
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
-                        CustomAttachmentType.Sticker -> initViewDataBinding((holder as StickerViewHolder).ivDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.Sticker -> initViewDataBinding((holder as StickerViewHolder).stickerDataBinding, holder.layoutPosition)
                     }
                 }
             }
-            20, 21, 22, 23, 24, 25 -> {
+            20, 21, 22, 23, 24, 25, 26, 27 -> {
                 if (messages[holder.layoutPosition].attachment != null) {
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
-                        CustomAttachmentType.VR -> initViewDataBinding((holder as VRViewHolder).ivDataBinding, holder.layoutPosition)
-                        CustomAttachmentType.HOUSE -> initViewDataBinding((holder as HouseCardViewHolder).ivDataBinding, holder.layoutPosition)
-                        CustomAttachmentType.USERINFO -> initViewDataBinding((holder as UserInfoViewHolder).ivDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.VR -> initViewDataBinding((holder as VRViewHolder).vRDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.HOUSE -> initViewDataBinding((holder as HouseCardViewHolder).houseCardDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.USERINFO -> initViewDataBinding((holder as UserInfoViewHolder).userInfoDataBinding, holder.layoutPosition)
+                        else -> initViewDataBinding((holder as UnknowAttachmentHolder).unknowDataBinding, holder.layoutPosition)
                     }
                 }
             }
@@ -259,22 +270,24 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
         // 接收自定义消息
         if (messages[position].msgType == MsgTypeEnum.custom && messages[position].direct == MsgDirectionEnum.In) {
             if (messages[position].attachment != null) {
-                when((messages[position].attachment as CustomAttachment).type) {
-                    CustomAttachmentType.Sticker -> return 18
-                    CustomAttachmentType.VR -> return 20
-                    CustomAttachmentType.HOUSE -> return 22
-                    CustomAttachmentType.USERINFO -> return 24
+                return when((messages[position].attachment as CustomAttachment).type) {
+                    CustomAttachmentType.Sticker -> 18
+                    CustomAttachmentType.VR -> 20
+                    CustomAttachmentType.HOUSE -> 22
+                    CustomAttachmentType.USERINFO -> 24
+                    else -> 26
                 }
             }
         }
         // 发送自定义消息
         else if (messages[position].msgType == MsgTypeEnum.custom && messages[position].direct == MsgDirectionEnum.Out) {
             if (messages[position].attachment != null) {
-                when((messages[position].attachment as CustomAttachment).type) {
-                    CustomAttachmentType.Sticker -> return 19
-                    CustomAttachmentType.VR -> return 21
-                    CustomAttachmentType.HOUSE -> return 23
-                    CustomAttachmentType.USERINFO -> return 25
+                return when((messages[position].attachment as CustomAttachment).type) {
+                    CustomAttachmentType.Sticker -> 19
+                    CustomAttachmentType.VR -> 21
+                    CustomAttachmentType.HOUSE -> 23
+                    CustomAttachmentType.USERINFO -> 25
+                    else -> 27
                 }
             }
         }

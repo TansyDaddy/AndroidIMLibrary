@@ -5,5 +5,5 @@ import android.support.v7.widget.RecyclerView
 
 
 class StickerViewHolder(viewDataBinding: ViewDataBinding): RecyclerView.ViewHolder(viewDataBinding.root) {
-    val ivDataBinding = viewDataBinding
+    val stickerDataBinding = viewDataBinding
 }
