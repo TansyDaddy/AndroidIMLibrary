@@ -281,6 +281,8 @@ class ConversationViewModel(private val account: String, private val sessionType
         // 遍历找到并刷新
         for ((index, message) in messages.withIndex()) {
             if (message.uuid == imMessage.uuid) {
+                // 网易云信这里有bug，如果在当前页面发送完消息（比如图片），发送状态会更新；如果在发送过程中离开页面再进来，则会出现发送状态不更新的情况
+                message.status = imMessage.status
                 Handler().postDelayed({
                     adapter.notifyItemChanged(index)
                 }, 250)
