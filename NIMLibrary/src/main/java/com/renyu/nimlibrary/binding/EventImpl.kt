@@ -2,6 +2,7 @@ package com.renyu.nimlibrary.binding
 
 import android.view.View
 import com.netease.nimlib.sdk.msg.model.IMMessage
+import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 
 interface EventImpl {
@@ -11,7 +12,7 @@ interface EventImpl {
     fun deleteRecentContact(view: View, contactId: String) {}
 
     // 跳转会话详情
-    fun gotoConversationActivity(view: View, account: String) {}
+    fun gotoConversationActivity(view: View, recentContact: RecentContact) {}
 
     // 重新发送消息
     fun resendIMMessage(view: View, uuid: String) {}

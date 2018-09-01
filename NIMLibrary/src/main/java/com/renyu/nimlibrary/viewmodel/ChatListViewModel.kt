@@ -4,7 +4,6 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
-import android.content.Intent
 import android.view.View
 import com.blankj.utilcode.util.NetworkUtils
 import com.netease.nimlib.sdk.StatusCode
@@ -17,7 +16,7 @@ import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.repository.Repos
 import com.renyu.nimlibrary.ui.adapter.ChatListAdapter
-import com.renyu.nimlibrary.ui.fragment.ConversationFragment
+import com.renyu.nimlibrary.ui.fragment.ChatListFragment
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -120,28 +119,9 @@ class ChatListViewModel : ViewModel(), EventImpl {
     /**
      * 跳转会话详情
      */
-    override fun gotoConversationActivity(view: View, account: String) {
-        super.gotoConversationActivity(view, account)
-        try {
-            val clazz = Class.forName("com.renyu.nimapp.params.NimInitParams")
-            val conversationActivityName = clazz.getField("ConversationActivityName").get(clazz).toString()
-            val conversationClass = Class.forName(conversationActivityName)
-
-            val intent = Intent(view.context, conversationClass)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.UNSPECIFIED)
-            view.context.startActivity(intent)
-        }
-        catch (e:ClassNotFoundException) {
-            e.printStackTrace()
-        }
-        catch (e:IllegalAccessException) {
-            e.printStackTrace()
-        }
-        catch (e:NoSuchFieldException) {
-            e.printStackTrace()
-        }
+    override fun gotoConversationActivity(view: View, recentContact: RecentContact) {
+        super.gotoConversationActivity(view, recentContact)
+        (view.context as ChatListFragment.ChatListListener).clickRecentContact(recentContact)
     }
 
     private fun sortRecentContacts(list: List<RecentContact>):  List<RecentContact> {

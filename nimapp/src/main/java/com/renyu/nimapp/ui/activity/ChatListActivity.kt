@@ -2,12 +2,13 @@ package com.renyu.nimapp.ui.activity
 
 import android.content.Intent
 import android.os.Bundle
+import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.ui.fragment.ChatListFragment
 import kotlinx.android.synthetic.main.view_nav.*
 
-class ChatListActivity : BaseActivity() {
+class ChatListActivity : BaseActivity(), ChatListFragment.ChatListListener {
 
     private var conversationFragment: ChatListFragment? = null
 
@@ -42,6 +43,13 @@ class ChatListActivity : BaseActivity() {
                 .beginTransaction()
                 .replace(R.id.layout_chatlistframe, conversationFragment, "conversationFragment")
                 .commitAllowingStateLoss()
+    }
+
+    /**
+     * 会话列表点击
+     */
+    override fun clickRecentContact(recentContact: RecentContact) {
+        ConversationActivity.gotoConversationActivity(this, recentContact.contactId)
     }
 
     override fun onBackPressed() {

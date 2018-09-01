@@ -2,9 +2,9 @@ package com.renyu.nimlibrary.ui.fragment
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +33,18 @@ class ChatListFragment : Fragment() {
     var vm: ChatListViewModel? = null
 
     private var disposable: Disposable? = null
+
+    private var chatListListener: ChatListListener? = null
+    // 使用到的相关接口
+    interface ChatListListener {
+        // 会话列表点击
+        fun clickRecentContact(recentContact: RecentContact)
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        chatListListener = context as ChatListFragment.ChatListListener
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewDataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_chatlist, container, false)

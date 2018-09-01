@@ -13,8 +13,6 @@ import java.io.File;
  * 参数配置位置，因为通过反射，所以一定要类名位置写对
  */
 public class NimInitParams {
-    // 自定义的会话详情activity
-    public static String ConversationActivityName = "com.renyu.nimapp.ui.activity.ConversationActivity";
     // 自定义的通知处理activity
     public static String NotificationActivityName = "com.renyu.nimapp.ui.activity.NotificationActivity";
 
@@ -32,6 +30,7 @@ public class NimInitParams {
 
     // SDK根目录路径
     public static final String SDKROOT = Environment.getExternalStorageDirectory().getPath() + File.separator + "example";
+    // IM数据库秘钥
     public static final String databaseEncryptKey = "house365";
 
     // 自定义的踢下线逻辑
