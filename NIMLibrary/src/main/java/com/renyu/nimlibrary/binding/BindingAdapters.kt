@@ -162,7 +162,13 @@ object BindingAdapters {
         // 如果是自定义消息中的用户信息
         if (recentContact.attachment != null && recentContact.attachment is UserInfoAttachment) {
             val jsonObject = JSONObject((recentContact.attachment as UserInfoAttachment).userInfoJson)
-            textView.text = "${jsonObject.getString("userInfo")}"
+            // 当前消息是由对方发送的，即B端用户收到的C端用户信息消息
+            if (recentContact.contactId == recentContact.fromAccount) {
+                textView.text = "${jsonObject.getString("userInfo")}"
+            }
+            else {
+                textView.text = "${jsonObject.getString("lastMessages")}"
+            }
             return
         }
         EmojiUtils.replaceFaceMsgByFresco(textView, recentContact.content)
@@ -235,11 +241,15 @@ object BindingAdapters {
     @BindingAdapter(value = ["cvListImageUrl"])
     fun loadChatListImageUrl(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
         val imageUrl = if ((imMessage.attachment as ImageAttachment).path == null) {
-            if ((imMessage.attachment as ImageAttachment).thumbUrl == null) {
+            try {
+                if ((imMessage.attachment as ImageAttachment).thumbUrl == null) {
+                    ""
+                }
+                else {
+                    (imMessage.attachment as ImageAttachment).thumbUrl
+                }
+            } catch (e: Exception) {
                 ""
-            }
-            else {
-                (imMessage.attachment as ImageAttachment).thumbUrl
             }
         }
         else {

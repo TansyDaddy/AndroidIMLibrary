@@ -55,13 +55,14 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         /**
          * 基本场景，用户主动发送一条信息后触发发送用户信息
          */
-        fun gotoConversationActivityWithUserInfo(context: Context, account: String, tip: String) {
+        fun gotoConversationActivityWithUserInfo(context: Context, account: String, tip: String, extraMessage: String) {
             MessageManager.sendTipMessage(account, tip)
 
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
             intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend)
+            intent.putExtra("extraMessage", extraMessage)
             context.startActivity(intent)
         }
 
@@ -127,14 +128,18 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
                     ConversationFragment.ConversationCard.TIPOFFS)
         }
         // 区分是否已经发送过VR卡片的场景
-        conversationFragment = if (intent.getSerializableExtra("type") == ConversationFragment.CONVERSATIONTYPE.VR) {
-            ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
+        conversationFragment = when {
+            intent.getSerializableExtra("type") == ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
                     intent.getSerializableExtra("type"),
                     intent.getStringExtra("uuid"),
                     intent.getBooleanExtra("isGroup", false),
                     cards)
-        } else {
-            ConversationFragment.getInstance(intent.getStringExtra("account"),
+            intent.getSerializableExtra("type") == ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend -> ConversationFragment.getInstanceWithSendUserInfoAfterSend(intent.getStringExtra("account"),
+                    intent.getSerializableExtra("type"),
+                    intent.getStringExtra("extraMessage"),
+                    intent.getBooleanExtra("isGroup", false),
+                    cards)
+            else -> ConversationFragment.getInstance(intent.getStringExtra("account"),
                     intent.getSerializableExtra("type"),
                     intent.getBooleanExtra("isGroup", false),
                     cards)

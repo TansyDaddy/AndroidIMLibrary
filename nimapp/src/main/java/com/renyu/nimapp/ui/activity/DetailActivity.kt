@@ -14,7 +14,7 @@ class DetailActivity : BaseActivity() {
 //            ConversationActivity.gotoConversationActivityWithVR(this, "r17171709")
 //            ConversationActivity.gotoConversationActivityWithTip(this, "r17171709", "r17171709正在为您服务")
 //            ConversationActivity.gotoConversationActivityWithCard(this, "r17171709", "r17171709正在为您服务")
-            ConversationActivity.gotoConversationActivityWithUserInfo(this, "r17171709", "r17171709正在为您服务")
+            ConversationActivity.gotoConversationActivityWithUserInfo(this, "r17171709", "r17171709正在为您服务", "来自{淘房APP}，正在浏览{项目名称}")
         }
         finish()
     }

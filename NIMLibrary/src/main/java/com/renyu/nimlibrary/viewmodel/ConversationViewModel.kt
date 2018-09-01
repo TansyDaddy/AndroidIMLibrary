@@ -28,10 +28,7 @@ import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.manager.BaseAVManager
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
-import com.renyu.nimlibrary.bean.HouseItem
-import com.renyu.nimlibrary.bean.ObserveResponse
-import com.renyu.nimlibrary.bean.Resource
-import com.renyu.nimlibrary.bean.StickerItem
+import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.extension.StickerAttachment
 import com.renyu.nimlibrary.extension.VRAttachment
@@ -380,6 +377,42 @@ class ConversationViewModel(private val account: String, private val sessionType
      */
     fun copyIMMessage(imMessage: IMMessage) {
         ClipboardUtils.copyText(imMessage.content)
+    }
+
+    /**
+     * 判断是否需要发送完消息之后补充发送用户信息卡片
+     */
+    fun isSendUserInfoAfterSend(imMessage: IMMessage, need: Boolean, extraMessage: String) {
+        if (need) {
+            // 判断上一条用户发出的消息的类型
+            val lastMessage = when(imMessage.msgType) {
+                MsgTypeEnum.text -> {
+                    // 如果是文本消息，则去除文字即可
+                    imMessage.content
+                }
+                MsgTypeEnum.image -> {
+                    // 如果是图片消息，则使用固定文字
+                    "[图片]"
+                }
+                MsgTypeEnum.audio -> {
+                    // 如果是音频消息，则使用固定文字
+                    "[语音]"
+                }
+                MsgTypeEnum.location -> {
+                    // 如果是位置消息，则使用固定文字
+                    "[位置]"
+                }
+                MsgTypeEnum.custom -> {
+                    "[自定义卡片消息，待完善]"
+                }
+                else -> ""
+            }
+            val temp = MessageManager.sendUserInfoMessage(UserInfoItem(extraMessage, lastMessage), "用户信息")
+            refreshSendIMMessage(imMessage, temp)
+        }
+        else {
+            refreshSendIMMessage(imMessage)
+        }
     }
 
     /**

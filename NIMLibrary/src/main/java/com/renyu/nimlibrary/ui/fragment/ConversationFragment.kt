@@ -32,6 +32,7 @@ import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.SizeUtils
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.StatusCode
+import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.IMMessage
@@ -41,6 +42,7 @@ import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
+import com.renyu.nimlibrary.extension.UserInfoAttachment
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.activity.MapActivity
@@ -91,6 +93,35 @@ class ConversationFragment : Fragment(), EventImpl {
 
     companion object {
         /**
+         * 直接打开会话详情
+         */
+        fun getInstance(account: String, type: Serializable, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
+            val fragment = ConversationFragment()
+            val bundle = Bundle()
+            bundle.putString("account", account)
+            bundle.putSerializable("type", type)
+            bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        /**
+         * 用户主动发送一条信息后触发发送用户信息
+         */
+        fun getInstanceWithSendUserInfoAfterSend(account: String, type: Serializable, extraMessage: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
+            val fragment = ConversationFragment()
+            val bundle = Bundle()
+            bundle.putString("account", account)
+            bundle.putSerializable("type", type)
+            bundle.putString("extraMessage", extraMessage)
+            bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        /**
          * 发送VR卡片后打开详情
          */
         fun getInstanceWithVRCard(account: String, type: Serializable, uuid: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
@@ -99,20 +130,6 @@ class ConversationFragment : Fragment(), EventImpl {
             bundle.putString("account", account)
             bundle.putSerializable("type", type)
             bundle.putString("uuid", uuid)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
-            fragment.arguments = bundle
-            return fragment
-        }
-
-        /**
-         * 直接打开会话详情
-         */
-        fun getInstance(account: String, type: Serializable, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
-            val fragment = ConversationFragment()
-            val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", type)
             bundle.putBoolean("isGroup", isGroup)
             bundle.putSerializable("cards", cards)
             fragment.arguments = bundle
@@ -276,7 +293,17 @@ class ConversationFragment : Fragment(), EventImpl {
                             if (!receive) {
                                 return@doOnNext
                             }
-                            if (isLast) {
+                            // 如果是用户信息卡片，一定要滚动到最后
+                            if ((it.data as List<*>).size == 1 &&
+                                    (it.data as List<*>)[0] is IMMessage &&
+                                    ((it.data as List<*>)[0] as IMMessage).msgType == MsgTypeEnum.custom &&
+                                    ((it.data as List<*>)[0] as IMMessage).attachment is UserInfoAttachment) {
+                                // 稍微延迟一点
+                                Handler().postDelayed({
+                                    rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                                }, 350)
+                            }
+                            else if (isLast) {
                                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
                             }
                             // 发送消息已读回执
@@ -633,12 +660,10 @@ class ConversationFragment : Fragment(), EventImpl {
     private fun isSendUserInfoAfterSend(imMessage: IMMessage) {
         if (!hasFinishSendUserInfoAfterSend && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendUserInfoAfterSend) {
             hasFinishSendUserInfoAfterSend = true
-
-            val temp = MessageManager.sendUserInfoMessage(UserInfoItem("来自app的消息", "是我发的"), "用户信息")
-            vm!!.refreshSendIMMessage(imMessage, temp)
+            vm!!.isSendUserInfoAfterSend(imMessage, true, arguments!!.getString("extraMessage"))
         }
         else {
-            vm!!.refreshSendIMMessage(imMessage)
+            vm!!.isSendUserInfoAfterSend(imMessage, false, "")
         }
     }
 
