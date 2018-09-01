@@ -253,7 +253,7 @@ class ConversationFragment : Fragment(), EventImpl {
                             if (NIMClient.getStatus() == StatusCode.LOGINED) {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
-                                sendHousecardWithoutDelay(arguments!!.getSerializable("houseItem") as HouseItem)
+                                sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
                                 vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
                             }
                         }
@@ -380,7 +380,7 @@ class ConversationFragment : Fragment(), EventImpl {
                             if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime) {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
-                                sendHousecardWithoutDelay(arguments!!.getSerializable("houseItem") as HouseItem)
+                                sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
                             }
                             // 消息同步完成后重新获取会话列表数据
                             vm!!.queryMessageLists(null)
@@ -782,15 +782,14 @@ class ConversationFragment : Fragment(), EventImpl {
      */
     fun sendHousecard(houseItem: HouseItem) {
         Handler().postDelayed({
-            val imMessage = vm!!.prepareHouseCard(houseItem)
-            if (imMessage != null) {
-                vm!!.refreshSendIMMessage(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
-            }
+            sendHousecardDirectly(houseItem)
         }, 500)
     }
 
-    fun sendHousecardWithoutDelay(houseItem: HouseItem) {
+    /**
+     * 发送楼盘卡片消息
+     */
+    private fun sendHousecardDirectly(houseItem: HouseItem) {
         val imMessage = vm!!.prepareHouseCard(houseItem)
         if (imMessage != null) {
             vm!!.refreshSendIMMessage(imMessage)
