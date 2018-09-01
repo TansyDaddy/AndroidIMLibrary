@@ -397,8 +397,8 @@ class ConversationViewModel(private val account: String, private val sessionType
                     "[图片]"
                 }
                 MsgTypeEnum.audio -> {
-                    // 如果是音频消息，则使用固定文字
-                    "[语音]"
+                    // 如果是语音消息，则使用固定文字
+                    "[语音消息]"
                 }
                 MsgTypeEnum.location -> {
                     // 如果是位置消息，则使用固定文字
@@ -415,6 +415,14 @@ class ConversationViewModel(private val account: String, private val sessionType
         else {
             refreshSendIMMessage(imMessage)
         }
+    }
+
+    /**
+     * 添加临时提示消息
+     */
+    fun addTempHappyMessage(account: String, tip: String) {
+        messages.add(MessageManager.addTempTipMessage(account, tip))
+        adapter.notifyItemInserted(messages.size - 1)
     }
 
     /**

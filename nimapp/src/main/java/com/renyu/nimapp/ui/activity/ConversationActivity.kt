@@ -13,6 +13,7 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
 import com.renyu.nimapp.params.NimInitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
+import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem
 import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
@@ -43,38 +44,38 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
          */
         @JvmStatic
         fun gotoConversationActivityWithTip(context: Context, account: String, tip: String) {
-            MessageManager.sendTipMessage(account, tip)
-
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.UNSPECIFIED)
+            intent.putExtra("tip", tip)
+            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.TIP)
             context.startActivity(intent)
         }
 
         /**
-         * 基本场景，用户主动发送一条信息后触发发送用户信息
+         * 用户主动发送一条信息后触发发送用户信息
          */
+        @JvmStatic
         fun gotoConversationActivityWithUserInfo(context: Context, account: String, tip: String, extraMessage: String) {
-            MessageManager.sendTipMessage(account, tip)
-
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
+            intent.putExtra("tip", tip)
             intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend)
             intent.putExtra("extraMessage", extraMessage)
             context.startActivity(intent)
         }
 
         /**
-         * 基本场景，每一个新的聊天对象触发一次发送楼盘卡片
+         * 每一个新的聊天对象触发一次发送楼盘卡片
          */
-        fun gotoConversationActivityWithCard(context: Context, account: String, tip: String) {
-            MessageManager.sendTipMessage(account, tip)
-
+        @JvmStatic
+        fun gotoConversationActivityWithCard(context: Context, account: String, tip: String, houseItem: HouseItem) {
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
+            intent.putExtra("houseItem", houseItem)
+            intent.putExtra("tip", tip)
             intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.SendOneTime)
             context.startActivity(intent)
         }
@@ -83,7 +84,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
          * 进入VR带看流程
          */
         @JvmStatic
-        fun gotoConversationActivityWithVR(context: Context, account: String) {
+        fun gotoConversationActivityWithVR(context: Context, account: String, tip: String) {
             // 发送VR卡片
             val uuid = MessageManager.sendVRCardMessage(VRItem(
                     "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
@@ -93,6 +94,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
+            intent.putExtra("tip", tip)
             intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.VR)
             // 发送当前VR卡片的uuid作为可判断点击
             intent.putExtra("uuid", uuid)
@@ -128,19 +130,27 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
                     ConversationFragment.ConversationCard.TIPOFFS)
         }
         // 区分是否已经发送过VR卡片的场景
-        conversationFragment = when {
-            intent.getSerializableExtra("type") == ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
-                    intent.getSerializableExtra("type"),
+        conversationFragment = when(intent.getSerializableExtra("type")) {
+            ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
                     intent.getStringExtra("uuid"),
                     intent.getBooleanExtra("isGroup", false),
-                    cards)
-            intent.getSerializableExtra("type") == ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend -> ConversationFragment.getInstanceWithSendUserInfoAfterSend(intent.getStringExtra("account"),
-                    intent.getSerializableExtra("type"),
+                    cards,
+                    intent.getStringExtra("tip"))
+            ConversationFragment.CONVERSATIONTYPE.TIP -> ConversationFragment.getInstanceWithTip(intent.getStringExtra("account"),
+                    intent.getBooleanExtra("isGroup", false),
+                    cards,
+                    intent.getStringExtra("tip"))
+            ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend -> ConversationFragment.getInstanceWithSendUserInfoAfterSend(intent.getStringExtra("account"),
                     intent.getStringExtra("extraMessage"),
                     intent.getBooleanExtra("isGroup", false),
-                    cards)
+                    cards,
+                    intent.getStringExtra("tip"))
+            ConversationFragment.CONVERSATIONTYPE.SendOneTime -> ConversationFragment.getInstanceWithSendOneTime(intent.getStringExtra("account"),
+                    intent.getSerializableExtra("houseItem") as HouseItem,
+                    intent.getBooleanExtra("isGroup", false),
+                    cards,
+                    intent.getStringExtra("tip"))
             else -> ConversationFragment.getInstance(intent.getStringExtra("account"),
-                    intent.getSerializableExtra("type"),
                     intent.getBooleanExtra("isGroup", false),
                     cards)
         }
@@ -190,7 +200,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
     }
 
     /**
-     * 发送房源
+     * 选择楼盘
      */
     override fun choiceHouse() {
 

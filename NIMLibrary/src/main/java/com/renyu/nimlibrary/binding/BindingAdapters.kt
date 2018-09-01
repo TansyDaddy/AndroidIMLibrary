@@ -22,7 +22,6 @@ import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
-import com.netease.nimlib.sdk.msg.attachment.MsgAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
@@ -169,6 +168,11 @@ object BindingAdapters {
             else {
                 textView.text = "${jsonObject.getString("lastMessages")}"
             }
+            return
+        }
+        // 语音消息
+        if (recentContact.msgType == MsgTypeEnum.audio) {
+            textView.text = "[语音消息]"
             return
         }
         EmojiUtils.replaceFaceMsgByFresco(textView, recentContact.content)

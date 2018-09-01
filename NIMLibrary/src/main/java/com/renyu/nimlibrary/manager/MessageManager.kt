@@ -333,6 +333,19 @@ object MessageManager {
     }
 
     /**
+     * 生成临时提示消息
+     */
+    fun addTempTipMessage(account: String, content: String): IMMessage {
+        val imMessage = MessageBuilder.createTipMessage(account, SessionTypeEnum.P2P)
+        imMessage.content = content
+        imMessage.status = MsgStatusEnum.success
+        val config = CustomMessageConfig()
+        config.enableUnreadCount = false
+        imMessage.config = config
+        return imMessage
+    }
+
+    /**
      * 发送VR消息
      */
     fun sendVRCardMessage(vrItem: VRItem): String {

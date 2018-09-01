@@ -60,7 +60,6 @@ import kotlinx.android.synthetic.main.panel_content.*
 import kotlinx.android.synthetic.main.panel_emoji.*
 import org.json.JSONObject
 import java.io.File
-import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -73,10 +72,12 @@ class ConversationFragment : Fragment(), EventImpl {
     enum class CONVERSATIONTYPE {
         // VR带看
         VR,
-        // 基本场景，用户主动发送一条信息后触发发送用户信息
+        // 用户主动发送一条信息后触发发送用户信息
         SendUserInfoAfterSend,
-        // 基本场景，每一个新的聊天对象触发一次发送楼盘卡片
+        // 每一个新的聊天对象触发一次发送楼盘卡片
         SendOneTime,
+        // 带提示的消息
+        TIP,
         // 默认场景
         UNSPECIFIED
     }
@@ -95,11 +96,11 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 直接打开会话详情
          */
-        fun getInstance(account: String, type: Serializable, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
+        fun getInstance(account: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
-            bundle.putSerializable("type", type)
+            bundle.putSerializable("type", CONVERSATIONTYPE.UNSPECIFIED)
             bundle.putBoolean("isGroup", isGroup)
             bundle.putSerializable("cards", cards)
             fragment.arguments = bundle
@@ -109,14 +110,46 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 用户主动发送一条信息后触发发送用户信息
          */
-        fun getInstanceWithSendUserInfoAfterSend(account: String, type: Serializable, extraMessage: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
+        fun getInstanceWithSendUserInfoAfterSend(account: String, extraMessage: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
-            bundle.putSerializable("type", type)
+            bundle.putSerializable("type", CONVERSATIONTYPE.SendUserInfoAfterSend)
             bundle.putString("extraMessage", extraMessage)
             bundle.putBoolean("isGroup", isGroup)
             bundle.putSerializable("cards", cards)
+            bundle.putString("tip", tip)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        /**
+         * 用户主动发送一条信息后触发发送用户信息
+         */
+        fun getInstanceWithSendOneTime(account: String, houseItem: HouseItem, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
+            val fragment = ConversationFragment()
+            val bundle = Bundle()
+            bundle.putString("account", account)
+            bundle.putSerializable("type", CONVERSATIONTYPE.SendOneTime)
+            bundle.putSerializable("houseItem", houseItem)
+            bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
+            bundle.putString("tip", tip)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        /**
+         * 带提示的消息
+         */
+        fun getInstanceWithTip(account: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
+            val fragment = ConversationFragment()
+            val bundle = Bundle()
+            bundle.putString("account", account)
+            bundle.putSerializable("type", CONVERSATIONTYPE.TIP)
+            bundle.putBoolean("isGroup", isGroup)
+            bundle.putSerializable("cards", cards)
+            bundle.putString("tip", tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -124,14 +157,15 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 发送VR卡片后打开详情
          */
-        fun getInstanceWithVRCard(account: String, type: Serializable, uuid: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
+        fun getInstanceWithVRCard(account: String, uuid: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
-            bundle.putSerializable("type", type)
+            bundle.putSerializable("type", CONVERSATIONTYPE.VR)
             bundle.putString("uuid", uuid)
             bundle.putBoolean("isGroup", isGroup)
             bundle.putSerializable("cards", cards)
+            bundle.putString("tip", tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -183,7 +217,6 @@ class ConversationFragment : Fragment(), EventImpl {
 
     // 每一个新的聊天对象触发一次发送楼盘卡片是否已经发送完成
     var hasFinishSendOneTime = false
-
     // 用户主动发送一条信息后触发发送用户信息是否已经发送完成
     var hasFinishSendUserInfoAfterSend = false
 
@@ -214,6 +247,20 @@ class ConversationFragment : Fragment(), EventImpl {
                 when(it?.status) {
                     Status.SUCESS -> {
                         vm!!.addOldIMMessages(it.data!!, false)
+
+                        // 用户已登录，在需要发送楼盘卡片的情况下执行发送卡片
+                        if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime) {
+                            if (NIMClient.getStatus() == StatusCode.LOGINED) {
+                                hasFinishSendOneTime = true
+                                // 发送楼盘卡片
+                                sendHousecardWithoutDelay(arguments!!.getSerializable("houseItem") as HouseItem)
+                                vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                            }
+                        }
+                        // 发送提示消息
+                        else if (arguments!!.getSerializable("type") != CONVERSATIONTYPE.UNSPECIFIED) {
+                            vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                        }
 
                         // 首次加载完成滚动到最底部
                         rv_conversation.scrollToPosition(rv_conversation.adapter.itemCount - 1)
@@ -293,6 +340,7 @@ class ConversationFragment : Fragment(), EventImpl {
                             if (!receive) {
                                 return@doOnNext
                             }
+
                             // 如果是用户信息卡片，一定要滚动到最后
                             if ((it.data as List<*>).size == 1 &&
                                     (it.data as List<*>)[0] is IMMessage &&
@@ -306,6 +354,7 @@ class ConversationFragment : Fragment(), EventImpl {
                             else if (isLast) {
                                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
                             }
+
                             // 发送消息已读回执
                             vm!!.sendMsgReceipt()
                             // "正在输入"提示重置
@@ -314,6 +363,7 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 添加发出的消息状态监听
                         if (it.type == ObserveResponseType.MsgStatus) {
+                            // 更新消息UI
                             vm!!.updateIMMessage(it)
                         }
                         // 对方消息撤回
@@ -326,17 +376,14 @@ class ConversationFragment : Fragment(), EventImpl {
                         }
                         // 消息同步完成
                         if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
-                            // 消息同步完成后重新获取会话列表数据
-                            vm!!.queryMessageLists(null)
-                            // 数据同步完成之后发送楼盘卡片
+                            // 数据同步完成之后在需要发送楼盘卡片的情况下执行发送卡片以及提示消息
                             if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime) {
                                 hasFinishSendOneTime = true
-                                sendHousecard(HouseItem(
-                                        "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
-                                        "明华清园 3室2厅 690万",
-                                        "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg",
-                                        "1"))
+                                // 发送楼盘卡片
+                                sendHousecardWithoutDelay(arguments!!.getSerializable("houseItem") as HouseItem)
                             }
+                            // 消息同步完成后重新获取会话列表数据
+                            vm!!.queryMessageLists(null)
                         }
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {
@@ -386,16 +433,6 @@ class ConversationFragment : Fragment(), EventImpl {
 
             // 获取会话列表数据
             vm!!.queryMessageLists(null)
-
-            // 用户已登录，发送楼盘卡片
-            if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime && NIMClient.getStatus() == StatusCode.LOGINED) {
-                hasFinishSendOneTime = true
-                sendHousecard(HouseItem(
-                        "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
-                        "明华清园 3室2厅 690万",
-                        "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg",
-                        "1"))
-            }
         }
     }
 
@@ -743,7 +780,7 @@ class ConversationFragment : Fragment(), EventImpl {
     /**
      * 发送楼盘卡片消息
      */
-    private fun sendHousecard(houseItem: HouseItem) {
+    fun sendHousecard(houseItem: HouseItem) {
         Handler().postDelayed({
             val imMessage = vm!!.prepareHouseCard(houseItem)
             if (imMessage != null) {
@@ -751,6 +788,14 @@ class ConversationFragment : Fragment(), EventImpl {
                 rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
             }
         }, 500)
+    }
+
+    fun sendHousecardWithoutDelay(houseItem: HouseItem) {
+        val imMessage = vm!!.prepareHouseCard(houseItem)
+        if (imMessage != null) {
+            vm!!.refreshSendIMMessage(imMessage)
+            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+        }
     }
 
     /**
