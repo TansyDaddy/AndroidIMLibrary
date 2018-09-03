@@ -23,6 +23,8 @@ import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BaseAVManager {
@@ -80,7 +82,7 @@ public class BaseAVManager {
         this.avChatMuteListener = avChatMuteListener;
     }
 
-    // 来电未接超时
+    // 来去电未连通超时
     Observer<Integer> timeoutObserver = (Observer<Integer>) integer -> {
         Log.d("NIM_AV_APP", "timeoutObserver");
         // 挂断
@@ -88,6 +90,7 @@ public class BaseAVManager {
         if (avChatTypeListener != null) {
             avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_NO_RESPONSE);
         }
+        sendAvChatType(AVChatTypeEnum.PEER_NO_RESPONSE);
     };
 
     private SimpleAVChatStateObserver avchatStateObserver = new SimpleAVChatStateObserver() {
@@ -107,39 +110,44 @@ public class BaseAVManager {
                 if (avChatTypeListener != null) {
                     avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONN);
                 }
+                sendAvChatType(AVChatTypeEnum.CONN);
             } else {
                 isAVChatting = false;
                 avChatData = null;
-                // 注销来电超时
+                // 注销未连通超时
                 AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
                 if (code == 101) {
                     // 连接超时
                     Log.d("NIM_AV_APP", "onJoinedChannel 连接超时");
-                    showQuitToast(AVChatExitCode.PEER_NO_RESPONSE);
                     if (avChatTypeListener != null) {
                         avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_NO_RESPONSE);
                     }
+                    sendAvChatType(AVChatTypeEnum.PEER_NO_RESPONSE);
+                    showQuitToast(AVChatExitCode.PEER_NO_RESPONSE);
                 } else if (code == 401) {
                     // 验证失败
                     Log.d("NIM_AV_APP", "onJoinedChannel 验证失败");
-                    showQuitToast(AVChatExitCode.CONFIG_ERROR);
                     if (avChatTypeListener != null) {
                         avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONFIG_ERROR);
                     }
+                    sendAvChatType(AVChatTypeEnum.CONFIG_ERROR);
+                    showQuitToast(AVChatExitCode.CONFIG_ERROR);
                 } else if (code == 417) {
                     // 无效的channelId
                     Log.d("NIM_AV_APP", "onJoinedChannel 无效的channelId");
-                    showQuitToast(AVChatExitCode.INVALIDE_CHANNELID);
                     if (avChatTypeListener != null) {
                         avChatTypeListener.chatTypeChange(AVChatTypeEnum.INVALIDE_CHANNELID);
                     }
+                    sendAvChatType(AVChatTypeEnum.INVALIDE_CHANNELID);
+                    showQuitToast(AVChatExitCode.INVALIDE_CHANNELID);
                 } else {
                     // 连接服务器错误，直接退出
                     Log.d("NIM_AV_APP", "onJoinedChannel 连接服务器错误，直接退出");
-                    showQuitToast(AVChatExitCode.CONFIG_ERROR);
                     if (avChatTypeListener != null) {
                         avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONFIG_ERROR);
                     }
+                    sendAvChatType(AVChatTypeEnum.CONFIG_ERROR);
+                    showQuitToast(AVChatExitCode.CONFIG_ERROR);
                 }
             }
         }
@@ -151,7 +159,7 @@ public class BaseAVManager {
         public void onCallEstablished() {
             super.onCallEstablished();
             Log.d("NIM_AV_APP", "onCallEstablished");
-            // 注销来电超时
+            // 注销未连通超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
             // 音频通话建立
             isCallEstablish.set(true);
@@ -160,6 +168,7 @@ public class BaseAVManager {
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_AGREE);
             }
+            sendAvChatType(AVChatTypeEnum.CALLEE_ACK_AGREE);
         }
     };
 
@@ -168,7 +177,7 @@ public class BaseAVManager {
         if (statusCode.wontAutoLogin()) {
             // 取消
             hangUp(AVChatExitCode.CANCEL);
-            // 注销来电超时
+            // 注销未连通超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
         }
     };
@@ -204,6 +213,8 @@ public class BaseAVManager {
             public void onSuccess(AVChatData avChatData) {
                 // 去电成功
                 BaseAVManager.avChatData = avChatData;
+                // 注册未连通超时
+                AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true);
             }
 
             @Override
@@ -231,7 +242,7 @@ public class BaseAVManager {
         AVChatManager.getInstance().accept2(avChatData.getChatId(), new AVChatCallback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                // 接听成功
+
             }
 
             @Override
@@ -265,7 +276,9 @@ public class BaseAVManager {
             AVChatManager.getInstance().hangUp2(avChatData.getChatId(), new AVChatCallback<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-
+                    // 在未接听的时候，注销未连通超时
+                    AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
+                    sendAvChatType(AVChatTypeEnum.PEER_HANG_UP);
                 }
 
                 @Override
@@ -352,6 +365,23 @@ public class BaseAVManager {
             if (avChatMuteListener != null) {
                 avChatMuteListener.chatMuteChange(false);
             }
+        }
+    }
+
+    /**
+     * 音频状态发送点
+     * @param avChatTypeEnum
+     */
+    public void sendAvChatType(AVChatTypeEnum avChatTypeEnum) {
+        // 通知基础IM刷新
+        try {
+            Class rxBus = Class.forName("com.renyu.nimlibrary.util.RxBus");
+            Method getDefault = rxBus.getMethod("getDefault");
+            Method post = rxBus.getDeclaredMethod("post", Object.class);
+            post.setAccessible(true);
+            post.invoke(getDefault.invoke(null), avChatTypeEnum);
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 

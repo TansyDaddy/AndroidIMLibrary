@@ -21,7 +21,6 @@ public class OutGoingAVManager extends BaseAVManager {
     // 呼叫时，被叫方的响应（接听、拒绝、忙）
     private Observer<AVChatCalleeAckEvent> callAckObserver = (Observer<AVChatCalleeAckEvent>) avChatCalleeAckEvent -> {
         if (avChatData != null && avChatData.getChatId() == avChatCalleeAckEvent.getChatId()) {
-            AVChatSoundPlayer.instance().stop();
             if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_BUSY) {
                 Log.d("NIM_AV_APP", "被叫方正在忙");
                 AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.PEER_BUSY);
@@ -29,14 +28,13 @@ public class OutGoingAVManager extends BaseAVManager {
                 if (avChatTypeListener != null) {
                     avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_BUSY);
                 }
+                sendAvChatType(AVChatTypeEnum.CALLEE_ACK_BUSY);
+                AVChatSoundPlayer.instance().stop();
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_REJECT) {
                 Log.d("NIM_AV_APP", "被叫方拒绝通话");
-                onHangUp(AVChatExitCode.REJECT);
-                if (avChatTypeListener != null) {
-                    avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REJECT);
-                }
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_AGREE) {
                 Log.d("NIM_AV_APP", "被叫方同意通话");
+                AVChatSoundPlayer.instance().stop();
             }
         }
     };
@@ -44,11 +42,12 @@ public class OutGoingAVManager extends BaseAVManager {
     private Observer<AVChatCommonEvent> callHangupObserver = (Observer<AVChatCommonEvent>) avChatCommonEvent -> {
         Log.d("NIM_AV_APP", "收到对方挂断电话");
         onHangUp(AVChatExitCode.HANGUP);
-        // 注销来电超时
-        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
         if (avChatTypeListener != null) {
             avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_HANG_UP);
         }
+        sendAvChatType(AVChatTypeEnum.PEER_HANG_UP);
+        // 注销未连通超时
+        AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
 
         Toast.makeText(Utils.getApp(), avChatCommonEvent.getAccount()+"终止VR带看", Toast.LENGTH_SHORT).show();
     };

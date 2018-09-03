@@ -348,26 +348,25 @@ object MessageManager {
     /**
      * 发送VR消息
      */
-    fun sendVRCardMessage(vrItem: VRItem): String {
+    fun sendVRCardMessage(account: String, vrItem: VRItem, content: String): IMMessage {
         val attachment = VRAttachment(vrItem.vrJson)
-        val imMessage = MessageManager.sendCustomMessage("r17171709", "VR", attachment)
-        return imMessage.uuid
+        return sendCustomMessage(account, content, attachment)
     }
 
     /**
      * 发送楼盘卡片
      */
-    fun sendHouseCardMessage(houseItem: HouseItem, content: String): IMMessage {
+    fun sendHouseCardMessage(account: String, houseItem: HouseItem, content: String): IMMessage {
         val attachment = HouseAttachment(houseItem.houseJson)
-        return MessageManager.sendCustomMessage("r17171709", content, attachment)
+        return MessageManager.sendCustomMessage(account, content, attachment)
     }
 
     /**
      * 发送用户信息卡片
      */
-    fun sendUserInfoMessage(userInfoItem: UserInfoItem, content: String): IMMessage {
+    fun sendUserInfoMessage(account: String, userInfoItem: UserInfoItem, content: String): IMMessage {
         val attachment = UserInfoAttachment(userInfoItem.userInfoJson)
-        return MessageManager.sendCustomMessage("r17171709", content, attachment)
+        return MessageManager.sendCustomMessage(account, content, attachment)
     }
 
     /**

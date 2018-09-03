@@ -9,6 +9,9 @@
         <variable
             name="eventImpl"
             type="com.renyu.nimlibrary.binding.EventImpl" />
+        <variable
+            name="aVChatTypeEnum"
+            type="com.renyu.nimavchatlibrary.params.AVChatTypeEnum" />
     </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -51,6 +54,7 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
                     android:orientation="vertical"
                     android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
                     android:onClick="@{(view) -> eventImpl.gotoVrOutgoingCall(view, imMessage)}">
@@ -58,6 +62,7 @@
                         xmlns:fresco="http://schemas.android.com/apk/res-auto"
                         android:layout_width="123dip"
                         android:layout_height="115dip"
+                        android:layout_gravity="end"
                         fresco:actualImageResource="@drawable/default_grey_avatar"
                         fresco:actualImageScaleType="focusCrop"
                         fresco:placeholderImage="@drawable/default_grey_avatar"
@@ -71,6 +76,10 @@
                         android:layout_height="wrap_content"
                         android:padding="5dip"
                         app:cvListVRTitle="@{imMessage}"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cvListVRStatue="@{aVChatTypeEnum}"/>
                 </LinearLayout>
             </RelativeLayout>
             <ImageView

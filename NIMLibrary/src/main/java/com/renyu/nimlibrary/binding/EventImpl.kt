@@ -26,7 +26,7 @@ interface EventImpl {
     fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {}
 
     // 经纪人前往VR来电页面
-    fun gotoVrInComingCall(view: View, imMessage: IMMessage) {}
+    fun gotoVrInComingCall(view: View, imMessage: IMMessage, receive: Boolean) {}
 
     // 前往地图预览页面
     fun gotoMapPreview(view: View, imMessage: IMMessage) {}

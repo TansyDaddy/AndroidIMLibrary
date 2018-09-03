@@ -17,6 +17,8 @@ import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.receiver.IncomingCallReceiver;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
 
+import java.lang.reflect.Field;
+
 public class InComingAVManager extends BaseAVManager {
 
     public static InComingAVManager inComingAVManager;
@@ -49,13 +51,22 @@ public class InComingAVManager extends BaseAVManager {
             }
             // 有来电发生
             BaseAVManager.avChatData = avChatData;
+            // 设置currentVRUUID
+            try {
+                Class commonParams = Class.forName("com.renyu.nimlibrary.params.CommonParams");
+                Field currentVRUUID = commonParams.getDeclaredField("currentVRUUID");
+                currentVRUUID.set(commonParams, avChatData.getExtra());
+            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
             isAVChatting = true;
             // 重置参数
             reSetParams();
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REQUEST);
             }
-            // 注册来电未接超时
+            sendAvChatType(AVChatTypeEnum.CALLEE_ACK_REQUEST);
+            // 注册未连通超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true);
 
             AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.RING);
@@ -69,7 +80,8 @@ public class InComingAVManager extends BaseAVManager {
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_HANG_UP);
             }
-            // 注销来电超时
+            sendAvChatType(AVChatTypeEnum.PEER_HANG_UP);
+            // 注销未连通超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
 
             Toast.makeText(Utils.getApp(), avChatCommonEvent.getAccount()+"终止VR带看", Toast.LENGTH_SHORT).show();

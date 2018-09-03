@@ -85,20 +85,14 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
          * 进入VR带看流程
          */
         @JvmStatic
-        fun gotoConversationActivityWithVR(context: Context, account: String, tip: String) {
-            // 发送VR卡片
-            val uuid = MessageManager.sendVRCardMessage(VRItem(
-                    "https://realsee.com/lianjia/Zo2183oENp9wKvyQ/N2j4qeoMWnP4ZH9cxhGHB0lB876Kv0Qg/",
-                    "明华清园 3室2厅 690万",
-                    "http://ke-image.ljcdn.com/320100-inspection/test-856ed6fe-b82d-4c97-a536-642050cd35d7.png.280x210.jpg"))
-
+        fun gotoConversationActivityWithVR(context: Context, account: String, tip: String, vrItem: VRItem) {
             val intent = Intent(context, ConversationActivity::class.java)
             intent.putExtra("account", account)
             intent.putExtra("isGroup", false)
             intent.putExtra("tip", tip)
             intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.VR)
             // 发送当前VR卡片的uuid作为可判断点击
-            intent.putExtra("uuid", uuid)
+            intent.putExtra("vrItem", vrItem)
             context.startActivity(intent)
         }
     }
@@ -133,7 +127,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         // 区分是否已经发送过VR卡片的场景
         conversationFragment = when(intent.getSerializableExtra("type")) {
             ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
-                    intent.getStringExtra("uuid"),
+                    intent.getSerializableExtra("vrItem") as VRItem,
                     intent.getBooleanExtra("isGroup", false),
                     cards,
                     intent.getStringExtra("tip"))

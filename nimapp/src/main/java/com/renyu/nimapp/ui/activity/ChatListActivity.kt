@@ -21,23 +21,23 @@ class ChatListActivity : BaseActivity(), ChatListFragment.ChatListListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chatlist)
 
-        tv_nav_right.text = "退出登录"
-        tv_nav_right.setOnClickListener {
-            // 退出登录
-            AuthManager.logout()
-            // 打开登录页
-            jumpToSignIn()
-        }
+//        tv_nav_right.text = "退出登录"
+//        tv_nav_right.setOnClickListener {
+//            // 退出登录
+//            AuthManager.logout()
+//            // 打开登录页
+//            jumpToSignIn()
+//        }
 
 //        tv_nav_right.text = "好友列表"
 //        tv_nav_right.setOnClickListener {
 //            startActivity(Intent(this, ContactActivity::class.java))
 //        }
 
-//        tv_nav_right.text = "详情"
-//        tv_nav_right.setOnClickListener {
-//            startActivity(Intent(this, DetailActivity::class.java))
-//        }
+        tv_nav_right.text = "详情"
+        tv_nav_right.setOnClickListener {
+            startActivity(Intent(this, DetailActivity::class.java))
+        }
 
         conversationFragment = ChatListFragment()
         supportFragmentManager

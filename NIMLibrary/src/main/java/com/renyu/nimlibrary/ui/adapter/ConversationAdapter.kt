@@ -15,11 +15,14 @@ import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.*
 import com.renyu.nimlibrary.extension.CustomAttachment
 import com.renyu.nimlibrary.extension.CustomAttachmentType
+import com.renyu.nimlibrary.manager.UserManager
+import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.viewholder.*
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
@@ -184,7 +187,27 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
             20, 21, 22, 23, 24, 25, 26, 27 -> {
                 if (messages[holder.layoutPosition].attachment != null) {
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
-                        CustomAttachmentType.VR -> initViewDataBinding((holder as VRViewHolder).vRDataBinding, holder.layoutPosition)
+                        CustomAttachmentType.VR -> {
+                            if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
+                                // B端用户，如果当前uuid与item相同，则该item的状态由外层控制
+                                if (messages[holder.layoutPosition].uuid == CommonParams.currentVRUUID) {
+                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, CommonParams.currentVRStatus)
+                                }
+                                else {
+                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, AVChatTypeEnum.VALID)
+                                }
+                            }
+                            else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+                                // C端用户，如果当前uuid与item相同，则该item的状态由外层控制
+                                if (messages[holder.layoutPosition].uuid != CommonParams.currentVRUUID) {
+                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, AVChatTypeEnum.INVALID)
+                                }
+                                else {
+                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, CommonParams.currentVRStatus)
+                                }
+                            }
+                            initViewDataBinding((holder as VRViewHolder).vRDataBinding, holder.layoutPosition)
+                        }
                         CustomAttachmentType.HOUSE -> initViewDataBinding((holder as HouseCardViewHolder).houseCardDataBinding, holder.layoutPosition)
                         CustomAttachmentType.USERINFO -> initViewDataBinding((holder as UserInfoViewHolder).userInfoDataBinding, holder.layoutPosition)
                         else -> initViewDataBinding((holder as UnknowAttachmentHolder).unknowDataBinding, holder.layoutPosition)

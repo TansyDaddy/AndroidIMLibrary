@@ -1,5 +1,7 @@
 package com.renyu.nimlibrary.params;
 
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
+
 /**
  * Created by Administrator on 2018/3/21 0021.
  */
@@ -17,6 +19,9 @@ public class CommonParams {
 
     // 发出"正在输入提示"指令
     public static final String COMMAND_INPUT = "command_input";
-    // 发出用户来源信息
-    public static final String COMMAND_USERFROM = "command_userfrom";
+
+    // 当前发送的VR卡片的UUID
+    public static String currentVRUUID = "";
+    // 当前发送的VR卡片的状态
+    public static AVChatTypeEnum currentVRStatus = AVChatTypeEnum.VALID;
 }

@@ -9,6 +9,9 @@
         <variable
             name="eventImpl"
             type="com.renyu.nimlibrary.binding.EventImpl" />
+        <variable
+            name="aVChatTypeEnum"
+            type="com.renyu.nimavchatlibrary.params.AVChatTypeEnum" />
     </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -62,8 +65,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
-                    android:onClick="@{(view) -> eventImpl.gotoVrInComingCall(view, imMessage)}">
+                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}">
                     <com.facebook.drawee.view.SimpleDraweeView
                         xmlns:fresco="http://schemas.android.com/apk/res-auto"
                         android:layout_width="123dip"
@@ -81,6 +83,29 @@
                         android:layout_height="wrap_content"
                         android:padding="5dip"
                         app:cvListVRTitle="@{imMessage}"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        app:cvListVRStatue="@{aVChatTypeEnum}"/>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:cvListVRShowOperButton="@{imMessage}">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="10dip"
+                            android:text="接听"
+                            android:onClick="@{(view) -> eventImpl.gotoVrInComingCall(view, imMessage, true)}"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="10dip"
+                            android:text="挂断"
+                            android:onClick="@{(view) -> eventImpl.gotoVrInComingCall(view, imMessage, false)}"/>
+                    </LinearLayout>
                 </LinearLayout>
             </RelativeLayout>
         </RelativeLayout>

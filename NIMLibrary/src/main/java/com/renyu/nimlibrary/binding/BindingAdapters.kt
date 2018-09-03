@@ -7,6 +7,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.blankj.utilcode.util.SizeUtils
@@ -29,6 +30,8 @@ import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
+import com.renyu.nimavchatlibrary.manager.BaseAVManager
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
@@ -364,6 +367,79 @@ object BindingAdapters {
             textView.text = jsonObject.getString("houseTitle")
         } catch (e: Exception) {
 
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListVRStatue"])
+    fun loadChatListVRStatue(textView: TextView, aVChatTypeEnum: AVChatTypeEnum) {
+        // 这里要考虑到C端和B端处理流程
+        when(aVChatTypeEnum) {
+            // 默认点击VR带看进入会话详情
+            AVChatTypeEnum.VALID,
+            // 超时，无人接听
+            AVChatTypeEnum.PEER_NO_RESPONSE,
+            // 对方挂断电话
+            AVChatTypeEnum.PEER_HANG_UP,
+            // 验证失败
+            AVChatTypeEnum.CONFIG_ERROR,
+            // 无效的聊天ID
+            AVChatTypeEnum.INVALIDE_CHANNELID -> {
+                // 如果是C端用户，则显示带看准备
+                if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+                    textView.text = "带看准备"
+                }
+                // 如果是B端用户，则显示用户退出
+                if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
+                    textView.text = "用户退出"
+                }
+            }
+            // 从非VR带看进入会话详情
+            AVChatTypeEnum.INVALID -> {
+                // 这种场景不会发生在B端
+                textView.text = "带看失效"
+            }
+            // 连接建立
+            AVChatTypeEnum.CONN -> {
+                // 如果是C端用户，则显示等待经纪人
+                if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+                    textView.text = "等待经纪人"
+                }
+                // 如果是B端用户，则显示收到带看请求
+                if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
+                    textView.text = "收到带看请求"
+                }
+            }
+            // 被叫方收到呼叫
+            AVChatTypeEnum.CALLEE_ACK_REQUEST -> {
+                // 这种场景不会发生在C端
+                textView.text = "收到带看请求"
+            }
+            // 被叫方同意通话
+            AVChatTypeEnum.CALLEE_ACK_AGREE -> {
+                // B、C端用户均显示带看开始
+                textView.text = "带看开始"
+            }
+            // 被叫方正在忙
+            AVChatTypeEnum.CALLEE_ACK_BUSY -> {
+                // 这种场景不会发生在B端
+                if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+                    textView.text = "带看准备"
+                }
+            }
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListVRShowOperButton"])
+    fun loadChatListVRShowOperButton(linearLayout: LinearLayout, imMessage: IMMessage) {
+        if (BaseAVManager.avChatData != null &&
+                !TextUtils.isEmpty(BaseAVManager.avChatData.extra) &&
+                imMessage.uuid == BaseAVManager.avChatData.extra)  {
+            linearLayout.visibility = View.VISIBLE
+        }
+        else {
+            linearLayout.visibility = View.GONE
         }
     }
 

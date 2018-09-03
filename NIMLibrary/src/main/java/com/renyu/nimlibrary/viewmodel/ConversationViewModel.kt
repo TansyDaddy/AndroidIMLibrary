@@ -26,6 +26,7 @@ import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
 import com.renyu.nimavchatlibrary.manager.BaseAVManager
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
 import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.bean.*
@@ -46,7 +47,7 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ConversationViewModel(private val account: String, private val sessionType: SessionTypeEnum, private val uuid: String) : ViewModel(), EventImpl {
+class ConversationViewModel(private val account: String, private val sessionType: SessionTypeEnum) : ViewModel(), EventImpl {
 
     private val messages: ArrayList<IMMessage> by lazy {
         ArrayList<IMMessage>()
@@ -291,6 +292,19 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
+     * 更新VR卡片当前状态
+     */
+    fun updateVRCardStatus(aVChatTypeEnum: AVChatTypeEnum) {
+        // 遍历找到并刷新
+        for ((index, message) in messages.withIndex()) {
+            if (message.uuid == CommonParams.currentVRUUID) {
+                CommonParams.currentVRStatus = aVChatTypeEnum
+                adapter.notifyItemChanged(index)
+            }
+        }
+    }
+
+    /**
      * 长按消息列表
      */
     override fun onLongClick(view: View, imMessage: IMMessage): Boolean {
@@ -409,7 +423,7 @@ class ConversationViewModel(private val account: String, private val sessionType
                 }
                 else -> ""
             }
-            val temp = MessageManager.sendUserInfoMessage(UserInfoItem(extraMessage, lastMessage), "用户信息")
+            val temp = MessageManager.sendUserInfoMessage(account, UserInfoItem(extraMessage, lastMessage), "用户信息")
             refreshSendIMMessage(imMessage, temp)
         }
         else {
@@ -431,22 +445,22 @@ class ConversationViewModel(private val account: String, private val sessionType
     override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
         super.gotoVrOutgoingCall(view, imMessage)
         // 只有当前发送的卡片才能重复点击
-        if (uuid == imMessage.uuid) {
+        if (CommonParams.currentVRUUID == imMessage.uuid) {
             // 客户进入VR环节
-            OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, uuid, true)
+            OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, CommonParams.currentVRUUID, true)
         }
     }
 
     /**
      * 经纪人前往VR来电页面
      */
-    override fun gotoVrInComingCall(view: View, imMessage: IMMessage) {
-        super.gotoVrInComingCall(view, imMessage)
+    override fun gotoVrInComingCall(view: View, imMessage: IMMessage, receive: Boolean) {
+        super.gotoVrInComingCall(view, imMessage, receive)
         // 若收到音频被叫且主叫人为当前页面聊天的对象，客户触发的卡片与经纪人点击的卡片相同，则判断通过
         if (BaseAVManager.avChatData != null &&
                 BaseAVManager.avChatData.account == account &&
                 BaseAVManager.avChatData.extra == imMessage.uuid) {
-            InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson)
+            InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, receive)
         }
     }
 
@@ -607,7 +621,17 @@ class ConversationViewModel(private val account: String, private val sessionType
         if (isAsync) {
             return null
         }
-        return MessageManager.sendHouseCardMessage(houseItem, houseItem.houseJson)
+        return MessageManager.sendHouseCardMessage(account, houseItem, houseItem.houseJson)
+    }
+
+    /**
+     * 准备VR卡片消息
+     */
+    fun prepareVRCard(vrItem: VRItem): IMMessage? {
+        if (isAsync) {
+            return null
+        }
+        return MessageManager.sendVRCardMessage(account, vrItem, vrItem.vrJson)
     }
 
     /**

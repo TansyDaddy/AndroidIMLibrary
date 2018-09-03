@@ -44,6 +44,7 @@ import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.databinding.FragmentConversationBinding
 import com.renyu.nimlibrary.extension.UserInfoAttachment
 import com.renyu.nimlibrary.manager.MessageManager
+import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.activity.MapActivity
 import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
@@ -157,12 +158,12 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 发送VR卡片后打开详情
          */
-        fun getInstanceWithVRCard(account: String, uuid: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
+        fun getInstanceWithVRCard(account: String, vrItem: VRItem, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
             bundle.putString("account", account)
             bundle.putSerializable("type", CONVERSATIONTYPE.VR)
-            bundle.putString("uuid", uuid)
+            bundle.putSerializable("vrItem", vrItem)
             bundle.putBoolean("isGroup", isGroup)
             bundle.putSerializable("cards", cards)
             bundle.putString("tip", tip)
@@ -237,11 +238,24 @@ class ConversationFragment : Fragment(), EventImpl {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        // 处理最后一条VR卡片的状态
+        if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
+            CommonParams.currentVRStatus = AVChatTypeEnum.VALID
+        }
+        else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+            // 从VR带看页面进来
+            CommonParams.currentVRStatus = if (arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+                AVChatTypeEnum.VALID
+            } else {
+                AVChatTypeEnum.INVALID
+            }
+        }
+
         viewDataBinding.also {
             vm = ViewModelProviders.of(this,
                     ConversationViewModelFactory(arguments!!.getString("account"),
-                            if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P,
-                    if (arguments!!.getString("uuid") != null) arguments!!.getString("uuid") else ""))
+                            if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P))
                     .get(ConversationViewModel::class.java)
             vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
@@ -254,6 +268,15 @@ class ConversationFragment : Fragment(), EventImpl {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
                                 sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
+                                vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                            }
+                        }
+                        // 用户已登录，在需要发送VR卡片的情况下执行发送卡片
+                        else if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+                            if (NIMClient.getStatus() == StatusCode.LOGINED) {
+                                hasFinishSendOneTime = true
+                                // 发送VR卡片
+                                sendVRCard(arguments!!.getSerializable("vrItem") as VRItem)
                                 vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
                             }
                         }
@@ -348,11 +371,11 @@ class ConversationFragment : Fragment(), EventImpl {
                                     ((it.data as List<*>)[0] as IMMessage).attachment is UserInfoAttachment) {
                                 // 稍微延迟一点
                                 Handler().postDelayed({
-                                    rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                                    smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
                                 }, 350)
                             }
                             else if (isLast) {
-                                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
                             }
 
                             // 发送消息已读回执
@@ -381,6 +404,12 @@ class ConversationFragment : Fragment(), EventImpl {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
                                 sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
+                            }
+                            // 数据同步完成之后在需要发送VR卡片的情况下执行发送卡片以及提示消息
+                            else if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+                                hasFinishSendOneTime = true
+                                // 发送VR卡片
+                                sendVRCard(arguments!!.getSerializable("vrItem") as VRItem)
                             }
                             // 消息同步完成后重新获取会话列表数据
                             vm!!.queryMessageLists(null)
@@ -418,16 +447,14 @@ class ConversationFragment : Fragment(), EventImpl {
                     .toObservable(AVChatTypeEnum::class.java)
                     .observeOn(AndroidSchedulers.mainThread())
                     .doOnNext {
-                        when(it) {
-                            // 收到客户拨号
-                            AVChatTypeEnum.CALLEE_ACK_REQUEST -> {
-                                // 开启定时器
+                        // VR带看的卡片高度会随着UI改变而发生变化，所以一旦卡片在最底部，需要重新滚动调整位置
+                        val isLast = isLastMessageVisible()
+                        vm!!.updateVRCardStatus(it)
+                        Handler().postDelayed({
+                            if (isLast) {
+                                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
                             }
-                            // 其他任何情况
-                            else -> {
-                                // 终止定时器
-                            }
-                        }
+                        }, 250)
                     }
                     .subscribe())
 
@@ -465,6 +492,11 @@ class ConversationFragment : Fragment(), EventImpl {
 
         // 语音处理
         layout_record.onDestroy()
+
+        // 只有C端才重置VR带看自定义参数
+        if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
+            CommonParams.currentVRUUID = ""
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -590,11 +622,18 @@ class ConversationFragment : Fragment(), EventImpl {
         rv_conversation.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
+                onScrolled()
+
                 // 上拉加载更多
                 val canScrollDown = rv_conversation.canScrollVertically(-1)
                 if (!canScrollDown) {
                     vm!!.pullMessageHistory(false)
                 }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                onScrollStateChanged(newState)
             }
         })
         audioRecord.setOnTouchListener { v, event ->
@@ -683,15 +722,6 @@ class ConversationFragment : Fragment(), EventImpl {
     }
 
     /**
-     * 判断当前显示的是不是最后一条
-     */
-    private fun isLastMessageVisible(): Boolean {
-        val layoutManager = rv_conversation.layoutManager as WrapContentLinearLayoutManager
-        val lastVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition()
-        return lastVisiblePosition >= vm?.adapter?.itemCount!! - 1
-    }
-
-    /**
      * 判断是否需要发送完消息之后补充发送用户信息卡片
      */
     private fun isSendUserInfoAfterSend(imMessage: IMMessage) {
@@ -717,7 +747,7 @@ class ConversationFragment : Fragment(), EventImpl {
             isSendUserInfoAfterSend(imMessage)
             // 重置文本框
             editTextMessage.setText("")
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
         }
     }
 
@@ -730,7 +760,7 @@ class ConversationFragment : Fragment(), EventImpl {
             if (imMessage != null) {
                 // 判断是否需要发送完消息之后补充发送用户信息卡片
                 isSendUserInfoAfterSend(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
             }
         }, 500)
     }
@@ -744,7 +774,7 @@ class ConversationFragment : Fragment(), EventImpl {
             if (imMessage != null) {
                 // 判断是否需要发送完消息之后补充发送用户信息卡片
                 isSendUserInfoAfterSend(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
             }
         }, 500)
     }
@@ -758,7 +788,7 @@ class ConversationFragment : Fragment(), EventImpl {
             if (imMessage != null) {
                 // 判断是否需要发送完消息之后补充发送用户信息卡片
                 isSendUserInfoAfterSend(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
             }
         }, 500)
     }
@@ -772,7 +802,7 @@ class ConversationFragment : Fragment(), EventImpl {
             if (imMessage != null) {
                 // 判断是否需要发送完消息之后补充发送用户信息卡片
                 isSendUserInfoAfterSend(imMessage)
-                rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
             }
         }, 500)
     }
@@ -793,7 +823,21 @@ class ConversationFragment : Fragment(), EventImpl {
         val imMessage = vm!!.prepareHouseCard(houseItem)
         if (imMessage != null) {
             vm!!.refreshSendIMMessage(imMessage)
-            rv_conversation.smoothScrollToPosition(rv_conversation.adapter.itemCount - 1)
+            smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
+        }
+    }
+
+    /**
+     * 发送楼盘卡片消息
+     */
+    private fun sendVRCard(vrItem: VRItem) {
+        val imMessage = vm!!.prepareVRCard(vrItem)
+        if (imMessage != null) {
+            // 更新最新VR卡片UUID
+            CommonParams.currentVRUUID = imMessage.uuid
+
+            vm!!.refreshSendIMMessage(imMessage)
+            smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
         }
     }
 
@@ -833,5 +877,69 @@ class ConversationFragment : Fragment(), EventImpl {
         super.onSaveInstanceState(outState)
         outState.putBoolean("hasFinishSendOneTime", hasFinishSendOneTime)
         outState.putBoolean("hasFinishSendUserInfoAfterSend", hasFinishSendUserInfoAfterSend)
+    }
+
+    private var mIndex = 0
+    private var move = false
+
+    private fun smoothMoveToPosition(n: Int) {
+        mIndex = n
+        val firstItem = (rv_conversation.layoutManager as WrapContentLinearLayoutManager).findFirstVisibleItemPosition()
+        val lastItem = (rv_conversation.layoutManager as WrapContentLinearLayoutManager).findLastVisibleItemPosition()
+        when {
+            n <= firstItem -> rv_conversation.smoothScrollToPosition(n)
+            n <= lastItem -> {
+                val top = rv_conversation.getChildAt(n - firstItem).top
+                rv_conversation.smoothScrollBy(0, top)
+            }
+            else -> {
+                rv_conversation.smoothScrollToPosition(n)
+                move = true
+            }
+        }
+    }
+
+    private fun moveToPosition(n: Int) {
+        mIndex = n
+        val firstItem = (rv_conversation.layoutManager as WrapContentLinearLayoutManager).findFirstVisibleItemPosition()
+        val lastItem = (rv_conversation.layoutManager as WrapContentLinearLayoutManager).findLastVisibleItemPosition()
+        when {
+            n <= firstItem -> rv_conversation.scrollToPosition(n)
+            n <= lastItem -> {
+                val top = rv_conversation.getChildAt(n - firstItem).top
+                rv_conversation.scrollBy(0, top)
+            }
+            else -> {
+                rv_conversation.scrollToPosition(n)
+                move = true
+            }
+        }
+    }
+
+    private fun onScrollStateChanged(newState: Int) {
+        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+            onScrolled()
+        }
+    }
+
+    private fun onScrolled() {
+        if (move) {
+            move = false
+            val n = mIndex - (rv_conversation.layoutManager as WrapContentLinearLayoutManager).findFirstVisibleItemPosition()
+            if ( 0 <= n && n < rv_conversation.childCount) {
+                val top = rv_conversation.getChildAt(n).top
+                rv_conversation.scrollBy(0, top)
+            }
+        }
+    }
+
+
+    /**
+     * 判断当前显示的是不是最后一条
+     */
+    private fun isLastMessageVisible(): Boolean {
+        val layoutManager = rv_conversation.layoutManager as WrapContentLinearLayoutManager
+        val lastVisiblePosition = layoutManager.findLastCompletelyVisibleItemPosition()
+        return lastVisiblePosition >= vm?.adapter?.itemCount!! - 1
     }
 }

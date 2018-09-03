@@ -67,6 +67,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static final String KEY_ACCOUNT = "KEY_ACCOUNT";
     static final String KEY_NEEDCALL = "KEY_NEEDCALL";
     static final String KEY_EXTEND_MESSAGE = "extendMessage";
+    static final String KEY_RECEIVE = "KEY_RECEIVE";
 
     static boolean needFinish = true;
     // 是否暂停音频
@@ -76,7 +77,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     EventSubscribeRequest eventSubscribeRequest;
     Observer<List<Event>> observeEventChanged;
     // 当前通话状态
-    AVChatTypeEnum avChatType = AVChatTypeEnum.UNDEFINE;
+    AVChatTypeEnum avChatType = AVChatTypeEnum.VALID;
 
     WebView web_webview;
 
@@ -378,12 +379,15 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                     if (impl != null) {
                         ((WebAppInterface) impl).updateVRStatus("对方已挂断，点击关闭");
                     }
-                    endAVChatConfig();
                 }
+                endAVChatConfig();
                 break;
             case PEER_NO_RESPONSE:
-                if (impl != null) {
-                    ((WebAppInterface) impl).updateVRStatus("已超时，点击关闭");
+                if (!isAgent) {
+                    if (impl != null) {
+                        ((WebAppInterface) impl).updateVRStatus("已超时，点击呼叫");
+                    }
+                    endAVChatConfig();
                 }
                 break;
             case INVALIDE_CHANNELID:
@@ -394,11 +398,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             case CALLEE_ACK_AGREE:
                 if (impl != null) {
                     ((WebAppInterface) impl).updateVRStatus("正在通话，点击挂断");
-                }
-                break;
-            case CALLEE_ACK_REJECT:
-                if (impl != null) {
-                    ((WebAppInterface) impl).updateVRStatus("已被拒绝，点击关闭");
                 }
                 break;
             case CALLEE_ACK_BUSY:
@@ -442,22 +441,23 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case PEER_HANG_UP:
                 if (!isAgent) {
+                    startAVChatConfig();
                     manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
                 } else {
                     finish();
                 }
                 break;
             case PEER_NO_RESPONSE:
-                finish();
+                if (!isAgent) {
+                    startAVChatConfig();
+                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                }
                 break;
             case INVALIDE_CHANNELID:
                 finish();
                 break;
             case CALLEE_ACK_AGREE:
                 manager.hangUp(AVChatExitCode.HANGUP);
-                finish();
-                break;
-            case CALLEE_ACK_REJECT:
                 finish();
                 break;
             case CALLEE_ACK_BUSY:
@@ -526,12 +526,12 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 // 如果页面在加载完毕之前已经发生状态变化，则忽略
-                if (avChatType != AVChatTypeEnum.UNDEFINE) {
+                if (avChatType != AVChatTypeEnum.VALID) {
 
                 }
                 else {
                     // 页面加载完毕之后根据主叫或者被叫区分状态内容
-                    chatTypeChange(AVChatTypeEnum.UNDEFINE);
+                    chatTypeChange(AVChatTypeEnum.VALID);
                 }
                 ((WebAppInterface) impl).updateMuteStatues("非静音");
             }
@@ -615,15 +615,15 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             Method getRole = userRole.getDeclaredMethod("getRole");
             getRole.setAccessible(true);
             Integer integer = (Integer) getRole.invoke(triple.getThird());
-            if (integer == 0) {
-                Log.d("NIM_AV_APP", "未知");
-            }
-            if (integer == 1) {
-                Log.d("NIM_AV_APP", "经纪人");
-            }
-            if (integer == 2) {
-                Log.d("NIM_AV_APP", "客户");
-            }
+//            if (integer == 0) {
+//                Log.d("NIM_AV_APP", "未知");
+//            }
+//            if (integer == 1) {
+//                Log.d("NIM_AV_APP", "经纪人");
+//            }
+//            if (integer == 2) {
+//                Log.d("NIM_AV_APP", "客户");
+//            }
             return integer;
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
