@@ -1,53 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+
     <data>
+
         <variable
             name="eventImpl"
             type="com.renyu.nimlibrary.binding.EventImpl"></variable>
     </data>
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_margin="10dip"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
             <TextView
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
-                android:text="用户名"/>
+                android:text="用户名" />
+
             <EditText
                 android:id="@+id/ed_username"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dip"
+                android:layout_marginRight="10dip" />
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_margin="10dip"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
             <TextView
                 android:layout_width="50dip"
                 android:layout_height="wrap_content"
-                android:text="密码"/>
+                android:text="密码" />
+
             <EditText
                 android:id="@+id/ed_pwd"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dip"
+                android:layout_marginRight="10dip" />
         </LinearLayout>
+
         <Button
             android:id="@+id/btn_signin"
-            android:text="登录"
-            android:onClick="@{(view) -> eventImpl.click(view)}"
-            android:layout_margin="10dip"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_margin="10dip"
+            android:onClick="@{(view) -> eventImpl.click(view)}"
+            android:text="登录" />
     </LinearLayout>
 </layout>

@@ -2,17 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/ease_recording_hint_bg"
-    android:padding="10dp"
     android:layout_centerInParent="true"
-    android:orientation="vertical">
+    android:background="@drawable/ease_recording_hint_bg"
+    android:orientation="vertical"
+    android:padding="10dp">
 
     <ImageView
         android:id="@+id/mic_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:src="@mipmap/ease_record_animate_01" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:id="@+id/recording_hint"
@@ -22,7 +21,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="5dp"
         android:padding="2dp"
-        android:text="手指上滑，取消发送"
         android:textSize="12sp" />
 
 </RelativeLayout>
