@@ -23,13 +23,9 @@ public class OutGoingAVManager extends BaseAVManager {
         if (avChatData != null && avChatData.getChatId() == avChatCalleeAckEvent.getChatId()) {
             if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_BUSY) {
                 Log.d("NIM_AV_APP", "被叫方正在忙");
-                AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.PEER_BUSY);
-                onHangUp(AVChatExitCode.PEER_BUSY);
                 if (avChatTypeListener != null) {
                     avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_BUSY);
                 }
-                sendAvChatType(AVChatTypeEnum.CALLEE_ACK_BUSY);
-                AVChatSoundPlayer.instance().stop();
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_REJECT) {
                 Log.d("NIM_AV_APP", "被叫方拒绝通话");
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_AGREE) {

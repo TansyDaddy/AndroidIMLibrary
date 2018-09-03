@@ -16,6 +16,20 @@ public class CommonParams {
     public static boolean isKickout = false;
 
     public static final String TYPE = "type";
+    // accid
+    public static final String ACCOUNT = "account";
+    // 群组
+    public static final String ISGROUP = "isGroup";
+    // C端友好文字提示
+    public static final String TIP = "tip";
+    // VR看房卡片
+    public static final String VRITEM = "vrItem";
+    // 楼盘卡片
+    public static final String HOUSEITEM = "houseItem";
+    // B端接收到的用户信息
+    public static final String USERINFO = "userInfo";
+    // 扩展功能
+    public static final String CARD = "card";
 
     // 发出"正在输入提示"指令
     public static final String COMMAND_INPUT = "command_input";

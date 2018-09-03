@@ -16,7 +16,7 @@ import com.renyu.nimapp.ui.view.QPopuWindow
 import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem
 import com.renyu.nimlibrary.extension.HouseAttachment
-import com.renyu.nimlibrary.manager.MessageManager
+import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import java.io.File
 
@@ -34,9 +34,9 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         @JvmStatic
         fun gotoConversationActivity(context: Context, account: String) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.UNSPECIFIED)
+            intent.putExtra(CommonParams.ACCOUNT, account)
+            intent.putExtra(CommonParams.ISGROUP, false)
+            intent.putExtra(CommonParams.TYPE, ConversationFragment.CONVERSATIONTYPE.UNSPECIFIED)
             context.startActivity(intent)
         }
 
@@ -46,10 +46,10 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         @JvmStatic
         fun gotoConversationActivityWithTip(context: Context, account: String, tip: String) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("tip", tip)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.TIP)
+            intent.putExtra(CommonParams.ACCOUNT, account)
+            intent.putExtra(CommonParams.ISGROUP, false)
+            intent.putExtra(CommonParams.TIP, tip)
+            intent.putExtra(CommonParams.TYPE, ConversationFragment.CONVERSATIONTYPE.TIP)
             context.startActivity(intent)
         }
 
@@ -57,13 +57,13 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
          * 用户主动发送一条信息后触发发送用户信息
          */
         @JvmStatic
-        fun gotoConversationActivityWithUserInfo(context: Context, account: String, tip: String, extraMessage: String) {
+        fun gotoConversationActivityWithUserInfo(context: Context, account: String, tip: String, userInfo: String) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("tip", tip)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend)
-            intent.putExtra("extraMessage", extraMessage)
+            intent.putExtra(CommonParams.ACCOUNT, account)
+            intent.putExtra(CommonParams.ISGROUP, false)
+            intent.putExtra(CommonParams.TIP, tip)
+            intent.putExtra(CommonParams.TYPE, ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend)
+            intent.putExtra(CommonParams.USERINFO, userInfo)
             context.startActivity(intent)
         }
 
@@ -73,11 +73,11 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         @JvmStatic
         fun gotoConversationActivityWithCard(context: Context, account: String, tip: String, houseItem: HouseItem) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("houseItem", houseItem)
-            intent.putExtra("tip", tip)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.SendOneTime)
+            intent.putExtra(CommonParams.ACCOUNT, account)
+            intent.putExtra(CommonParams.ISGROUP, false)
+            intent.putExtra(CommonParams.HOUSEITEM, houseItem)
+            intent.putExtra(CommonParams.TIP, tip)
+            intent.putExtra(CommonParams.TYPE, ConversationFragment.CONVERSATIONTYPE.SendOneTime)
             context.startActivity(intent)
         }
 
@@ -87,12 +87,11 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
         @JvmStatic
         fun gotoConversationActivityWithVR(context: Context, account: String, tip: String, vrItem: VRItem) {
             val intent = Intent(context, ConversationActivity::class.java)
-            intent.putExtra("account", account)
-            intent.putExtra("isGroup", false)
-            intent.putExtra("tip", tip)
-            intent.putExtra("type", ConversationFragment.CONVERSATIONTYPE.VR)
-            // 发送当前VR卡片的uuid作为可判断点击
-            intent.putExtra("vrItem", vrItem)
+            intent.putExtra(CommonParams.ACCOUNT, account)
+            intent.putExtra(CommonParams.ISGROUP, false)
+            intent.putExtra(CommonParams.TIP, tip)
+            intent.putExtra(CommonParams.TYPE, ConversationFragment.CONVERSATIONTYPE.VR)
+            intent.putExtra(CommonParams.VRITEM, vrItem)
             context.startActivity(intent)
         }
     }
@@ -125,28 +124,28 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
                     ConversationFragment.ConversationCard.TIPOFFS)
         }
         // 区分是否已经发送过VR卡片的场景
-        conversationFragment = when(intent.getSerializableExtra("type")) {
-            ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra("account"),
-                    intent.getSerializableExtra("vrItem") as VRItem,
-                    intent.getBooleanExtra("isGroup", false),
+        conversationFragment = when(intent.getSerializableExtra(CommonParams.TYPE)) {
+            ConversationFragment.CONVERSATIONTYPE.VR -> ConversationFragment.getInstanceWithVRCard(intent.getStringExtra(CommonParams.ACCOUNT),
+                    intent.getSerializableExtra(CommonParams.VRITEM) as VRItem,
+                    intent.getBooleanExtra(CommonParams.ISGROUP, false),
                     cards,
-                    intent.getStringExtra("tip"))
-            ConversationFragment.CONVERSATIONTYPE.TIP -> ConversationFragment.getInstanceWithTip(intent.getStringExtra("account"),
-                    intent.getBooleanExtra("isGroup", false),
+                    intent.getStringExtra(CommonParams.TIP))
+            ConversationFragment.CONVERSATIONTYPE.TIP -> ConversationFragment.getInstanceWithTip(intent.getStringExtra(CommonParams.ACCOUNT),
+                    intent.getBooleanExtra(CommonParams.ISGROUP, false),
                     cards,
-                    intent.getStringExtra("tip"))
-            ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend -> ConversationFragment.getInstanceWithSendUserInfoAfterSend(intent.getStringExtra("account"),
-                    intent.getStringExtra("extraMessage"),
-                    intent.getBooleanExtra("isGroup", false),
+                    intent.getStringExtra(CommonParams.TIP))
+            ConversationFragment.CONVERSATIONTYPE.SendUserInfoAfterSend -> ConversationFragment.getInstanceWithSendUserInfoAfterSend(intent.getStringExtra(CommonParams.ACCOUNT),
+                    intent.getStringExtra(CommonParams.USERINFO),
+                    intent.getBooleanExtra(CommonParams.ISGROUP, false),
                     cards,
-                    intent.getStringExtra("tip"))
-            ConversationFragment.CONVERSATIONTYPE.SendOneTime -> ConversationFragment.getInstanceWithSendOneTime(intent.getStringExtra("account"),
-                    intent.getSerializableExtra("houseItem") as HouseItem,
-                    intent.getBooleanExtra("isGroup", false),
+                    intent.getStringExtra(CommonParams.TIP))
+            ConversationFragment.CONVERSATIONTYPE.SendOneTime -> ConversationFragment.getInstanceWithSendOneTime(intent.getStringExtra(CommonParams.ACCOUNT),
+                    intent.getSerializableExtra(CommonParams.HOUSEITEM) as HouseItem,
+                    intent.getBooleanExtra(CommonParams.ISGROUP, false),
                     cards,
-                    intent.getStringExtra("tip"))
-            else -> ConversationFragment.getInstance(intent.getStringExtra("account"),
-                    intent.getBooleanExtra("isGroup", false),
+                    intent.getStringExtra(CommonParams.TIP))
+            else -> ConversationFragment.getInstance(intent.getStringExtra(CommonParams.ACCOUNT),
+                    intent.getBooleanExtra(CommonParams.ISGROUP, false),
                     cards)
         }
         supportFragmentManager.beginTransaction()

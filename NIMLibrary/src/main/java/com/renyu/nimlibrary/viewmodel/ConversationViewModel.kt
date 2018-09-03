@@ -398,7 +398,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     /**
      * 判断是否需要发送完消息之后补充发送用户信息卡片
      */
-    fun isSendUserInfoAfterSend(imMessage: IMMessage, need: Boolean, extraMessage: String) {
+    fun isSendUserInfoAfterSend(imMessage: IMMessage, need: Boolean, userInfo: String) {
         if (need) {
             // 判断上一条用户发出的消息的类型
             val lastMessage = when(imMessage.msgType) {
@@ -423,7 +423,7 @@ class ConversationViewModel(private val account: String, private val sessionType
                 }
                 else -> ""
             }
-            val temp = MessageManager.sendUserInfoMessage(account, UserInfoItem(extraMessage, lastMessage), "用户信息")
+            val temp = MessageManager.sendUserInfoMessage(account, UserInfoItem(userInfo, lastMessage), "用户信息")
             refreshSendIMMessage(imMessage, temp)
         }
         else {

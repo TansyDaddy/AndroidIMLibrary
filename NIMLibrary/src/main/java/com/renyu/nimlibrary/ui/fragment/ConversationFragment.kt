@@ -100,10 +100,10 @@ class ConversationFragment : Fragment(), EventImpl {
         fun getInstance(account: String, isGroup: Boolean, cards: Array<ConversationCard>): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", CONVERSATIONTYPE.UNSPECIFIED)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
+            bundle.putString(CommonParams.ACCOUNT, account)
+            bundle.putSerializable(CommonParams.TYPE, CONVERSATIONTYPE.UNSPECIFIED)
+            bundle.putBoolean(CommonParams.ISGROUP, isGroup)
+            bundle.putSerializable(CommonParams.CARD, cards)
             fragment.arguments = bundle
             return fragment
         }
@@ -111,15 +111,15 @@ class ConversationFragment : Fragment(), EventImpl {
         /**
          * 用户主动发送一条信息后触发发送用户信息
          */
-        fun getInstanceWithSendUserInfoAfterSend(account: String, extraMessage: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
+        fun getInstanceWithSendUserInfoAfterSend(account: String, userInfo: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", CONVERSATIONTYPE.SendUserInfoAfterSend)
-            bundle.putString("extraMessage", extraMessage)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
-            bundle.putString("tip", tip)
+            bundle.putString(CommonParams.ACCOUNT, account)
+            bundle.putSerializable(CommonParams.TYPE, CONVERSATIONTYPE.SendUserInfoAfterSend)
+            bundle.putString(CommonParams.USERINFO, userInfo)
+            bundle.putBoolean(CommonParams.ISGROUP, isGroup)
+            bundle.putSerializable(CommonParams.CARD, cards)
+            bundle.putString(CommonParams.TIP, tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -130,12 +130,12 @@ class ConversationFragment : Fragment(), EventImpl {
         fun getInstanceWithSendOneTime(account: String, houseItem: HouseItem, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", CONVERSATIONTYPE.SendOneTime)
-            bundle.putSerializable("houseItem", houseItem)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
-            bundle.putString("tip", tip)
+            bundle.putString(CommonParams.ACCOUNT, account)
+            bundle.putSerializable(CommonParams.TYPE, CONVERSATIONTYPE.SendOneTime)
+            bundle.putSerializable(CommonParams.HOUSEITEM, houseItem)
+            bundle.putBoolean(CommonParams.ISGROUP, isGroup)
+            bundle.putSerializable(CommonParams.CARD, cards)
+            bundle.putString(CommonParams.TIP, tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -146,11 +146,11 @@ class ConversationFragment : Fragment(), EventImpl {
         fun getInstanceWithTip(account: String, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", CONVERSATIONTYPE.TIP)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
-            bundle.putString("tip", tip)
+            bundle.putString(CommonParams.ACCOUNT, account)
+            bundle.putSerializable(CommonParams.TYPE, CONVERSATIONTYPE.TIP)
+            bundle.putBoolean(CommonParams.ISGROUP, isGroup)
+            bundle.putSerializable(CommonParams.CARD, cards)
+            bundle.putString(CommonParams.TIP, tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -161,12 +161,12 @@ class ConversationFragment : Fragment(), EventImpl {
         fun getInstanceWithVRCard(account: String, vrItem: VRItem, isGroup: Boolean, cards: Array<ConversationCard>, tip: String): ConversationFragment {
             val fragment = ConversationFragment()
             val bundle = Bundle()
-            bundle.putString("account", account)
-            bundle.putSerializable("type", CONVERSATIONTYPE.VR)
-            bundle.putSerializable("vrItem", vrItem)
-            bundle.putBoolean("isGroup", isGroup)
-            bundle.putSerializable("cards", cards)
-            bundle.putString("tip", tip)
+            bundle.putString(CommonParams.ACCOUNT, account)
+            bundle.putSerializable(CommonParams.TYPE, CONVERSATIONTYPE.VR)
+            bundle.putSerializable(CommonParams.VRITEM, vrItem)
+            bundle.putBoolean(CommonParams.ISGROUP, isGroup)
+            bundle.putSerializable(CommonParams.CARD, cards)
+            bundle.putString(CommonParams.TIP, tip)
             fragment.arguments = bundle
             return fragment
         }
@@ -245,7 +245,7 @@ class ConversationFragment : Fragment(), EventImpl {
         }
         else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
             // 从VR带看页面进来
-            CommonParams.currentVRStatus = if (arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+            CommonParams.currentVRStatus = if (arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.VR) {
                 AVChatTypeEnum.VALID
             } else {
                 AVChatTypeEnum.INVALID
@@ -254,8 +254,8 @@ class ConversationFragment : Fragment(), EventImpl {
 
         viewDataBinding.also {
             vm = ViewModelProviders.of(this,
-                    ConversationViewModelFactory(arguments!!.getString("account"),
-                            if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P))
+                    ConversationViewModelFactory(arguments!!.getString(CommonParams.ACCOUNT),
+                            if (arguments!!.getBoolean(CommonParams.ISGROUP)) SessionTypeEnum.Team else SessionTypeEnum.P2P))
                     .get(ConversationViewModel::class.java)
             vm!!.messageListResponseLocal?.observe(this, Observer {
                 when(it?.status) {
@@ -263,26 +263,26 @@ class ConversationFragment : Fragment(), EventImpl {
                         vm!!.addOldIMMessages(it.data!!, false)
 
                         // 用户已登录，在需要发送楼盘卡片的情况下执行发送卡片
-                        if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime) {
+                        if (!hasFinishSendOneTime && arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.SendOneTime) {
                             if (NIMClient.getStatus() == StatusCode.LOGINED) {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
-                                sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
-                                vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                                sendHousecardDirectly(arguments!!.getSerializable(CommonParams.HOUSEITEM) as HouseItem)
+                                vm!!.addTempHappyMessage(arguments!!.getString(CommonParams.ACCOUNT), arguments!!.getString(CommonParams.TIP))
                             }
                         }
                         // 用户已登录，在需要发送VR卡片的情况下执行发送卡片
-                        else if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+                        else if (!hasFinishSendOneTime && arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.VR) {
                             if (NIMClient.getStatus() == StatusCode.LOGINED) {
                                 hasFinishSendOneTime = true
                                 // 发送VR卡片
-                                sendVRCard(arguments!!.getSerializable("vrItem") as VRItem)
-                                vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                                sendVRCard(arguments!!.getSerializable(CommonParams.VRITEM) as VRItem)
+                                vm!!.addTempHappyMessage(arguments!!.getString(CommonParams.ACCOUNT), arguments!!.getString(CommonParams.TIP))
                             }
                         }
                         // 发送提示消息
-                        else if (arguments!!.getSerializable("type") != CONVERSATIONTYPE.UNSPECIFIED) {
-                            vm!!.addTempHappyMessage(arguments!!.getString("account"), arguments!!.getString("tip"))
+                        else if (arguments!!.getSerializable(CommonParams.TYPE) != CONVERSATIONTYPE.UNSPECIFIED) {
+                            vm!!.addTempHappyMessage(arguments!!.getString(CommonParams.ACCOUNT), arguments!!.getString(CommonParams.TIP))
                         }
 
                         // 首次加载完成滚动到最底部
@@ -400,16 +400,16 @@ class ConversationFragment : Fragment(), EventImpl {
                         // 消息同步完成
                         if (it.type == ObserveResponseType.ObserveLoginSyncDataStatus) {
                             // 数据同步完成之后在需要发送楼盘卡片的情况下执行发送卡片以及提示消息
-                            if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendOneTime) {
+                            if (!hasFinishSendOneTime && arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.SendOneTime) {
                                 hasFinishSendOneTime = true
                                 // 发送楼盘卡片
-                                sendHousecardDirectly(arguments!!.getSerializable("houseItem") as HouseItem)
+                                sendHousecardDirectly(arguments!!.getSerializable(CommonParams.HOUSEITEM) as HouseItem)
                             }
                             // 数据同步完成之后在需要发送VR卡片的情况下执行发送卡片以及提示消息
-                            else if (!hasFinishSendOneTime && arguments!!.getSerializable("type") == CONVERSATIONTYPE.VR) {
+                            else if (!hasFinishSendOneTime && arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.VR) {
                                 hasFinishSendOneTime = true
                                 // 发送VR卡片
-                                sendVRCard(arguments!!.getSerializable("vrItem") as VRItem)
+                                sendVRCard(arguments!!.getSerializable(CommonParams.VRITEM) as VRItem)
                             }
                             // 消息同步完成后重新获取会话列表数据
                             vm!!.queryMessageLists(null)
@@ -417,7 +417,7 @@ class ConversationFragment : Fragment(), EventImpl {
                         // 收到自定义的通知，这里是"正在输入"提示
                         if (it.type == ObserveResponseType.CustomNotification) {
                             // 判断属于当前会话中的用户
-                            if ((it.data as CustomNotification).sessionId == arguments!!.getString("account")) {
+                            if ((it.data as CustomNotification).sessionId == arguments!!.getString(CommonParams.ACCOUNT)) {
                                 val content = (it.data as CustomNotification).content
                                 try {
                                     val type = JSONObject(content).getString(CommonParams.TYPE)
@@ -466,8 +466,8 @@ class ConversationFragment : Fragment(), EventImpl {
     override fun onResume() {
         super.onResume()
         // 消息提醒场景设置，设置为当前正在聊天的对象，当前正在聊天的对象没有通知显示，其余有
-        MessageManager.setChattingAccount(arguments!!.getString("account"),
-                if (arguments!!.getBoolean("isGroup")) SessionTypeEnum.Team else SessionTypeEnum.P2P)
+        MessageManager.setChattingAccount(arguments!!.getString(CommonParams.ACCOUNT),
+                if (arguments!!.getBoolean(CommonParams.ISGROUP)) SessionTypeEnum.Team else SessionTypeEnum.P2P)
 
         // 判断是否登录，没有登录自动执行登录
         vm!!.signIn()
@@ -521,7 +521,7 @@ class ConversationFragment : Fragment(), EventImpl {
         // ***********************************  更多菜单配置 ***************************************
         val width = ScreenUtils.getScreenWidth()/4
         val params = LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT)
-        val cards = arguments!!.getSerializable("cards") as Array<ConversationCard>
+        val cards = arguments!!.getSerializable(CommonParams.CARD) as Array<ConversationCard>
         for (i in 0 until cards.size) {
             val view = LayoutInflater.from(activity).inflate(R.layout.view_grid_panel_content_item, null, false)
             val itemIv = view.findViewById<ImageView>(R.id.iv_view_grid_panel_content_item)
@@ -597,7 +597,7 @@ class ConversationFragment : Fragment(), EventImpl {
         kp_panel_root.post {
             val layoutParams = kp_panel_root.layoutParams as LinearLayout.LayoutParams
             // 如果卡片类型小于4种，就按照固定高度来处理，反之则使用键盘高度
-            layoutParams.height = if ((arguments!!.getSerializable("cards") as Array<ConversationCard>).size > 4) {
+            layoutParams.height = if ((arguments!!.getSerializable(CommonParams.CARD) as Array<ConversationCard>).size > 4) {
                 KeyboardUtil.getKeyboardHeight(context)
             } else {
                 SizeUtils.dp2px(140f)
@@ -725,9 +725,9 @@ class ConversationFragment : Fragment(), EventImpl {
      * 判断是否需要发送完消息之后补充发送用户信息卡片
      */
     private fun isSendUserInfoAfterSend(imMessage: IMMessage) {
-        if (!hasFinishSendUserInfoAfterSend && arguments!!.getSerializable("type") == CONVERSATIONTYPE.SendUserInfoAfterSend) {
+        if (!hasFinishSendUserInfoAfterSend && arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.SendUserInfoAfterSend) {
             hasFinishSendUserInfoAfterSend = true
-            vm!!.isSendUserInfoAfterSend(imMessage, true, arguments!!.getString("extraMessage"))
+            vm!!.isSendUserInfoAfterSend(imMessage, true, arguments!!.getString(CommonParams.USERINFO))
         }
         else {
             vm!!.isSendUserInfoAfterSend(imMessage, false, "")

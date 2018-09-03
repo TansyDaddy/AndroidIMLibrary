@@ -23,6 +23,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -402,7 +403,8 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case CALLEE_ACK_BUSY:
                 if (impl != null) {
-                    ((WebAppInterface) impl).updateVRStatus("对方繁忙，点击关闭");
+                    ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击挂断");
+                    Toast.makeText(this, "安家顾问（经纪人）暂时忙，请稍后呼叫", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
@@ -426,15 +428,11 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         boolean isAgent = getUserRole() == 1;
         switch (avChatType) {
             case CALLEE_ACK_REQUEST:
-                if (impl != null) {
-                    manager.receive();
-                }
+                manager.receive();
                 break;
             case CONN:
-                if (impl != null) {
-                    manager.hangUp(AVChatExitCode.CANCEL);
-                    finish();
-                }
+                manager.hangUp(AVChatExitCode.CANCEL);
+                finish();
                 break;
             case CONFIG_ERROR:
                 finish();
@@ -461,6 +459,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 finish();
                 break;
             case CALLEE_ACK_BUSY:
+                manager.hangUp(AVChatExitCode.CANCEL);
                 finish();
                 break;
             default:
