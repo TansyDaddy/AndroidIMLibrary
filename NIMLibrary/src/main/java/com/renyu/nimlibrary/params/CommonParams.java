@@ -33,9 +33,4 @@ public class CommonParams {
 
     // 发出"正在输入提示"指令
     public static final String COMMAND_INPUT = "command_input";
-
-    // 当前发送的VR卡片的UUID
-    public static String currentVRUUID = "";
-    // 当前发送的VR卡片的状态
-    public static AVChatTypeEnum currentVRStatus = AVChatTypeEnum.VALID;
 }

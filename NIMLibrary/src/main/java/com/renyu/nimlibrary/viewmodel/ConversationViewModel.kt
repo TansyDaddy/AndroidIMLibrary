@@ -429,7 +429,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     override fun gotoVrOutgoingCall(view: View, imMessage: IMMessage) {
         super.gotoVrOutgoingCall(view, imMessage)
         // 只有当前发送的卡片才能重复点击
-        if (CommonParams.currentVRUUID == imMessage.uuid) {
+        if (ConversationFragment.currentVRUUID == imMessage.uuid) {
             // 客户进入VR环节
             val jsonObject = JSONObject((imMessage.attachment as VRAttachment).vrJson)
             OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, jsonObject.toString(), true)

@@ -94,6 +94,11 @@ class ConversationFragment : Fragment(), EventImpl {
     }
 
     companion object {
+        // 当前发送的VR卡片的UUID
+        var currentVRUUID = ""
+        // 当前发送的VR卡片的状态
+        var currentVRStatus = AVChatTypeEnum.VALID
+
         /**
          * 直接打开会话详情
          */
@@ -241,11 +246,11 @@ class ConversationFragment : Fragment(), EventImpl {
 
         // 处理最后一条VR卡片的状态
         if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
-            CommonParams.currentVRStatus = AVChatTypeEnum.VALID
+            ConversationFragment.currentVRStatus = AVChatTypeEnum.VALID
         }
         else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
             // 从VR带看页面进来
-            CommonParams.currentVRStatus = if (arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.VR) {
+            ConversationFragment.currentVRStatus = if (arguments!!.getSerializable(CommonParams.TYPE) == CONVERSATIONTYPE.VR) {
                 AVChatTypeEnum.VALID
             } else {
                 AVChatTypeEnum.INVALID
@@ -813,7 +818,7 @@ class ConversationFragment : Fragment(), EventImpl {
         val imMessage = vm!!.prepareVRCard(vrItem)
         if (imMessage != null) {
             // 更新最新VR卡片UUID
-            CommonParams.currentVRUUID = imMessage.uuid
+            ConversationFragment.currentVRUUID = imMessage.uuid
 
             vm!!.refreshSendIMMessage(imMessage)
             smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)

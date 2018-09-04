@@ -22,7 +22,7 @@ import com.renyu.nimlibrary.databinding.*
 import com.renyu.nimlibrary.extension.CustomAttachment
 import com.renyu.nimlibrary.extension.CustomAttachmentType
 import com.renyu.nimlibrary.manager.UserManager
-import com.renyu.nimlibrary.params.CommonParams
+import com.renyu.nimlibrary.ui.fragment.ConversationFragment
 import com.renyu.nimlibrary.ui.viewholder.*
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.audio.MessageAudioControl
@@ -193,11 +193,11 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                             }
                             else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
                                 // C端用户，如果当前uuid与item相同，则该item的状态由外层控制
-                                if (messages[holder.layoutPosition].uuid != CommonParams.currentVRUUID) {
+                                if (messages[holder.layoutPosition].uuid != ConversationFragment.currentVRUUID) {
                                     ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, AVChatTypeEnum.INVALID)
                                 }
                                 else {
-                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, CommonParams.currentVRStatus)
+                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, ConversationFragment.currentVRStatus)
                                 }
                             }
                             initViewDataBinding((holder as VRViewHolder).vRDataBinding, holder.layoutPosition)
