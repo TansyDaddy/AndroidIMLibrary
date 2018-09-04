@@ -18,7 +18,7 @@ import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.databinding.FragmentChatlistBinding
-import com.renyu.nimlibrary.manager.MessageManager
+import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.viewmodel.ChatListViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -113,8 +113,6 @@ class ChatListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // 不需要通知显示
-        MessageManager.enableMsgNotification(false)
 
         // 每次恢复Activity的时候都要刷新当前连接状态
         refreshClientStatus(NIMClient.getStatus())
@@ -123,21 +121,26 @@ class ChatListFragment : Fragment() {
         vm!!.signIn()
     }
 
-    override fun onPause() {
-        super.onPause()
-        // 需要通知显示
-        MessageManager.enableMsgNotification(true)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         disposable?.dispose()
     }
 
     private fun refreshClientStatus(statusCode: StatusCode) {
+        tv_chatlist_tip.setOnClickListener(null)
         when(statusCode) {
             // 如果用户登录成功，则同步数据
-            StatusCode.LOGINED -> { updateTip("登录成功", false) }
+            StatusCode.LOGINED -> {
+                if (OtherUtils.areNotificationsEnabled(activity)) {
+                    updateTip("登录成功", false)
+                }
+                else {
+                    updateTip("消息通知未打开", true)
+                    tv_chatlist_tip.setOnClickListener {
+                        OtherUtils.goToNotificationSet(activity)
+                    }
+                }
+            }
             StatusCode.UNLOGIN -> { updateTip("未登录", true) }
             StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true) }
             StatusCode.CONNECTING -> { updateTip("正在连接服务器", true) }
@@ -152,7 +155,7 @@ class ChatListFragment : Fragment() {
     /**
      * 更新提示消息
      */
-    fun updateTip(text: String, visibility: Boolean) {
+    private fun updateTip(text: String, visibility: Boolean) {
         tv_chatlist_tip.text = text
         tv_chatlist_tip.visibility = if (visibility) View.VISIBLE else View.GONE
     }

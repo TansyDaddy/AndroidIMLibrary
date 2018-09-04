@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.renyu.nimlibrary.util.OtherUtils" />
         <variable
@@ -16,33 +17,24 @@
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingBottom="10dip">
-        <TextView
+        <include
             android:id="@+id/aurora_tv_msgitem_date"
-            style="@style/chat_text_date_style"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"/>
+            layout="@layout/view_msgitem_date"
+            bind:imMessage="@{imMessage}" />
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}">
-            <com.facebook.drawee.view.SimpleDraweeView
-                xmlns:fresco="http://schemas.android.com/apk/res-auto"
+            <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
+                layout="@layout/view_msgitem_avatar"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
+                android:layout_marginEnd="10dip"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
-                android:layout_marginEnd="10dip"
-                app:avatarImage="@{imMessage.getFromAccount()}"
-                android:onClick="@{(view) -> eventImpl.gotoUserInfo(view, imMessage.getFromAccount())}"
-                fresco:actualImageResource="@drawable/default_grey_avatar"
-                fresco:actualImageScaleType="focusCrop"
-                fresco:placeholderImage="@drawable/default_grey_avatar"
-                fresco:placeholderImageScaleType="focusCrop"
-                fresco:failureImage="@drawable/default_grey_avatar"
-                fresco:failureImageScaleType="focusCrop"
-                fresco:roundAsCircle="true"/>
+                bind:eventImpl="@{eventImpl}"
+                bind:imMessage="@{imMessage}" />
             <RelativeLayout
                 android:id="@+id/bubble"
                 android:layout_width="wrap_content"
@@ -63,34 +55,14 @@
                     android:textSize="15sp"
                     app:emojiText="@{imMessage.getContent()}" />
             </RelativeLayout>
-            <ImageView
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@id/bubble"
-                android:layout_marginEnd="12dip"
-                android:src="@mipmap/ease_msg_state_failed_resend"
-                android:onClick="@{(view) -> eventImpl.resendIMMessage(view, imMessage.getUuid())}"
-                app:cvListIvStatue="@{imMessage.getStatus().getValue()}" />
-            <ProgressBar
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="12dip"
-                style="@style/pb_conversation_send"
-                app:cvListPbStatue="@{imMessage.getStatus().getValue()}"
-                android:layout_toStartOf="@id/bubble" />
-            <TextView
+            <include
+                layout="@layout/view_msgitem_send_oper"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="3dip"
-                android:layout_marginEnd="12dip"
-                android:layout_alignBottom="@id/bubble"
+                android:layout_centerVertical="true"
                 android:layout_toStartOf="@id/bubble"
-                android:textColor="#666666"
-                android:textSize="12sp"
-                app:read="@{imMessage}"/>
+                bind:eventImpl="@{eventImpl}"
+                bind:imMessage="@{imMessage}" />
         </RelativeLayout>
     </LinearLayout>
 </layout>

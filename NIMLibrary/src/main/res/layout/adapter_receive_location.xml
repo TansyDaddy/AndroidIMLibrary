@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.renyu.nimlibrary.util.OtherUtils" />
         <variable
@@ -16,42 +17,30 @@
         android:orientation="vertical"
         android:gravity="center_horizontal"
         android:paddingBottom="10dip">
-        <TextView
+        <include
             android:id="@+id/aurora_tv_msgitem_date"
-            style="@style/chat_text_date_style"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"
-            android:layout_gravity="center"/>
+            layout="@layout/view_msgitem_date"
+            bind:imMessage="@{imMessage}" />
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <com.facebook.drawee.view.SimpleDraweeView
-                xmlns:fresco="http://schemas.android.com/apk/res-auto"
+            <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
+                layout="@layout/view_msgitem_avatar"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="10dip"
-                app:avatarImage="@{imMessage.getFromAccount()}"
-                android:onClick="@{(view) -> eventImpl.gotoUserInfo(view, imMessage.getFromAccount())}"
-                fresco:actualImageResource="@drawable/default_grey_avatar"
-                fresco:actualImageScaleType="focusCrop"
-                fresco:placeholderImage="@drawable/default_grey_avatar"
-                fresco:placeholderImageScaleType="focusCrop"
-                fresco:failureImage="@drawable/default_grey_avatar"
-                fresco:failureImageScaleType="focusCrop"
-                fresco:roundAsCircle="true"/>
-            <TextView
+                bind:eventImpl="@{eventImpl}"
+                bind:imMessage="@{imMessage}" />
+            <include
                 android:id="@+id/aurora_tv_msgitem_display_name"
-                style="@style/chat_text_name_style"
+                layout="@layout/view_msgitem_display_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:textSize="13sp"
                 android:layout_toEndOf="@id/aurora_iv_msgitem_avatar"
-                android:visibility="gone"
-                app:chatName="@{imMessage.getFromAccount()}" />
+                bind:imMessage="@{imMessage}" />
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

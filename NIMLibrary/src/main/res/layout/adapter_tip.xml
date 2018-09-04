@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <import type="com.renyu.nimlibrary.util.OtherUtils" />
         <variable
@@ -11,13 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="10dip">
-        <TextView
+        <include
             android:id="@+id/aurora_tv_msgitem_date"
-            style="@style/chat_text_date_style"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{OtherUtils.getFriendlyTimeSpanByNow2(imMessage.getTime())}"
-            android:layout_gravity="center"/>
+            layout="@layout/view_msgitem_date"
+            bind:imMessage="@{imMessage}" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

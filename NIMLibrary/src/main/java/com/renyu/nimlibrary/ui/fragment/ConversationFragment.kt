@@ -464,8 +464,6 @@ class ConversationFragment : Fragment(), EventImpl {
 
     override fun onPause() {
         super.onPause()
-        // 需要通知显示
-        MessageManager.enableMsgNotification(true)
 
         // 语音处理
         layout_record.onPause()

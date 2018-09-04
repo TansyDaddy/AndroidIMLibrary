@@ -1,5 +1,9 @@
 package com.renyu.nimlibrary.util;
 
+import android.content.Context;
+import android.content.Intent;
+import android.provider.Settings;
+import android.support.v4.app.NotificationManagerCompat;
 import android.view.View;
 
 import com.baidu.mapapi.map.BitmapDescriptor;
@@ -229,5 +233,24 @@ public class OtherUtils {
         public int getHeight() {
             return height;
         }
+    }
+
+    /**
+     * 设置通知栏权限
+     * @param context
+     */
+    public static void goToNotificationSet(Context context) {
+        Intent intent = new Intent(Settings.ACTION_SETTINGS);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 判断通知权限是否打开
+     * @param context
+     * @return
+     */
+    public static boolean areNotificationsEnabled(Context context) {
+        NotificationManagerCompat notification = NotificationManagerCompat.from(context);
+        return notification.areNotificationsEnabled();
     }
 }
