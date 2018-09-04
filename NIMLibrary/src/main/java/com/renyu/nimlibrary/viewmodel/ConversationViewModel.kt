@@ -25,9 +25,6 @@ import com.netease.nimlib.sdk.msg.model.CustomNotification
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification
-import com.renyu.nimavchatlibrary.manager.BaseAVManager
-import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
-import com.renyu.nimavchatlibrary.ui.InComingAVChatActivity
 import com.renyu.nimavchatlibrary.ui.OutGoingAVChatActivity
 import com.renyu.nimlibrary.bean.*
 import com.renyu.nimlibrary.binding.EventImpl
@@ -124,7 +121,7 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 消息同步比较
+     * 消息首次触发同步后进行比较
      */
     fun compareData(remoteMessages: List<IMMessage>?) {
         if (remoteMessages == null) {
@@ -292,19 +289,6 @@ class ConversationViewModel(private val account: String, private val sessionType
     }
 
     /**
-     * 更新VR卡片当前状态
-     */
-    fun updateVRCardStatus(aVChatTypeEnum: AVChatTypeEnum) {
-        // 遍历找到并刷新
-        for ((index, message) in messages.withIndex()) {
-            if (message.uuid == CommonParams.currentVRUUID) {
-                CommonParams.currentVRStatus = aVChatTypeEnum
-                adapter.notifyItemChanged(index)
-            }
-        }
-    }
-
-    /**
      * 长按消息列表
      */
     override fun onLongClick(view: View, imMessage: IMMessage): Boolean {
@@ -447,20 +431,8 @@ class ConversationViewModel(private val account: String, private val sessionType
         // 只有当前发送的卡片才能重复点击
         if (CommonParams.currentVRUUID == imMessage.uuid) {
             // 客户进入VR环节
-            OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, CommonParams.currentVRUUID, true)
-        }
-    }
-
-    /**
-     * 经纪人前往VR来电页面
-     */
-    override fun gotoVrInComingCall(view: View, imMessage: IMMessage, receive: Boolean) {
-        super.gotoVrInComingCall(view, imMessage, receive)
-        // 若收到音频被叫且主叫人为当前页面聊天的对象，客户触发的卡片与经纪人点击的卡片相同，则判断通过
-        if (BaseAVManager.avChatData != null &&
-                BaseAVManager.avChatData.account == account &&
-                BaseAVManager.avChatData.extra == imMessage.uuid) {
-            InComingAVChatActivity.incomingCall(Utils.getApp(), imMessage.sessionId, (imMessage.attachment as VRAttachment).vrJson, receive)
+            val jsonObject = JSONObject((imMessage.attachment as VRAttachment).vrJson)
+            OutGoingAVChatActivity.outgoingCall(Utils.getApp(), imMessage.sessionId, jsonObject.toString(), true)
         }
     }
 

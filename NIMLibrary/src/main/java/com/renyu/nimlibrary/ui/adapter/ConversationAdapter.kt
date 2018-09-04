@@ -189,13 +189,7 @@ class ConversationAdapter(val messages: ArrayList<IMMessage>, private val eventI
                     when((messages[holder.layoutPosition].attachment as CustomAttachment).type) {
                         CustomAttachmentType.VR -> {
                             if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
-                                // B端用户，如果当前uuid与item相同，则该item的状态由外层控制
-                                if (messages[holder.layoutPosition].uuid == CommonParams.currentVRUUID) {
-                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, CommonParams.currentVRStatus)
-                                }
-                                else {
-                                    ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, AVChatTypeEnum.VALID)
-                                }
+                                ((holder as VRViewHolder).vRDataBinding).setVariable(BR.aVChatTypeEnum, AVChatTypeEnum.VALID)
                             }
                             else if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
                                 // C端用户，如果当前uuid与item相同，则该item的状态由外层控制

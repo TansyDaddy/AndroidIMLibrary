@@ -442,22 +442,6 @@ class ConversationFragment : Fragment(), EventImpl {
                     }
                     .subscribe())
 
-            // 添加音频监听
-            disposable.add(RxBus.getDefault()
-                    .toObservable(AVChatTypeEnum::class.java)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnNext {
-                        // VR带看的卡片高度会随着UI改变而发生变化，所以一旦卡片在最底部，需要重新滚动调整位置
-                        val isLast = isLastMessageVisible()
-                        vm!!.updateVRCardStatus(it)
-                        Handler().postDelayed({
-                            if (isLast) {
-                                smoothMoveToPosition(rv_conversation.adapter.itemCount - 1)
-                            }
-                        }, 250)
-                    }
-                    .subscribe())
-
             // 获取会话列表数据
             vm!!.queryMessageLists(null)
         }
@@ -492,11 +476,6 @@ class ConversationFragment : Fragment(), EventImpl {
 
         // 语音处理
         layout_record.onDestroy()
-
-        // 只有C端才重置VR带看自定义参数
-        if (UserManager.getUserAccount().third == UserManager.UserRole.CUSTOMER) {
-            CommonParams.currentVRUUID = ""
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

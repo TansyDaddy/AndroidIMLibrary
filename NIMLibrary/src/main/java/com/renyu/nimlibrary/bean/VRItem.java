@@ -17,28 +17,18 @@ public class VRItem implements Serializable {
     private String apartment;
     // 面积
     private String buildarea;
-    // 小区
-    private String residentialQuarters;
+    // 价格
+    private String price;
+    // 描述说明文字
+    private String desp;
     // VR看房URL
     private String vrUrl;
-    // 板块、街道
-    private String block;
 
     // 新房补充
-    // 物业类型
-    private String channel;
-    // 区属
-    private String dist;
-    // 卖点
-    private String intro;
+    // 户型名称
+    private String unitType;
 
-    // 租房补充
-    // 出租方式
-    private String renttype;
-    // 装修情况
-    private String fitment;
-
-    // 类型 1新房 2二手房 3租房
+    // 类型 1新房 2二手房
     private String type;
 
     /**
@@ -46,19 +36,23 @@ public class VRItem implements Serializable {
      * @param houseId
      * @param houseTitle
      * @param coverPic
-     * @param channel
-     * @param dist
-     * @param intro
+     * @param apartment
+     * @param buildarea
+     * @param price
+     * @param desp
      * @param vrUrl
+     * @param unitType
      */
-    public VRItem(String houseId, String houseTitle, String coverPic, String channel, String dist, String intro, String vrUrl) {
+    public VRItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String price, String desp, String vrUrl, String unitType) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
-        this.channel = channel;
-        this.dist = dist;
-        this.intro = intro;
+        this.apartment = apartment;
+        this.buildarea = buildarea;
+        this.price = price;
+        this.desp = desp;
         this.vrUrl= vrUrl;
+        this.unitType = unitType;
         this.type = "1";
     }
 
@@ -69,41 +63,20 @@ public class VRItem implements Serializable {
      * @param coverPic
      * @param apartment
      * @param buildarea
-     * @param block
-     * @param residentialQuarters
+     * @param price
+     * @param desp
      * @param vrUrl
      */
-    public VRItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String vrUrl) {
+    public VRItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String price, String desp, String vrUrl) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
         this.apartment = apartment;
         this.buildarea = buildarea;
-        this.block = block;
-        this.residentialQuarters = residentialQuarters;
+        this.price = price;
+        this.desp = desp;
         this.vrUrl= vrUrl;
-        this.type = "2";
-    }
-
-    /**
-     * 租房构造方法
-     * @param houseId
-     * @param houseTitle
-     * @param coverPic
-     * @param apartment
-     */
-    public VRItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String vrUrl, String renttype, String fitment) {
-        this.houseId = houseId;
-        this.houseTitle = houseTitle;
-        this.coverPic = coverPic;
-        this.apartment = apartment;
-        this.buildarea = buildarea;
-        this.block = block;
-        this.residentialQuarters = residentialQuarters;
-        this.vrUrl= vrUrl;
-        this.renttype = renttype;
-        this.fitment = fitment;
-        this.type = "3";
+        this.type = "1";
     }
 
     public String getVrJson() {
@@ -114,14 +87,10 @@ public class VRItem implements Serializable {
             jsonObject.put("coverPic", coverPic);
             jsonObject.put("apartment", apartment);
             jsonObject.put("buildarea", buildarea);
-            jsonObject.put("residentialQuarters", residentialQuarters);
+            jsonObject.put("price", price);
+            jsonObject.put("desp", desp);
             jsonObject.put("vrUrl", vrUrl);
-            jsonObject.put("block", block);
-            jsonObject.put("channel", channel);
-            jsonObject.put("dist", dist);
-            jsonObject.put("intro", intro);
-            jsonObject.put("renttype", renttype);
-            jsonObject.put("fitment", fitment);
+            jsonObject.put("unitType", unitType);
             jsonObject.put("type", type);
             return jsonObject.toString();
         } catch (JSONException e) {

@@ -41,7 +41,6 @@ public class OutGoingAVManager extends BaseAVManager {
         if (avChatTypeListener != null) {
             avChatTypeListener.chatTypeChange(AVChatTypeEnum.PEER_HANG_UP);
         }
-        sendAvChatType(AVChatTypeEnum.PEER_HANG_UP);
         // 注销未连通超时
         AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
 

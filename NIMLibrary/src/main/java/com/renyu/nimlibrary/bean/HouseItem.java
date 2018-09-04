@@ -19,10 +19,10 @@ public class HouseItem implements Serializable {
     private String buildarea;
     // 小区
     private String residentialQuarters;
-    // VR看房URL
-    private String vrUrl;
     // 板块、街道
     private String block;
+    // 价格
+    private String price;
 
     // 新房补充
     // 物业类型
@@ -49,16 +49,16 @@ public class HouseItem implements Serializable {
      * @param channel
      * @param dist
      * @param intro
-     * @param vrUrl
+     * @param price
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String channel, String dist, String intro, String vrUrl) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String channel, String dist, String intro, String price) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
         this.channel = channel;
         this.dist = dist;
         this.intro = intro;
-        this.vrUrl= vrUrl;
+        this.price= price;
         this.type = "1";
     }
 
@@ -71,9 +71,9 @@ public class HouseItem implements Serializable {
      * @param buildarea
      * @param block
      * @param residentialQuarters
-     * @param vrUrl
+     * @param price
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String vrUrl) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String price) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
@@ -81,7 +81,7 @@ public class HouseItem implements Serializable {
         this.buildarea = buildarea;
         this.block = block;
         this.residentialQuarters = residentialQuarters;
-        this.vrUrl= vrUrl;
+        this.price= price;
         this.type = "2";
     }
 
@@ -91,8 +91,14 @@ public class HouseItem implements Serializable {
      * @param houseTitle
      * @param coverPic
      * @param apartment
+     * @param buildarea
+     * @param block
+     * @param residentialQuarters
+     * @param price
+     * @param renttype
+     * @param fitment
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String vrUrl, String renttype, String fitment) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String price, String renttype, String fitment) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
@@ -100,7 +106,7 @@ public class HouseItem implements Serializable {
         this.buildarea = buildarea;
         this.block = block;
         this.residentialQuarters = residentialQuarters;
-        this.vrUrl= vrUrl;
+        this.price= price;
         this.renttype = renttype;
         this.fitment = fitment;
         this.type = "3";
@@ -115,7 +121,7 @@ public class HouseItem implements Serializable {
             jsonObject.put("apartment", apartment);
             jsonObject.put("buildarea", buildarea);
             jsonObject.put("residentialQuarters", residentialQuarters);
-            jsonObject.put("vrUrl", vrUrl);
+            jsonObject.put("price", price);
             jsonObject.put("block", block);
             jsonObject.put("channel", channel);
             jsonObject.put("dist", dist);

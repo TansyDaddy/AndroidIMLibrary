@@ -81,7 +81,7 @@ object UserManager {
         val userRole = when(SPUtils.getInstance().getInt(CommonParams.SP_USERROLE)) {
             1 -> UserRole.AGENT
             2 -> UserRole.CUSTOMER
-            else -> UserRole.AGENT
+            else -> UserRole.UNSPECIFIED
         }
         return Triple(accid, token, userRole)
     }

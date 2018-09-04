@@ -22,9 +22,8 @@ import com.renyu.nimavchatlibrary.params.AVChatConfigs;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
+import com.renyu.nimavchatlibrary.util.RxBusWithAV;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BaseAVManager {
@@ -110,7 +109,6 @@ public class BaseAVManager {
                 if (avChatTypeListener != null) {
                     avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONN);
                 }
-                sendAvChatType(AVChatTypeEnum.CONN);
             } else {
                 isAVChatting = false;
                 avChatData = null;
@@ -168,7 +166,6 @@ public class BaseAVManager {
             if (avChatTypeListener != null) {
                 avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_AGREE);
             }
-            sendAvChatType(AVChatTypeEnum.CALLEE_ACK_AGREE);
         }
     };
 
@@ -278,7 +275,6 @@ public class BaseAVManager {
                 public void onSuccess(Void aVoid) {
                     // 在未接听的时候，注销未连通超时
                     AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
-                    sendAvChatType(AVChatTypeEnum.PEER_HANG_UP);
                 }
 
                 @Override
@@ -372,17 +368,9 @@ public class BaseAVManager {
      * 音频状态发送点
      * @param avChatTypeEnum
      */
-    public void sendAvChatType(AVChatTypeEnum avChatTypeEnum) {
-        // 通知基础IM刷新
-        try {
-            Class rxBus = Class.forName("com.renyu.nimlibrary.util.RxBus");
-            Method getDefault = rxBus.getMethod("getDefault");
-            Method post = rxBus.getDeclaredMethod("post", Object.class);
-            post.setAccessible(true);
-            post.invoke(getDefault.invoke(null), avChatTypeEnum);
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+    void sendAvChatType(AVChatTypeEnum avChatTypeEnum) {
+        // 通知音频接听刷新
+        RxBusWithAV.getDefault().post(avChatTypeEnum);
     }
 
     private void showQuitToast(int code) {

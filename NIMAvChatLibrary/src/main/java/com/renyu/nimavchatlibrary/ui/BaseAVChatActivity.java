@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.AppUtils;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -68,7 +69,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static final String KEY_ACCOUNT = "KEY_ACCOUNT";
     static final String KEY_NEEDCALL = "KEY_NEEDCALL";
     static final String KEY_EXTEND_MESSAGE = "extendMessage";
-    static final String KEY_RECEIVE = "KEY_RECEIVE";
 
     static boolean needFinish = true;
     // 是否暂停音频
@@ -123,7 +123,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         String extendMessage = getIntent().getStringExtra(KEY_EXTEND_MESSAGE);
         try {
             JSONObject jsonObject = new JSONObject(extendMessage);
-            url = jsonObject.getString("vrurl");
+            url = jsonObject.getString("vrUrl");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -224,9 +224,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     protected void onDestroy() {
         super.onDestroy();
         if(manager != null){
-            //界面销毁时强制尝试挂断，防止出现红米Note 4X等手机在切后台点击杀死程序时，实际没有杀死的情况
-            manager.hangUp(AVChatExitCode.HANGUP);
-
             terminatedAVChatConfig();
         }
 
@@ -325,12 +322,27 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
     @Override
     public void chatTypeChange(AVChatTypeEnum avChatTypeEnum) {
-        // 该页面来电的时候要判断是不是真的是当前会话人在呼叫
         if (avChatTypeEnum == AVChatTypeEnum.CALLEE_ACK_REQUEST) {
-            if (BaseAVManager.avChatData != null
-                    && BaseAVManager.avChatData.getAccount().equals(getIntent().getStringExtra(KEY_ACCOUNT))) {
-                this.avChatType = avChatTypeEnum;
-                chatTypeChangeUI(avChatTypeEnum);
+            // 该页面来电的时候app不在前台就关闭
+            if (!AppUtils.isAppForeground()) {
+                finish();
+            }
+            else {
+                // 该页面来电的时候要判断是不是之前的C端用户所呼叫的房源
+                if (BaseAVManager.avChatData != null
+                        && BaseAVManager.avChatData.getExtra().equals(getIntent().getStringExtra(KEY_EXTEND_MESSAGE))
+                        && BaseAVManager.avChatData.getAccount().equals(getIntent().getStringExtra(KEY_ACCOUNT))) {
+                    this.avChatType = avChatTypeEnum;
+
+                    // 当前页面收到呼叫，重置各种监听事件
+                    startAVChatConfig();
+                    // 直接接听电话
+                    manager.receive();
+                }
+                // 若不是，则关闭当前页面
+                else {
+                    finish();
+                }
             }
         }
         else {
@@ -346,13 +358,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
         boolean isAgent = getUserRole() == 1;
         switch (avChatTypeEnum) {
-            case CALLEE_ACK_REQUEST:
-                if (impl != null) {
-                    // 当前页面收到呼叫，重置各种监听事件
-                    startAVChatConfig();
-                    ((WebAppInterface) impl).updateVRStatus("正在被叫，点击接听");
-                }
-                break;
             case CONN:
                 // 根据主叫或者被叫区分默认点击功能
                 if (!isAgent) {
@@ -427,9 +432,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     public void chatTypeChangeClick() {
         boolean isAgent = getUserRole() == 1;
         switch (avChatType) {
-            case CALLEE_ACK_REQUEST:
-                manager.receive();
-                break;
             case CONN:
                 manager.hangUp(AVChatExitCode.CANCEL);
                 finish();

@@ -1,5 +1,8 @@
 package com.renyu.nimavchatlibrary.manager;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,9 +18,8 @@ import com.renyu.nimavchatlibrary.module.AVChatTimeoutObserver;
 import com.renyu.nimavchatlibrary.params.AVChatExitCode;
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.receiver.IncomingCallReceiver;
+import com.renyu.nimavchatlibrary.ui.TelActivity;
 import com.renyu.nimavchatlibrary.util.AVChatSoundPlayer;
-
-import java.lang.reflect.Field;
 
 public class InComingAVManager extends BaseAVManager {
 
@@ -51,26 +53,25 @@ public class InComingAVManager extends BaseAVManager {
             }
             // 有来电发生
             BaseAVManager.avChatData = avChatData;
-            // 设置currentVRUUID
-            try {
-                Class commonParams = Class.forName("com.renyu.nimlibrary.params.CommonParams");
-                Field currentVRUUID = commonParams.getDeclaredField("currentVRUUID");
-                currentVRUUID.set(commonParams, avChatData.getExtra());
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
             isAVChatting = true;
             // 重置参数
             reSetParams();
-            if (avChatTypeListener != null) {
-                avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REQUEST);
-            }
-            sendAvChatType(AVChatTypeEnum.CALLEE_ACK_REQUEST);
+
             // 注册未连通超时
             AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, true);
 
             AVChatSoundPlayer.instance().play(AVChatSoundPlayer.RingerTypeEnum.RING);
             Toast.makeText(Utils.getApp(), avChatData.getAccount()+"要求进行VR带看", Toast.LENGTH_SHORT).show();
+
+            // 刷新VR带看页面
+            if (avChatTypeListener != null) {
+                avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REQUEST);
+            }
+
+            // 若当前页面已经是VR带看页面，则不打开接听选择功能页面
+            if (!getTopRunningClass(Utils.getApp()).equals("com.renyu.nimavchatlibrary.ui.InComingAVChatActivity")) {
+                TelActivity.gotoTelActivity();
+            }
         }, true);
 
         // 注册网络通话对方挂断的通知
@@ -89,5 +90,11 @@ public class InComingAVManager extends BaseAVManager {
 
         // 在线状态变化观察者
         NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(onlineStatusObserver, true);
+    }
+
+    private String getTopRunningClass(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+        return cn.getClassName();
     }
 }

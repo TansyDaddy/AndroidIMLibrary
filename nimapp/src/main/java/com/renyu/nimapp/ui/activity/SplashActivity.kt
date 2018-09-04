@@ -15,7 +15,11 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        NimInitParams.isFirst = true
+        if (NimInitParams.isFirst) {
+            NimInitParams.isFirst = false
+            finish()
+            return
+        }
 
         if (CommonParams.isKickout) {
             CommonParams.isKickout = false
@@ -29,6 +33,8 @@ class SplashActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        NimInitParams.isFirst = true
 
         val accid = UserManager.getUserAccount().first
         val token = UserManager.getUserAccount().second
