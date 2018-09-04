@@ -42,8 +42,6 @@ public class BaseAVManager {
 
     // 接收方音频通话信息
     public static AVChatData avChatData = null;
-    // 是否有来电发生
-    static boolean isAVChatting = false;
     // 是否音频通话连接成功
     public static AtomicBoolean isCallEstablish = new AtomicBoolean(false);
 
@@ -110,7 +108,6 @@ public class BaseAVManager {
                     avChatTypeListener.chatTypeChange(AVChatTypeEnum.CONN);
                 }
             } else {
-                isAVChatting = false;
                 avChatData = null;
                 // 注销未连通超时
                 AVChatTimeoutObserver.getInstance().observeTimeoutNotification(timeoutObserver, false);
@@ -313,7 +310,6 @@ public class BaseAVManager {
         destroyRTC = true;
         AVChatSoundPlayer.instance().stop();
 
-        isAVChatting = false;
         isCallEstablish.set(false);
         avChatData = null;
     }

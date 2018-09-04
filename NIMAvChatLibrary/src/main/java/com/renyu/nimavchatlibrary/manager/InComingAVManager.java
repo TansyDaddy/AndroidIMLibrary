@@ -45,7 +45,7 @@ public class InComingAVManager extends BaseAVManager {
         AVChatManager.getInstance().observeIncomingCall((Observer<AVChatData>) avChatData -> {
             // 非电话场景并且未发生音频连接的情况下可以接收呼叫
             if (IncomingCallReceiver.stateEnum != IncomingCallReceiver.PhoneCallStateEnum.IDLE
-                    || isAVChatting
+                    || BaseAVManager.avChatData != null
                     || AVChatManager.getInstance().getCurrentChatId() != 0) {
                 // 给对方用户发送占线指令
                 AVChatManager.getInstance().sendControlCommand(avChatData.getChatId(), AVChatControlCommand.BUSY, null);
@@ -53,7 +53,6 @@ public class InComingAVManager extends BaseAVManager {
             }
             // 有来电发生
             BaseAVManager.avChatData = avChatData;
-            isAVChatting = true;
             // 重置参数
             reSetParams();
 

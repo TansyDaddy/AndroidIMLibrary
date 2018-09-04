@@ -34,8 +34,6 @@ public class OutGoingAVChatActivity extends BaseAVChatActivity {
      * @param needCall
      */
     public static void outgoingCall(Context context, String account, String extendMessage, boolean needCall) {
-        needFinish = false;
-
         Intent intent = new Intent(context, OutGoingAVChatActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(KEY_ACCOUNT, account);

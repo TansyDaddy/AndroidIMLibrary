@@ -56,5 +56,5 @@ public class NimInitParams {
     public static final int MAIN = 4;
 
     // 是否为经纪人（区分租售宝和淘房）
-    public static boolean isAgent = false;
+    public static boolean isAgent = true;
 }

@@ -70,7 +70,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
     static final String KEY_NEEDCALL = "KEY_NEEDCALL";
     static final String KEY_EXTEND_MESSAGE = "extendMessage";
 
-    static boolean needFinish = true;
     // 是否暂停音频
     boolean hasOnPause = false;
     BaseAVManager manager;
@@ -126,12 +125,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             url = jsonObject.getString("vrUrl");
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-
-        // 若来电或去电未接通时，点击home。另外一方挂断通话。从最近任务列表恢复，则finish
-        if (needFinish) {
-            finish();
-            return;
         }
 
         // 加载webview相关
@@ -228,8 +221,6 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         }
 
         destoryWebView();
-
-        needFinish = true;
     }
 
     @Override
