@@ -57,6 +57,15 @@
     <uses-sdk tools:overrideLibrary="com.huawei.android.hms.base,com.huawei.android.hms.push" />
 
     <application>
+        <activity
+            android:name=".ui.activity.MapActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.activity.MapPreviewActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="portrait" />
+
         <!-- 365测试1  e37ca5acf989a4b1c18a6036cb08df86 -->
         <!-- 365测试   62dc70a4106624228d5bb0e1b7afccdb -->
         <meta-data
@@ -187,23 +196,5 @@
                 <action android:name="com.huawei.intent.action.PUSH" />
             </intent-filter>
         </receiver>
-
-        <!-- 百度地图 -->
-        <meta-data
-            android:name="com.baidu.lbsapi.API_KEY"
-            android:value="${baidumap}" />
-        <service
-            android:name="com.baidu.location.f"
-            android:enabled="true"
-            android:process=":baidumapremote" >
-        </service>
-        <activity
-            android:name=".ui.activity.MapActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".ui.activity.MapPreviewActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait" />
     </application>
 </manifest>

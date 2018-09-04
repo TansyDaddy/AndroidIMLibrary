@@ -54,7 +54,8 @@ kapt {
 }
 
 dependencies {
-    api fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly files('libs/BaiduLBS_Android.jar')
+    api files('libs/MiPush_SDK_Client_3_6_9.jar')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:gridlayout-v7:27.1.1'
@@ -79,7 +80,7 @@ dependencies {
     // 华为推送
     api 'com.huawei.android.hms:push:2.6.0.301'
     // 工具类
-    api 'com.blankj:utilcode:1.19.0'
+    api 'com.blankj:utilcode:1.19.4'
     // Fresco
     api 'com.facebook.fresco:fresco:1.10.0'
     api 'com.facebook.fresco:drawee-span:1.10.0'
@@ -92,5 +93,5 @@ dependencies {
     // JKeyboardPanelSwitch  For resolve the layout conflict when keybord & panel are switching (Android键盘面板冲突 布局闪动处理方案)
     api 'cn.dreamtobe.kpswitch:library:1.6.1'
     api project(':NIMAvChatLibrary')
-//        api 'com.github.renyu:AndroidNimAvChatLibrary:1.0.5'
+//    api 'com.github.renyu:AndroidNimAvChatLibrary:1.0.6'
 }

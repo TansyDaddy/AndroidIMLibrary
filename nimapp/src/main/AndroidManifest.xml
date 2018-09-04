@@ -52,5 +52,14 @@
             android:windowSoftInputMode="stateHidden|adjustResize"/>
         <!-- 务必要实现 -->
         <activity android:name=".ui.activity.NotificationActivity" android:screenOrientation="portrait"/>
+        <!-- 百度地图 -->
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="${baidumap}" />
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":baidumapremote" >
+        </service>
     </application>
 </manifest>
