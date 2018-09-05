@@ -35,22 +35,16 @@
                 bind:imMessage="@{imMessage}" />
             <RelativeLayout
                 android:id="@+id/bubble"
-                android:layout_width="wrap_content"
+                android:layout_width="274dip"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dip"
                 android:layout_toStartOf="@id/aurora_iv_msgitem_avatar"
+                android:background="@drawable/shape_message_receiver"
                 android:onClick="@{(view) -> eventImpl.openHouseCard(view, imMessage)}">
-                <LinearLayout
-                    android:layout_width="274dip"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:orientation="vertical"
-                    android:background="@drawable/shape_message_receiver">
-                    <include
-                        layout="@layout/view_msgitem_house"
-                        bind:eventImpl="@{eventImpl}"
-                        bind:imMessage="@{imMessage}" />
-                </LinearLayout>
+                <include
+                    layout="@layout/view_msgitem_house"
+                    bind:eventImpl="@{eventImpl}"
+                    bind:imMessage="@{imMessage}" />
             </RelativeLayout>
             <include
                 layout="@layout/view_msgitem_send_oper"

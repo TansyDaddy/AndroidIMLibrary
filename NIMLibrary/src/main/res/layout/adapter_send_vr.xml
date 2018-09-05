@@ -39,14 +39,13 @@
                 bind:imMessage="@{imMessage}" />
             <RelativeLayout
                 android:id="@+id/bubble"
-                android:layout_width="wrap_content"
+                android:layout_width="274dip"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dip"
                 android:layout_toStartOf="@id/aurora_iv_msgitem_avatar">
                 <LinearLayout
-                    android:layout_width="274dip"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
                     android:orientation="vertical"
                     android:background="@drawable/shape_message_receiver">
                     <include

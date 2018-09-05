@@ -55,7 +55,7 @@ class ChatListViewModel : ViewModel(), EventImpl {
     fun signIn() {
         if (AuthManager.getStatus() != StatusCode.LOGINED && NetworkUtils.isConnected()) {
             AuthManager.login(UserManager.getUserAccount().first,
-                    UserManager.getUserAccount().second)
+                    UserManager.getUserAccount().second, UserManager.getUserAccount().third == UserManager.UserRole.AGENT)
         }
     }
 

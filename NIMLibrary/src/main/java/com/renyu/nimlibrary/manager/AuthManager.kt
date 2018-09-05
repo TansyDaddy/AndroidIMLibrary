@@ -2,6 +2,7 @@ package com.renyu.nimlibrary.manager
 
 import android.app.Activity
 import android.graphics.Color
+import android.os.Handler
 import android.text.TextUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.Utils
@@ -41,34 +42,33 @@ object AuthManager {
         options.statusBarNotificationConfig = loadStatusBarNotificationConfig()
         options.mixPushConfig = buildMixPushConfig()
 
-        var temp = false
-
-        // 开启自动登录
-        if (needAuto &&
-                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
-                !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
+        val temp = isAuto(needAuto)
+        if (temp) {
             NIMClient.init(Utils.getApp(), LoginInfo(UserManager.getUserAccount().first, UserManager.getUserAccount().second), options)
-
-            temp = true
-        }
-        // 当天已登录的用户设置为自动登录
-        else if (UserManager.isTodaySignIn() &&
-                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
-                !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
-            NIMClient.init(Utils.getApp(), LoginInfo(UserManager.getUserAccount().first, UserManager.getUserAccount().second), options)
-
-            temp = true
-        }
-        else {
+        } else {
             NIMClient.init(Utils.getApp(), null, options)
-
-            temp = false
         }
 
         // 初始化消息提醒
         NIMClient.toggleNotification(true)
 
         return temp
+    }
+
+    /**
+     * 判断当前是否设置为自动登录
+     */
+    private fun isAuto(needAuto: Boolean): Boolean {
+        // 如果开启自动登录
+        return if (needAuto &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
+            true
+        }
+        // 当天已登录的用户设置为自动登录
+        else UserManager.isTodaySignIn() &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().second)
     }
 
     /**
@@ -171,13 +171,12 @@ object AuthManager {
     }
 
     /**
-     * 登录
+     * 首次登录
      */
     fun login(account: String, token: String, requestCallback: RequestCallback<LoginInfo>): AbortableFuture<out Any> {
         // 设置当前登录时间
         UserManager.setLastSignInTime()
 
-        NIMClient.getService(AuthService::class.java).logout()
         val loginRequest = NIMClient.getService(AuthService::class.java)
                 .login(LoginInfo(account, token))
         loginRequest.setCallback(requestCallback)
@@ -187,12 +186,14 @@ object AuthManager {
     /**
      * 登录
      */
-    fun login(account: String, token: String) {
+    fun login(account: String, token: String, needAuto: Boolean) {
+        val temp = isAuto(needAuto)
+        if (!temp) {
+            NIMClient.getService(AuthService::class.java).logout()
+            Handler().postDelayed({ NIMClient.getService(AuthService::class.java).login(LoginInfo(account, token)) }, 1000)
+        }
         // 设置当前登录时间
         UserManager.setLastSignInTime()
-
-        NIMClient.getService(AuthService::class.java).logout()
-        NIMClient.getService(AuthService::class.java).login(LoginInfo(account, token))
     }
 
     /**
