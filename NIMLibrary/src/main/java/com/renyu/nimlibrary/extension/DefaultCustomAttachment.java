@@ -1,6 +1,6 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/4/10.
@@ -15,14 +15,14 @@ public class DefaultCustomAttachment extends CustomAttachment {
 
     @Override
     protected void parseData(JSONObject data) {
-        content = data.toJSONString();
+        content = data.toString();
     }
 
     @Override
     protected JSONObject packData() {
         JSONObject data = null;
         try {
-            data = JSONObject.parseObject(content);
+            data = new JSONObject(content);
         } catch (Exception e) {
 
         }

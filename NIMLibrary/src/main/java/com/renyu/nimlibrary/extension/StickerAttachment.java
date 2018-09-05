@@ -1,7 +1,9 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.FileUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/7/8.
@@ -26,15 +28,23 @@ public class StickerAttachment extends CustomAttachment {
 
     @Override
     protected void parseData(JSONObject data) {
-        this.catalog = data.getString(KEY_CATALOG);
-        this.chartlet = data.getString(KEY_CHARTLET);
+        try {
+            this.catalog = data.getString(KEY_CATALOG);
+            this.chartlet = data.getString(KEY_CHARTLET);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected JSONObject packData() {
         JSONObject data = new JSONObject();
-        data.put(KEY_CATALOG, catalog);
-        data.put(KEY_CHARTLET, chartlet);
+        try {
+            data.put(KEY_CATALOG, catalog);
+            data.put(KEY_CHARTLET, chartlet);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return data;
     }
 

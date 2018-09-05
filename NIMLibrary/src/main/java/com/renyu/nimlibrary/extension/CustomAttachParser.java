@@ -1,9 +1,10 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachment;
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachmentParser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/4/9.
@@ -17,8 +18,8 @@ public class CustomAttachParser implements MsgAttachmentParser {
     public MsgAttachment parse(String json) {
         CustomAttachment attachment = null;
         try {
-            JSONObject object = JSON.parseObject(json);
-            int type = object.getInteger(KEY_TYPE);
+            JSONObject object = new JSONObject(json);
+            int type = object.getInt(KEY_TYPE);
             JSONObject data = object.getJSONObject(KEY_DATA);
             switch (type) {
                 case CustomAttachmentType.Sticker:
@@ -47,11 +48,14 @@ public class CustomAttachParser implements MsgAttachmentParser {
 
     public static String packData(int type, JSONObject data) {
         JSONObject object = new JSONObject();
-        object.put(KEY_TYPE, type);
-        if (data != null) {
-            object.put(KEY_DATA, data);
+        try {
+            object.put(KEY_TYPE, type);
+            if (data != null) {
+                object.put(KEY_DATA, data);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-
-        return object.toJSONString();
+        return object.toString();
     }
 }

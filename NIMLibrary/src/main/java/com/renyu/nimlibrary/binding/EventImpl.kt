@@ -8,9 +8,6 @@ import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 interface EventImpl {
     fun click(view: View) {}
 
-    // 删除联系人
-    fun deleteRecentContact(view: View, contactId: String) {}
-
     // 跳转会话详情
     fun gotoConversationActivity(view: View, recentContact: RecentContact) {}
 
@@ -19,6 +16,11 @@ interface EventImpl {
 
     // 长按消息列表中的消息
     fun onLongClick(view: View, imMessage: IMMessage): Boolean {
+        return true
+    }
+
+    // 长按消息列表中的消息
+    fun onLongClick(view: View, recentContact: RecentContact): Boolean {
         return true
     }
 

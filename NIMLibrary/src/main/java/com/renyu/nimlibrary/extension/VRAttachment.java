@@ -1,6 +1,7 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/7/8.
@@ -22,13 +23,21 @@ public class VRAttachment extends CustomAttachment {
 
     @Override
     protected void parseData(JSONObject data) {
-        this.vrJson = data.getString(KEY_VR);
+        try {
+            this.vrJson = data.getString(KEY_VR);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected JSONObject packData() {
         JSONObject data = new JSONObject();
-        data.put(KEY_VR, vrJson);
+        try {
+            data.put(KEY_VR, vrJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return data;
     }
 

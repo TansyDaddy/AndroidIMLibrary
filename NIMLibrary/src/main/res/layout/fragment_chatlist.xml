@@ -17,13 +17,35 @@
             app:adapter="@{adapter}">
 
         </android.support.v7.widget.RecyclerView>
-        <TextView
-            android:id="@+id/tv_chatlist_tip"
+        <LinearLayout
+            android:id="@+id/layout_chatlist_tip"
             android:layout_width="match_parent"
-            android:layout_height="30dip"
+            android:layout_height="32dip"
             android:visibility="gone"
-            android:textColor="@android:color/holo_red_dark"
-            android:background="@android:color/holo_red_light"
-            android:gravity="center_vertical"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="10dip"
+            android:background="#ffd4d4">
+            <ImageView
+                android:id="@+id/iv_chatlist_tip"
+                android:src="@mipmap/ic_chat_tip"
+                android:layout_marginEnd="5dip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ProgressBar
+                android:id="@+id/pb_chatlist_tip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/progressBarStyleSmall"
+                android:indeterminateTint="#b1b1b1"
+                android:layout_marginEnd="5dip"/>
+            <TextView
+                android:id="@+id/tv_chatlist_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#dd2a2a"
+                android:textSize="12sp"
+                android:gravity="center_vertical"/>
+        </LinearLayout>
     </RelativeLayout>
 </layout>

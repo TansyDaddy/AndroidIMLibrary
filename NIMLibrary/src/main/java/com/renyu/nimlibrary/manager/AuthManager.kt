@@ -41,7 +41,17 @@ object AuthManager {
         options.statusBarNotificationConfig = loadStatusBarNotificationConfig()
         options.mixPushConfig = buildMixPushConfig()
 
-        NIMClient.init(Utils.getApp(), null, options)
+        // 当天已登录的用户设置为自动登录
+        if (UserManager.isTodaySignIn() &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().first)&&
+                !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
+            NIMClient.init(Utils.getApp(), LoginInfo(UserManager.getUserAccount().first, UserManager.getUserAccount().second), options)
+        }
+        else {
+            NIMClient.init(Utils.getApp(), null, options)
+            // 假登录获取本地数据
+            AuthManager.fakeLogin()
+        }
 
         // 初始化消息提醒
         NIMClient.toggleNotification(true)
@@ -150,6 +160,9 @@ object AuthManager {
      * 登录
      */
     fun login(account: String, token: String, requestCallback: RequestCallback<LoginInfo>): AbortableFuture<out Any> {
+        // 设置当前登录时间
+        UserManager.setLastSignInTime()
+
         NIMClient.getService(AuthService::class.java).logout()
         val loginRequest = NIMClient.getService(AuthService::class.java)
                 .login(LoginInfo(account, token))
@@ -161,6 +174,9 @@ object AuthManager {
      * 登录
      */
     fun login(account: String, token: String) {
+        // 设置当前登录时间
+        UserManager.setLastSignInTime()
+
         NIMClient.getService(AuthService::class.java).logout()
         NIMClient.getService(AuthService::class.java).login(LoginInfo(account, token))
     }

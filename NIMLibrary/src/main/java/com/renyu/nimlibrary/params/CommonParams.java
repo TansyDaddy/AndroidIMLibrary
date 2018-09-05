@@ -12,6 +12,9 @@ public class CommonParams {
     public static final String SP_TOKEN = "sp_token";
     public static final String SP_USERROLE = "sp_userrole";
 
+    // 最后一次登录日期
+    public static final String SP_LASTSIGNIN = "sp_lastsignin";
+
     // 是否被踢下线
     public static boolean isKickout = false;
 

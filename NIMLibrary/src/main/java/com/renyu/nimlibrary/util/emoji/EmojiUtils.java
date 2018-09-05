@@ -123,7 +123,7 @@ public class EmojiUtils {
      * @param simpleDraweeSpanTextView
      * @param msg
      */
-    public static void replaceFaceMsgByFresco(SimpleDraweeSpanTextView simpleDraweeSpanTextView, String msg) {
+    public static void replaceFaceMsgByFresco(SimpleDraweeSpanTextView simpleDraweeSpanTextView, String msg, int textSize) {
         Context context = simpleDraweeSpanTextView.getContext();
 
         DraweeSpanStringBuilder draweeSpanStringBuilder = new DraweeSpanStringBuilder(msg);
@@ -150,8 +150,8 @@ public class EmojiUtils {
                         animatedController,
                         matcher.start(),
                         matcher.end()-1,
-                        SizeUtils.dp2px(20),
-                        SizeUtils.dp2px(20),
+                        SizeUtils.dp2px(textSize),
+                        SizeUtils.dp2px(textSize),
                         false,
                         DraweeSpan.ALIGN_BOTTOM);
             }

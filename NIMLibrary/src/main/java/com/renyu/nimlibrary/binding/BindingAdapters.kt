@@ -80,16 +80,6 @@ object BindingAdapters {
     }
 
     @JvmStatic
-    @BindingAdapter(value = ["showUnreadNum"])
-    fun loadUnreadNum(textView: TextView, count: Int) {
-        textView.visibility = if (count>0) {
-            View.VISIBLE
-        } else {
-            View.INVISIBLE
-        }
-    }
-
-    @JvmStatic
     @BindingAdapter(value = ["chatName"])
     fun loadChatName(textView: TextView, contactId: String) {
         val userInfo = UserManager.getUserInfo(contactId)
@@ -135,7 +125,7 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["emojiText"])
     fun loadEmojiText(textView: SimpleDraweeSpanTextView, text: String) {
-        EmojiUtils.replaceFaceMsgByFresco(textView, text)
+        EmojiUtils.replaceFaceMsgByFresco(textView, text, 12)
     }
 
     @JvmStatic
@@ -179,7 +169,7 @@ object BindingAdapters {
             textView.text = "[语音消息]"
             return
         }
-        EmojiUtils.replaceFaceMsgByFresco(textView, recentContact.content)
+        EmojiUtils.replaceFaceMsgByFresco(textView, recentContact.content, 14)
     }
 
     @JvmStatic

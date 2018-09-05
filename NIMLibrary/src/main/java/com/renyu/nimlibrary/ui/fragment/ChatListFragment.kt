@@ -39,7 +39,12 @@ class ChatListFragment : Fragment() {
     interface ChatListListener {
         // 会话列表点击
         fun clickRecentContact(recentContact: RecentContact)
+        // 删除联系人
+        fun deleteRecentContact(recentContact: RecentContact)
     }
+
+    // 是否在可见情况下刷新列表
+    var isRefresh = false
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -75,7 +80,6 @@ class ChatListFragment : Fragment() {
                 }
             })
             viewDataBinding?.adapter = vm?.adapter
-
 
             disposable = RxBus.getDefault()
                     .toObservable(ObserveResponse::class.java)
@@ -114,6 +118,11 @@ class ChatListFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        if (isRefresh) {
+            vm!!.adapter.notifyDataSetChanged()
+        }
+        isRefresh = true
+
         // 每次恢复Activity的时候都要刷新当前连接状态
         refreshClientStatus(NIMClient.getStatus())
 
@@ -132,31 +141,40 @@ class ChatListFragment : Fragment() {
             // 如果用户登录成功，则同步数据
             StatusCode.LOGINED -> {
                 if (OtherUtils.areNotificationsEnabled(activity)) {
-                    updateTip("登录成功", false)
+                    updateTip("登录成功", false, false, false)
                 }
                 else {
-                    updateTip("消息通知未打开", true)
+                    updateTip("消息通知未打开", true, false, true)
                     tv_chatlist_tip.setOnClickListener {
                         OtherUtils.goToNotificationSet(activity)
                     }
                 }
             }
-            StatusCode.UNLOGIN -> { updateTip("未登录", true) }
-            StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true) }
-            StatusCode.CONNECTING -> { updateTip("正在连接服务器", true) }
-            StatusCode.LOGINING -> { updateTip("正在登录中", true) }
-            StatusCode.FORBIDDEN -> { updateTip("被服务器禁止登录", true) }
-            StatusCode.VER_ERROR -> { updateTip("客户端版本错误", true) }
-            StatusCode.PWD_ERROR -> { updateTip("用户名或密码错误", true) }
-            else -> { updateTip("", false) }
+            StatusCode.UNLOGIN -> { updateTip("未登录", true, false, true) }
+            StatusCode.NET_BROKEN -> { updateTip("网络连接已断开", true, false, true) }
+            StatusCode.CONNECTING -> { updateTip("正在连接服务器", false, true, true) }
+            StatusCode.LOGINING -> { updateTip("正在登录中", false, true, true) }
+            StatusCode.FORBIDDEN -> { updateTip("被服务器禁止登录", true, false, true) }
+            StatusCode.VER_ERROR -> { updateTip("客户端版本错误", true, false, true) }
+            StatusCode.PWD_ERROR -> { updateTip("用户名或密码错误", true, false, true) }
+            else -> { updateTip("", false, false, false) }
         }
+    }
+
+    /**
+     * 删除联系人
+     */
+    fun deleteRecentContact(contactId: String) {
+        vm!!.deleteRecentContact(contactId)
     }
 
     /**
      * 更新提示消息
      */
-    private fun updateTip(text: String, visibility: Boolean) {
+    private fun updateTip(text: String, ivVisibility: Boolean, pbVisibility: Boolean, layoutVisibility: Boolean) {
         tv_chatlist_tip.text = text
-        tv_chatlist_tip.visibility = if (visibility) View.VISIBLE else View.GONE
+        iv_chatlist_tip.visibility = if (ivVisibility) View.VISIBLE else View.GONE
+        pb_chatlist_tip.visibility = if (pbVisibility) View.VISIBLE else View.GONE
+        layout_chatlist_tip.visibility = if (layoutVisibility) View.VISIBLE else View.GONE
     }
 }

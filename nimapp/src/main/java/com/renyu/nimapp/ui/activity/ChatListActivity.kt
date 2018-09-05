@@ -53,6 +53,13 @@ class ChatListActivity : BaseActivity(), ChatListFragment.ChatListListener {
         ConversationActivity.gotoConversationActivity(this, recentContact.contactId)
     }
 
+    /**
+     * 删除联系人
+     */
+    override fun deleteRecentContact(recentContact: RecentContact) {
+        conversationFragment?.deleteRecentContact(recentContact.contactId)
+    }
+
     override fun onBackPressed() {
 //        val intent = Intent(Intent.ACTION_MAIN)
 //        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

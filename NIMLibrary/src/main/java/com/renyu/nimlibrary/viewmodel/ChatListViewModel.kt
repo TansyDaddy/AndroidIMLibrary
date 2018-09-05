@@ -101,12 +101,15 @@ class ChatListViewModel : ViewModel(), EventImpl {
         adapter.notifyDataSetChanged()
     }
 
+    override fun onLongClick(view: View, recentContact: RecentContact): Boolean {
+        (view.context as ChatListFragment.ChatListListener).deleteRecentContact(recentContact)
+        return super.onLongClick(view, recentContact)
+    }
+
     /**
      * 从会话列表中删除一项。
      */
-    override fun deleteRecentContact(view: View, contactId: String) {
-        super.deleteRecentContact(view, contactId)
-
+    fun deleteRecentContact(contactId: String) {
         beans.filter {
             it.contactId == contactId
         }.forEach {

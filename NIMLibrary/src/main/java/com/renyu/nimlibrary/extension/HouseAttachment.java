@@ -1,6 +1,7 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/7/8.
@@ -22,13 +23,21 @@ public class HouseAttachment extends CustomAttachment {
 
     @Override
     protected void parseData(JSONObject data) {
-        this.houseJson = data.getString(KEY_HOUSE);
+        try {
+            this.houseJson = data.getString(KEY_HOUSE);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected JSONObject packData() {
         JSONObject data = new JSONObject();
-        data.put(KEY_HOUSE, houseJson);
+        try {
+            data.put(KEY_HOUSE, houseJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return data;
     }
 

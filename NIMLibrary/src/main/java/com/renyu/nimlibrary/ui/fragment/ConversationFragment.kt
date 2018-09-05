@@ -465,6 +465,9 @@ class ConversationFragment : Fragment(), EventImpl {
     override fun onPause() {
         super.onPause()
 
+        MessageManager.setChattingAccount("",
+                if (arguments!!.getBoolean(CommonParams.ISGROUP)) SessionTypeEnum.Team else SessionTypeEnum.P2P)
+
         // 语音处理
         layout_record.onPause()
 

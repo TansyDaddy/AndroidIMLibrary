@@ -1,7 +1,8 @@
 package com.renyu.nimlibrary.extension;
 
-import com.alibaba.fastjson.JSONObject;
 import com.netease.nimlib.sdk.msg.attachment.MsgAttachment;
+
+import org.json.JSONObject;
 
 /**
  * Created by zhoujianghua on 2015/4/9.

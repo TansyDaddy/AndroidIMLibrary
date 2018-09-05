@@ -9,6 +9,8 @@ import com.netease.nimlib.sdk.uinfo.UserService
 import com.netease.nimlib.sdk.uinfo.UserServiceObserve
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.params.CommonParams
+import java.text.SimpleDateFormat
+import java.util.*
 
 object UserManager {
 
@@ -96,5 +98,21 @@ object UserManager {
         AGENT(1),
         // 客户
         CUSTOMER(2)
+    }
+
+    /**
+     * 设置最后一次登录日期
+     */
+    fun setLastSignInTime() {
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
+        SPUtils.getInstance().put(CommonParams.SP_LASTSIGNIN, simpleDateFormat.format(Date()))
+    }
+
+    /**
+     * 判断今天是否登录过
+     */
+    fun isTodaySignIn(): Boolean {
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
+        return simpleDateFormat.format(Date()) == SPUtils.getInstance().getString(CommonParams.SP_LASTSIGNIN)
     }
 }

@@ -13,14 +13,6 @@ public class HouseItem implements Serializable {
     private String houseTitle;
     // 缩略图
     private String coverPic;
-    // 户型
-    private String apartment;
-    // 面积
-    private String buildarea;
-    // 小区
-    private String residentialQuarters;
-    // 板块、街道
-    private String block;
     // 价格
     private String price;
 
@@ -29,14 +21,12 @@ public class HouseItem implements Serializable {
     private String channel;
     // 区属
     private String dist;
-    // 卖点
-    private String intro;
 
-    // 租房补充
-    // 出租方式
-    private String renttype;
-    // 装修情况
-    private String fitment;
+    // 二手房、租房补充
+    // 户型
+    private String apartment;
+    // 面积
+    private String buildarea;
 
     // 类型 1新房 2二手房 3租房
     private String type;
@@ -48,39 +38,33 @@ public class HouseItem implements Serializable {
      * @param coverPic
      * @param channel
      * @param dist
-     * @param intro
      * @param price
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String channel, String dist, String intro, String price) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String channel, String dist, String price) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
         this.channel = channel;
         this.dist = dist;
-        this.intro = intro;
         this.price= price;
         this.type = "1";
     }
 
     /**
-     * 二手房构造方法
+     * 二手房、租房构造方法
      * @param houseId
      * @param houseTitle
      * @param coverPic
      * @param apartment
      * @param buildarea
-     * @param block
-     * @param residentialQuarters
      * @param price
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String price) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String price, String extra1) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
         this.apartment = apartment;
         this.buildarea = buildarea;
-        this.block = block;
-        this.residentialQuarters = residentialQuarters;
         this.price= price;
         this.type = "2";
     }
@@ -92,23 +76,15 @@ public class HouseItem implements Serializable {
      * @param coverPic
      * @param apartment
      * @param buildarea
-     * @param block
-     * @param residentialQuarters
      * @param price
-     * @param renttype
-     * @param fitment
      */
-    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String block, String residentialQuarters, String price, String renttype, String fitment) {
+    public HouseItem(String houseId, String houseTitle, String coverPic, String apartment, String buildarea, String price, String extra1, String extra2) {
         this.houseId = houseId;
         this.houseTitle = houseTitle;
         this.coverPic = coverPic;
         this.apartment = apartment;
         this.buildarea = buildarea;
-        this.block = block;
-        this.residentialQuarters = residentialQuarters;
         this.price= price;
-        this.renttype = renttype;
-        this.fitment = fitment;
         this.type = "3";
     }
 
@@ -120,14 +96,9 @@ public class HouseItem implements Serializable {
             jsonObject.put("coverPic", coverPic);
             jsonObject.put("apartment", apartment);
             jsonObject.put("buildarea", buildarea);
-            jsonObject.put("residentialQuarters", residentialQuarters);
             jsonObject.put("price", price);
-            jsonObject.put("block", block);
             jsonObject.put("channel", channel);
             jsonObject.put("dist", dist);
-            jsonObject.put("intro", intro);
-            jsonObject.put("renttype", renttype);
-            jsonObject.put("fitment", fitment);
             jsonObject.put("type", type);
             return jsonObject.toString();
         } catch (JSONException e) {
