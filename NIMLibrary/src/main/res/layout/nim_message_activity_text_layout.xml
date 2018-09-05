@@ -3,7 +3,7 @@
     <data>
         <variable
             name="eventImpl"
-            type="com.renyu.nimlibrary.binding.EventImpl"></variable>
+            type="com.renyu.nimlibrary.binding.EventImpl" />
     </data>
     <RelativeLayout
         android:layout_width="match_parent"
@@ -16,20 +16,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/editTextMessage"
-            android:layout_marginLeft="6dip"
-            android:layout_marginRight="6dip">
+            android:layout_marginStart="13dip"
+            android:layout_marginEnd="13dip">
             <ImageView
                 android:id="@+id/buttonAudioMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/nim_message_button_bottom_audio_selector"
+                android:background="@mipmap/nim_message_button_bottom_audio"
                 android:scaleType="center" />
             <ImageView
                 android:id="@+id/buttonTextMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:background="@drawable/nim_message_button_bottom_text_selector"
+                android:background="@mipmap/nim_message_button_bottom_text"
                 android:scaleType="center" />
         </FrameLayout>
         <FrameLayout
@@ -37,33 +37,37 @@
             android:layout_width="0dip"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/switchLayout"
-            android:layout_marginEnd="6dip"
+            android:layout_marginEnd="13dip"
             android:layout_toStartOf="@+id/emoji_button"
             android:layout_toEndOf="@+id/switchLayout">
-            <Button
+            <TextView
                 android:id="@+id/audioRecord"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@mipmap/nim_message_input_edittext_box"
+                android:layout_height="30dip"
                 android:text="按住说话"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/shape_message_receiver"
+                android:textColor="#888888"
+                android:textSize="14sp"
+                android:visibility="gone"/>
         </FrameLayout>
         <com.renyu.nimlibrary.ui.view.DetectDelEventEditText
             android:id="@+id/editTextMessage"
             android:textCursorDrawable="@null"
-            android:textColor="@android:color/black"
+            android:textColor="#212121"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="6dip"
+            android:layout_marginEnd="13dip"
             android:layout_toStartOf="@+id/emoji_button"
             android:layout_toEndOf="@+id/switchLayout"
             android:autoLink="web|email|phone"
-            android:background="@mipmap/nim_message_input_edittext_box"
+            android:background="@null"
+            android:minHeight="30dip"
             android:maxHeight="72dip"
-            android:maxLines="4"
-            android:textSize="16sp" />
+            android:lineSpacingExtra="2dip"
+            android:textSize="14sp" />
         <ImageView
             android:id="@+id/emoji_button"
             android:layout_width="wrap_content"
@@ -71,11 +75,11 @@
             android:layout_alignBottom="@id/audioTextSwitchLayout"
             android:layout_marginEnd="6dip"
             android:layout_toStartOf="@+id/sendLayout"
-            android:background="@drawable/nim_message_button_bottom_emoji_selector"
+            android:background="@mipmap/nim_message_button_bottom_emoji"
             android:scaleType="center" />
-        <FrameLayout
+        <RelativeLayout
             android:id="@+id/sendLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="50dip"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/audioTextSwitchLayout"
             android:layout_alignParentEnd="true"
@@ -84,13 +88,13 @@
                 android:id="@+id/buttonMoreFuntionInText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/nim_message_button_bottom_add_selector"
+                android:layout_centerInParent="true"
+                android:background="@mipmap/nim_message_button_bottom_add"
                 android:scaleType="center" />
             <TextView
                 android:id="@+id/buttonSendMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="30dip"
                 android:layout_gravity="center"
                 android:background="@drawable/nim_message_button_bottom_send_selector"
                 android:gravity="center"
@@ -98,6 +102,6 @@
                 android:onClick="@{(view) -> eventImpl.click(view)}"
                 android:textColor="@android:color/white"
                 android:textSize="14sp" />
-        </FrameLayout>
+        </RelativeLayout>
     </RelativeLayout>
 </layout>

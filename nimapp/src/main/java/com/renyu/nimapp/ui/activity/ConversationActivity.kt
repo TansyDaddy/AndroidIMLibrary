@@ -114,8 +114,7 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
             arrayOf(ConversationFragment.ConversationCard.ALUMNI,
                     ConversationFragment.ConversationCard.CAMERA,
                     ConversationFragment.ConversationCard.HOUSE,
-                    ConversationFragment.ConversationCard.LOCATION,
-                    ConversationFragment.ConversationCard.EVALUATE)
+                    ConversationFragment.ConversationCard.LOCATION)
         } else {
             arrayOf(ConversationFragment.ConversationCard.ALUMNI,
                     ConversationFragment.ConversationCard.CAMERA,

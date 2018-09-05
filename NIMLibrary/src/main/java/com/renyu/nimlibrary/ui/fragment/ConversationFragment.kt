@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.databinding.DataBindingUtil
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
@@ -24,7 +25,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import cn.dreamtobe.kpswitch.util.KPSwitchConflictUtil
 import cn.dreamtobe.kpswitch.util.KeyboardUtil
 import com.baidu.mapapi.model.LatLng
@@ -59,6 +59,7 @@ import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.nim_message_activity_text_layout.*
 import kotlinx.android.synthetic.main.panel_content.*
 import kotlinx.android.synthetic.main.panel_emoji.*
+import org.jetbrains.anko.textColor
 import org.json.JSONObject
 import java.io.File
 import java.util.*
@@ -505,42 +506,35 @@ class ConversationFragment : Fragment(), EventImpl {
 
         // ***********************************  更多菜单配置 ***************************************
         val width = ScreenUtils.getScreenWidth()/4
-        val params = LinearLayout.LayoutParams(width, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val params = LinearLayout.LayoutParams(width, width)
         val cards = arguments!!.getSerializable(CommonParams.CARD) as Array<ConversationCard>
         for (i in 0 until cards.size) {
             val view = LayoutInflater.from(activity).inflate(R.layout.view_grid_panel_content_item, null, false)
             val itemIv = view.findViewById<ImageView>(R.id.iv_view_grid_panel_content_item)
-            val itemTv= view.findViewById<TextView>(R.id.tv_view_grid_panel_content_item)
             when (cards[i]) {
                 // 选择相册
                 ConversationCard.ALUMNI -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_image)
-                    itemTv.text = "相册"
                     view.setOnClickListener { conversationListener?.pickPhoto() }
                 }
                 ConversationCard.CAMERA -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_camera)
-                    itemTv.text = "拍照"
                     view.setOnClickListener { conversationListener?.takePhoto() }
                 }
                 ConversationCard.HOUSE -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_house)
-                    itemTv.text = "楼盘"
                     view.setOnClickListener { conversationListener?.choiceHouse() }
                 }
                 ConversationCard.LOCATION -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_map)
-                    itemTv.text = "位置"
                     view.setOnClickListener { startActivityForResult(Intent(activity, MapActivity::class.java), 2000) }
                 }
                 ConversationCard.EVALUATE -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_evaluate)
-                    itemTv.text = "评价"
                     view.setOnClickListener { conversationListener?.evaluate() }
                 }
                 ConversationCard.TIPOFFS -> {
                     itemIv.setImageResource(R.mipmap.ic_conversation_tipoffs)
-                    itemTv.text = "举报"
                     view.setOnClickListener { conversationListener?.tipOffs() }
                 }
             }
@@ -585,7 +579,7 @@ class ConversationFragment : Fragment(), EventImpl {
             layoutParams.height = if ((arguments!!.getSerializable(CommonParams.CARD) as Array<ConversationCard>).size > 4) {
                 KeyboardUtil.getKeyboardHeight(context)
             } else {
-                SizeUtils.dp2px(140f)
+                SizeUtils.dp2px(126f)
             }
             kp_panel_root.layoutParams = layoutParams
         }
@@ -627,6 +621,15 @@ class ConversationFragment : Fragment(), EventImpl {
                 MessageAudioControl.getInstance().stopAudio()
             }
             layout_record.onPressToSpeakBtnTouch(v, event)
+            if (event.action == MotionEvent.ACTION_UP ||
+                    event.action == MotionEvent.ACTION_CANCEL) {
+                audioRecord.setBackgroundResource(R.drawable.shape_message_receiver)
+                audioRecord.textColor = Color.parseColor("#888888")
+            }
+            else {
+                audioRecord.setBackgroundResource(R.drawable.shape_message_audio)
+                audioRecord.textColor = Color.WHITE
+            }
             return@setOnTouchListener false
         }
         // 点击键盘按键

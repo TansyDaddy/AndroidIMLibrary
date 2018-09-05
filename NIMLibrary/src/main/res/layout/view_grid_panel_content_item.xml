@@ -3,17 +3,15 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="140dip"
     android:gravity="center">
-    <ImageView
-        android:id="@+id/iv_view_grid_panel_content_item"
-        android:layout_width="36dip"
-        android:layout_height="36dip"
-        android:layout_marginTop="10dip"/>
-    <TextView
-        android:id="@+id/tv_view_grid_panel_content_item"
-        android:layout_marginTop="10dip"
-        android:layout_marginBottom="10dip"
-        android:textColor="@android:color/black"
-        android:textSize="14sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="9dip"
+        android:gravity="center"
+        android:background="@drawable/nim_message_more_selector">
+        <ImageView
+            android:id="@+id/iv_view_grid_panel_content_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
 </LinearLayout>
