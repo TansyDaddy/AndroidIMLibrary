@@ -36,8 +36,7 @@
                 android:id="@+id/pb_chatlist_tip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="?android:attr/progressBarStyleSmall"
-                android:indeterminateTint="#b1b1b1"
+                style="@style/pb_conversation_send"
                 android:layout_marginEnd="5dip"/>
             <TextView
                 android:id="@+id/tv_chatlist_tip"

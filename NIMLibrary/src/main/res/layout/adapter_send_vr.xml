@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingBottom="10dip">
+        android:paddingBottom="17dip">
         <include
             android:id="@+id/aurora_tv_msgitem_date"
             layout="@layout/view_msgitem_date"
@@ -30,8 +30,8 @@
             <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
                 layout="@layout/view_msgitem_avatar"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:layout_marginEnd="10dip"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
@@ -41,53 +41,68 @@
                 android:id="@+id/bubble"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dip"
+                android:layout_marginEnd="10dip"
                 android:layout_toStartOf="@id/aurora_iv_msgitem_avatar">
                 <LinearLayout
-                    android:layout_width="250dip"
+                    android:layout_width="274dip"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:orientation="vertical"
-                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}">
-                    <com.facebook.drawee.view.SimpleDraweeView
-                        xmlns:fresco="http://schemas.android.com/apk/res-auto"
-                        android:layout_width="123dip"
-                        android:layout_height="115dip"
-                        android:layout_gravity="end"
-                        fresco:actualImageResource="@drawable/default_grey_avatar"
-                        fresco:actualImageScaleType="focusCrop"
-                        fresco:placeholderImage="@drawable/default_grey_avatar"
-                        fresco:placeholderImageScaleType="focusCrop"
-                        fresco:failureImage="@drawable/default_grey_avatar"
-                        fresco:failureImageScaleType="focusCrop"
-                        fresco:roundedCornerRadius="15dp"
-                        app:cvListVRImage="@{imMessage}"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="5dip"
-                        app:cvListVRTitle="@{imMessage}"/>
+                    android:background="@drawable/shape_message_receiver">
+                    <include
+                        layout="@layout/view_msgitem_house"
+                        bind:eventImpl="@{eventImpl}"
+                        bind:imMessage="@{imMessage}" />
                     <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="33dip"
                         app:cvListVRStatueRelativeLayout="@{aVChatTypeEnum}">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dip"
+                            android:layout_marginStart="10dip"
+                            android:layout_marginEnd="10dip"
+                            android:background="#d9d9d9" />
                         <TextView
                             android:text="点击右侧按钮，进入带看页面"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                        <TextView
+                            android:textSize="12sp"
+                            android:textColor="#666666"
+                            android:layout_centerVertical="true"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
-                            android:text="带看"
+                            android:layout_marginStart="18dip"/>
+                        <TextView
+                            android:layout_width="63dip"
+                            android:layout_height="19dip"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginEnd="18dip"
+                            android:gravity="center"
+                            android:text="VR带看"
+                            android:textSize="12sp"
+                            android:textColor="#ff7300"
+                            android:background="@drawable/shape_message_startvr"
                             android:onClick="@{(view) -> eventImpl.gotoVrOutgoingCall(view, imMessage)}"/>
                     </RelativeLayout>
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="本次带看已结束"
-                        app:cvListVRStatueTextView="@{aVChatTypeEnum}"/>
+                        android:layout_height="33dip"
+                        android:orientation="vertical"
+                        app:cvListVRStatueTextView="@{aVChatTypeEnum}">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dip"
+                            android:layout_marginStart="10dip"
+                            android:layout_marginEnd="10dip"
+                            android:background="#d9d9d9" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="本次带看已结束"
+                            android:textSize="12sp"
+                            android:textColor="#8a8a8a"/>
+                    </LinearLayout>
                 </LinearLayout>
             </RelativeLayout>
             <include

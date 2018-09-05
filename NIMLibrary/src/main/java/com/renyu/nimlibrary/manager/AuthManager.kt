@@ -13,7 +13,7 @@ import com.netease.nimlib.sdk.mixpush.MixPushConfig
 
 object AuthManager {
 
-    fun init(sdkStorageRootPath: String, databaseEncryptKey: String) {
+    fun init(sdkStorageRootPath: String, databaseEncryptKey: String, needAuto: Boolean): Boolean {
         val options = SDKOptions()
         // 配置 APP 保存图片/语音/文件/log等数据的目录
         options.sdkStorageRootPath = sdkStorageRootPath
@@ -41,20 +41,34 @@ object AuthManager {
         options.statusBarNotificationConfig = loadStatusBarNotificationConfig()
         options.mixPushConfig = buildMixPushConfig()
 
-        // 当天已登录的用户设置为自动登录
-        if (UserManager.isTodaySignIn() &&
-                !TextUtils.isEmpty(UserManager.getUserAccount().first)&&
+        var temp = false
+
+        // 开启自动登录
+        if (needAuto &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
                 !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
             NIMClient.init(Utils.getApp(), LoginInfo(UserManager.getUserAccount().first, UserManager.getUserAccount().second), options)
+
+            temp = true
+        }
+        // 当天已登录的用户设置为自动登录
+        else if (UserManager.isTodaySignIn() &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().first) &&
+                !TextUtils.isEmpty(UserManager.getUserAccount().second)) {
+            NIMClient.init(Utils.getApp(), LoginInfo(UserManager.getUserAccount().first, UserManager.getUserAccount().second), options)
+
+            temp = true
         }
         else {
             NIMClient.init(Utils.getApp(), null, options)
-            // 假登录获取本地数据
-            AuthManager.fakeLogin()
+
+            temp = false
         }
 
         // 初始化消息提醒
         NIMClient.toggleNotification(true)
+
+        return temp
     }
 
     /**

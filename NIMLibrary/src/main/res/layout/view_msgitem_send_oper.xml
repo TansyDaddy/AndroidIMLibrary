@@ -16,7 +16,7 @@
             android:layout_width="15dp"
             android:layout_height="15dp"
             android:layout_marginEnd="12dip"
-            android:src="@mipmap/ease_msg_state_failed_resend"
+            android:src="@mipmap/ic_chat_tip"
             android:onClick="@{(view) -> eventImpl.resendIMMessage(view, imMessage.getUuid())}"
             app:cvListIvStatue="@{imMessage.getStatus().getValue()}" />
         <ProgressBar

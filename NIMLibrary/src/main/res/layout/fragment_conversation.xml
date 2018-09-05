@@ -15,7 +15,7 @@
     <cn.dreamtobe.kpswitch.widget.KPSwitchRootRelativeLayout
         android:orientation="vertical" android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#f0f2f8">
+        android:background="#f6f6f6">
         <LinearLayout
             android:id="@+id/layout_conversation_controll"
             android:layout_width="match_parent"
@@ -49,12 +49,12 @@
         </LinearLayout>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_conversation"
-            android:layout_above="@id/layout_conversation_controll"
             app:adapter="@{adapter}"
+            android:layout_above="@id/layout_conversation_controll"
+            android:clipToPadding="false"
+            android:paddingTop="14dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </android.support.v7.widget.RecyclerView>
+            android:layout_height="match_parent" />
         <com.renyu.nimlibrary.ui.view.VoiceRecorderView
             android:id="@+id/layout_record"
             android:layout_width="176dp"

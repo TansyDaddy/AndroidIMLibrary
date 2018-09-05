@@ -25,7 +25,7 @@ class ExampleApp : MultiDexApplication() {
         SDKInitializer.setCoordType(CoordType.BD09LL)
 
         // 初始化云信
-        AuthManager.init(NimInitParams.SDKROOT, NimInitParams.databaseEncryptKey)
+        val autoSignIn = AuthManager.init(NimInitParams.SDKROOT, NimInitParams.databaseEncryptKey, NimInitParams.isAgent)
 
         if (NIMUtil.isMainProcess(this)) {
             // 配置基础监听
@@ -34,6 +34,11 @@ class ExampleApp : MultiDexApplication() {
             if (NimInitParams.isAgent) {
                 InComingAVManager.inComingAVManager = InComingAVManager()
                 InComingAVManager.inComingAVManager.registerInComingObserver()
+            }
+
+            // 假登录获取本地数据
+            if (!autoSignIn) {
+                AuthManager.fakeLogin()
             }
         }
     }

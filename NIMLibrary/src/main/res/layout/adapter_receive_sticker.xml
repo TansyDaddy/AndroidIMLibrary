@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingBottom="10dip">
+        android:paddingBottom="16dip">
         <include
             android:id="@+id/aurora_tv_msgitem_date"
             layout="@layout/view_msgitem_date"
@@ -28,8 +28,8 @@
             <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
                 layout="@layout/view_msgitem_avatar"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="10dip"
                 bind:eventImpl="@{eventImpl}"
@@ -46,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/aurora_tv_msgitem_display_name"
-                android:layout_marginStart="8dip"
+                android:layout_marginStart="10dip"
                 android:layout_toEndOf="@id/aurora_iv_msgitem_avatar">
                 <com.facebook.drawee.view.SimpleDraweeView
                     xmlns:fresco="http://schemas.android.com/apk/res-auto"

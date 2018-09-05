@@ -6,10 +6,7 @@ import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.TextView
+import android.widget.*
 import com.blankj.utilcode.util.SizeUtils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.drawee.span.SimpleDraweeSpanTextView
@@ -17,9 +14,6 @@ import com.facebook.drawee.view.SimpleDraweeView
 import com.facebook.imagepipeline.common.ResizeOptions
 import com.facebook.imagepipeline.request.ImageRequestBuilder
 import com.netease.nimlib.sdk.RequestCallback
-import com.netease.nimlib.sdk.avchat.constant.AVChatRecordState
-import com.netease.nimlib.sdk.avchat.constant.AVChatType
-import com.netease.nimlib.sdk.avchat.model.AVChatAttachment
 import com.netease.nimlib.sdk.msg.attachment.AudioAttachment
 import com.netease.nimlib.sdk.msg.attachment.ImageAttachment
 import com.netease.nimlib.sdk.msg.attachment.LocationAttachment
@@ -31,13 +25,11 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
-import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.extension.*
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
-import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
 import com.renyu.nimlibrary.util.sticker.StickerUtils
@@ -125,7 +117,7 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["emojiText"])
     fun loadEmojiText(textView: SimpleDraweeSpanTextView, text: String) {
-        EmojiUtils.replaceFaceMsgByFresco(textView, text, 12)
+        EmojiUtils.replaceFaceMsgByFresco(textView, text, 14)
     }
 
     @JvmStatic
@@ -200,7 +192,7 @@ object BindingAdapters {
     @BindingAdapter(value = ["cvListAudiolength"])
     fun changeConversationListAudiolength(textView: TextView, imMessage: IMMessage) {
         val duration = (imMessage.attachment as AudioAttachment).duration / 1000
-        textView.text = "$duration\'\'"
+        textView.text = "${duration}s"
     }
 
     @JvmStatic
@@ -296,70 +288,6 @@ object BindingAdapters {
     }
 
     @JvmStatic
-    @BindingAdapter(value = ["cvListAvChatImage"])
-    fun loadChatListAvChatImage(imageView: ImageView, imMessage: IMMessage) {
-        if ((imMessage.attachment as AVChatAttachment).type == AVChatType.AUDIO) {
-            imageView.setImageResource(R.mipmap.avchat_left_type_audio)
-        }
-        else {
-            imageView.setImageResource(R.mipmap.avchat_left_type_video)
-        }
-    }
-
-    @JvmStatic
-    @BindingAdapter(value = ["cvListAvChatText"])
-    fun loadChatListAvChatImage(textView: TextView, imMessage: IMMessage) {
-        val attachment = imMessage.attachment as AVChatAttachment
-        textView.text = when (attachment.state) {
-            //成功接听
-            AVChatRecordState.Success -> OtherUtils.secToTime(attachment.duration)
-            //未接听
-            AVChatRecordState.Missed -> "未接听"
-            //主动拒绝
-            AVChatRecordState.Rejected -> "已挂断"
-            else -> ""
-        }
-    }
-
-    @JvmStatic
-    @BindingAdapter(value = ["cvListVRImage"])
-    fun loadChatListVRImage(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
-        val attachment = imMessage.attachment as VRAttachment
-        val vrJson = attachment.vrJson
-        try {
-            val jsonObject = JSONObject(vrJson)
-            if (simpleDraweeView.tag !=null &&
-                    !TextUtils.isEmpty(simpleDraweeView.tag.toString()) &&
-                    simpleDraweeView.tag.toString() == jsonObject.getString("coverPic")) {
-                // 什么都不做，防止Fresco闪烁
-            }
-            else {
-                val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(jsonObject.getString("coverPic")))
-                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
-                val draweeController = Fresco.newDraweeControllerBuilder()
-                        .setImageRequest(request).setAutoPlayAnimations(true).build()
-                simpleDraweeView.controller = draweeController
-                simpleDraweeView.tag = jsonObject.getString("coverPic")
-            }
-        } catch (e: Exception) {
-
-        }
-    }
-
-    @JvmStatic
-    @BindingAdapter(value = ["cvListVRTitle"])
-    fun loadChatListVRTitle(textView: TextView, imMessage: IMMessage) {
-        val attachment = imMessage.attachment as VRAttachment
-        val vrJson = attachment.vrJson
-        try {
-            val jsonObject = JSONObject(vrJson)
-            textView.text = jsonObject.getString("houseTitle")
-        } catch (e: Exception) {
-
-        }
-    }
-
-    @JvmStatic
     @BindingAdapter(value = ["cvListVRStatueRelativeLayout"])
     fun loadChatListVRStatue(view: RelativeLayout, aVChatTypeEnum: AVChatTypeEnum) {
         when(aVChatTypeEnum) {
@@ -374,7 +302,7 @@ object BindingAdapters {
 
     @JvmStatic
     @BindingAdapter(value = ["cvListVRStatueTextView"])
-    fun loadChatListVRStatue(view: TextView, aVChatTypeEnum: AVChatTypeEnum) {
+    fun loadChatListVRStatue(view: LinearLayout, aVChatTypeEnum: AVChatTypeEnum) {
         when(aVChatTypeEnum) {
             AVChatTypeEnum.VALID -> {
                 view.visibility = View.GONE
@@ -388,8 +316,15 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["cvListHouseCardImage"])
     fun loadChatListHouseCardImage(simpleDraweeView: SimpleDraweeView, imMessage: IMMessage) {
-        val attachment = imMessage.attachment as HouseAttachment
-        val houseJson = attachment.houseJson
+        var houseJson: String? = null
+        if (imMessage.attachment is HouseAttachment) {
+            val attachment = imMessage.attachment as HouseAttachment
+            houseJson = attachment.houseJson
+        }
+        else if (imMessage.attachment is VRAttachment) {
+            val attachment = imMessage.attachment as VRAttachment
+            houseJson = attachment.vrJson
+        }
         try {
             val jsonObject = JSONObject(houseJson)
             if (simpleDraweeView.tag !=null &&
@@ -399,7 +334,7 @@ object BindingAdapters {
             }
             else {
                 val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(jsonObject.getString("coverPic")))
-                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(86f), SizeUtils.dp2px(64f))).build()
                 val draweeController = Fresco.newDraweeControllerBuilder()
                         .setImageRequest(request).setAutoPlayAnimations(true).build()
                 simpleDraweeView.controller = draweeController
@@ -413,13 +348,75 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter(value = ["cvListHouseCardTitle"])
     fun loadChatListHouseCardTitle(textView: TextView, imMessage: IMMessage) {
-        val attachment = imMessage.attachment as HouseAttachment
-        val houseJson = attachment.houseJson
+        var houseJson: String? = null
+        if (imMessage.attachment is HouseAttachment) {
+            val attachment = imMessage.attachment as HouseAttachment
+            houseJson = attachment.houseJson
+        }
+        else if (imMessage.attachment is VRAttachment) {
+            val attachment = imMessage.attachment as VRAttachment
+            houseJson = attachment.vrJson
+        }
         try {
             val jsonObject = JSONObject(houseJson)
             textView.text = jsonObject.getString("houseTitle")
         } catch (e: Exception) {
 
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListHouseCardPrice"])
+    fun loadChatListHouseCardPrice(textView: TextView, imMessage: IMMessage) {
+        var houseJson: String? = null
+        if (imMessage.attachment is HouseAttachment) {
+            val attachment = imMessage.attachment as HouseAttachment
+            houseJson = attachment.houseJson
+        }
+        else if (imMessage.attachment is VRAttachment) {
+            val attachment = imMessage.attachment as VRAttachment
+            houseJson = attachment.vrJson
+        }
+        try {
+            val jsonObject = JSONObject(houseJson)
+            textView.text = jsonObject.getString("price")
+        } catch (e: Exception) {
+
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["cvListHouseCardContent"])
+    fun loadChatListHouseCardContent(textView: TextView, imMessage: IMMessage) {
+        if (imMessage.attachment is HouseAttachment) {
+            val attachment = imMessage.attachment as HouseAttachment
+            val houseJson = attachment.houseJson
+            try {
+                val jsonObject = JSONObject(houseJson)
+                val type = jsonObject.getInt("type")
+                when(type) {
+                    1 -> textView.text = "${jsonObject.getString("dist")} ${jsonObject.getString("channel")}"
+                    2 -> textView.text = "${jsonObject.getString("apartment")} ${jsonObject.getString("buildarea")}"
+                    3 -> textView.text = "${jsonObject.getString("apartment")} ${jsonObject.getString("buildarea")}"
+                }
+            } catch (e: Exception) {
+
+            }
+        }
+        else if (imMessage.attachment is VRAttachment) {
+            val attachment = imMessage.attachment as VRAttachment
+            val houseJson = attachment.vrJson
+            try {
+                val jsonObject = JSONObject(houseJson)
+                val type = jsonObject.getInt("type")
+                when(type) {
+                    1 -> textView.text = "${jsonObject.getString("apartment")} ${jsonObject.getString("desp")} ${jsonObject.getString("buildarea")} ${jsonObject.getString("unitType")}"
+                    2 -> textView.text = "${jsonObject.getString("apartment")} ${jsonObject.getString("desp")} ${jsonObject.getString("buildarea")}"
+                    3 -> textView.text = "${jsonObject.getString("apartment")} ${jsonObject.getString("desp")} ${jsonObject.getString("buildarea")}"
+                }
+            } catch (e: Exception) {
+
+            }
         }
     }
 

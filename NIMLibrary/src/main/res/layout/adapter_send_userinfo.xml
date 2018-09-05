@@ -23,7 +23,6 @@
             android:layout_gravity="center"
             android:layout_marginStart="8dip"
             android:layout_marginEnd="8dip"
-            android:background="@mipmap/nim_bg_message_tip"
             app:cvListUserInfoTitle="@{imMessage}"
             android:gravity="center"
             android:paddingStart="8dip"

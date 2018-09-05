@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingBottom="10dip">
+        android:paddingBottom="16dip">
         <include
             android:id="@+id/aurora_tv_msgitem_date"
             layout="@layout/view_msgitem_date"
@@ -27,8 +27,8 @@
             <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
                 layout="@layout/view_msgitem_avatar"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="10dip"
                 bind:eventImpl="@{eventImpl}"
@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/aurora_tv_msgitem_display_name"
-                android:layout_marginStart="8dip"
+                android:layout_marginStart="10dip"
                 android:layout_toEndOf="@id/aurora_iv_msgitem_avatar">
                 <com.facebook.drawee.view.SimpleDraweeView
                     xmlns:fresco="http://schemas.android.com/apk/res-auto"
@@ -60,7 +60,9 @@
                     fresco:placeholderImageScaleType="focusCrop"
                     fresco:failureImage="@drawable/default_grey_avatar"
                     fresco:failureImageScaleType="focusCrop"
-                    fresco:roundedCornerRadius="15dp"
+                    fresco:roundedCornerRadius="4dp"
+                    fresco:roundingBorderWidth="1dp"
+                    fresco:roundingBorderColor="#59d9d9d9"
                     app:cvListImageUrl="@{imMessage}"/>
             </RelativeLayout>
         </RelativeLayout>

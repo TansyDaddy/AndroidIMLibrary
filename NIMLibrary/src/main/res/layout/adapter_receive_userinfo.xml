@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="10dip">
+        android:paddingBottom="16dip">
         <include
             android:id="@+id/aurora_tv_msgitem_date"
             layout="@layout/view_msgitem_date"
@@ -21,14 +21,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="8dip"
-            android:layout_marginEnd="8dip"
-            android:background="@mipmap/nim_bg_message_tip"
+            android:background="@drawable/shape_message_tip"
             app:cvListUserInfoTitle="@{imMessage}"
             android:gravity="center"
             android:paddingStart="8dip"
             android:paddingEnd="8dip"
-            android:textColor="#ffffff"
-            android:textSize="12sp"/>
+            android:paddingTop="3dip"
+            android:paddingBottom="3dip"
+            android:textColor="#888888"
+            android:textSize="11sp"/>
     </LinearLayout>
 </layout>
