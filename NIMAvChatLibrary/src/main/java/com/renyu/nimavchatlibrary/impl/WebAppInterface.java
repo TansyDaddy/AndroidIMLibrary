@@ -131,8 +131,8 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
      * 呼叫
      */
     @JavascriptInterface
-    public void call(String account, String extendMessage) {
-        ((BaseAVChatActivity) context).manager.call(account, extendMessage);
+    public void call() {
+        ((BaseAVChatActivity) context).manager.call(((BaseAVChatActivity) context).account, ((BaseAVChatActivity) context).extendMessage);
     }
 
     /**

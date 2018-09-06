@@ -81,7 +81,8 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
     WebView web_webview;
 
-    private String url;
+    public String extendMessage = "";
+    public String account = "";
 
     WebAppImpl impl;
 
@@ -119,13 +120,8 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avchat);
 
-        String extendMessage = getIntent().getStringExtra(KEY_EXTEND_MESSAGE);
-        try {
-            JSONObject jsonObject = new JSONObject(extendMessage);
-            url = jsonObject.getString("vrUrl");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        extendMessage = getIntent().getStringExtra(KEY_EXTEND_MESSAGE);
+        account = getIntent().getStringExtra(KEY_ACCOUNT);
 
         // 加载webview相关
         initWebView();
@@ -164,7 +160,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
         registerObserver();
         // 监听音频聊天对方在线情况与自定义消息通道
         ArrayList<String> accounts = new ArrayList<>();
-        accounts.add(getIntent().getStringExtra(KEY_ACCOUNT));
+        accounts.add(account);
         subscribeEvent(accounts);
         // 注册监听
         manager.setAVChatMuteListener(this);
@@ -321,8 +317,8 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             else {
                 // 该页面来电的时候要判断是不是之前的C端用户所呼叫的房源
                 if (BaseAVManager.avChatData != null
-                        && BaseAVManager.avChatData.getExtra().equals(getIntent().getStringExtra(KEY_EXTEND_MESSAGE))
-                        && BaseAVManager.avChatData.getAccount().equals(getIntent().getStringExtra(KEY_ACCOUNT))) {
+                        && BaseAVManager.avChatData.getExtra().equals(extendMessage)
+                        && BaseAVManager.avChatData.getAccount().equals(account)) {
                     this.avChatType = avChatTypeEnum;
 
                     // 当前页面收到呼叫，重置各种监听事件
@@ -440,7 +436,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             case PEER_HANG_UP:
                 if (!isAgent) {
                     startAVChatConfig();
-                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                    manager.call(account, extendMessage);
                 } else {
                     finish();
                 }
@@ -448,7 +444,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             case PEER_NO_RESPONSE:
                 if (!isAgent) {
                     startAVChatConfig();
-                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                    manager.call(account, extendMessage);
                 }
                 break;
             case INVALIDE_CHANNELID:
@@ -468,7 +464,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             default:
                 // 根据主叫或者被叫区分默认点击功能
                 if (!isAgent) {
-                    manager.call(getIntent().getStringExtra(KEY_ACCOUNT), getIntent().getStringExtra(KEY_EXTEND_MESSAGE));
+                    manager.call(account, extendMessage);
                 } else {
                     finish();
                 }
@@ -555,6 +551,12 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
             // cookies同步方法要在WebView的setting设置完之后调用，否则无效。
             syncCookie(this, getIntent().getStringExtra("cookieUrl"), cookies);
         }
+//        try {
+//            JSONObject jsonObject = new JSONObject(extendMessage);
+//            web_webview.loadUrl(jsonObject.getString("vrUrl"));
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         web_webview.loadUrl("file:///android_asset/index.html");
     }
 
