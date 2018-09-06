@@ -72,7 +72,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
 
     // 是否暂停音频
     boolean hasOnPause = false;
-    BaseAVManager manager;
+    public BaseAVManager manager;
     // 监听事件
     EventSubscribeRequest eventSubscribeRequest;
     Observer<List<Event>> observeEventChanged;
@@ -348,6 +348,7 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
      */
     public void chatTypeChangeUI(AVChatTypeEnum avChatTypeEnum) {
         boolean isAgent = getUserRole() == 1;
+        ((WebAppInterface) impl).showAcceptOrRefuse(avChatTypeEnum);
         switch (avChatTypeEnum) {
             case CONN:
                 // 根据主叫或者被叫区分默认点击功能

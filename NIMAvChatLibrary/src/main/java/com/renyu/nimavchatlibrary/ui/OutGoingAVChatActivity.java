@@ -39,7 +39,7 @@ public class OutGoingAVChatActivity extends BaseAVChatActivity {
         intent.putExtra(KEY_ACCOUNT, account);
         intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
         intent.putExtra(KEY_NEEDCALL, needCall);
-        intent.putExtra("WebAppImplName", "android");
+        intent.putExtra("WebAppImplName", "house365js");
         intent.putExtra("WebAppImpl", new WebAppInterface());
         context.startActivity(intent);
     }

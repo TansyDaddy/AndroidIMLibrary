@@ -62,7 +62,7 @@ object BindingAdapters {
             }
             else {
                 val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(userInfo.avatar))
-                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(40f), SizeUtils.dp2px(40f))).build()
+                        .setResizeOptions(ResizeOptions(SizeUtils.dp2px(51f), SizeUtils.dp2px(51f))).build()
                 val draweeController = Fresco.newDraweeControllerBuilder()
                         .setImageRequest(request).setAutoPlayAnimations(true).build()
                 simpleDraweeView.controller = draweeController
@@ -258,7 +258,7 @@ object BindingAdapters {
         }
         else {
             val request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(imageUrl))
-                    .setResizeOptions(ResizeOptions(SizeUtils.dp2px(123f), SizeUtils.dp2px(115f))).build()
+                    .setResizeOptions(ResizeOptions(SizeUtils.dp2px(150f), SizeUtils.dp2px(150f))).build()
             val draweeController = Fresco.newDraweeControllerBuilder()
                     .setImageRequest(request).setAutoPlayAnimations(true).build()
             simpleDraweeView.controller = draweeController

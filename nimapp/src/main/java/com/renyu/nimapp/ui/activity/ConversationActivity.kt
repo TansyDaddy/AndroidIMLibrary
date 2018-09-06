@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import com.blankj.utilcode.util.BarUtils
+import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
@@ -239,26 +240,21 @@ class ConversationActivity : BaseActivity(), ConversationFragment.ConversationLi
                 imMessage.msgType == MsgTypeEnum.image ||
                 imMessage.msgType == MsgTypeEnum.audio ||
                 (imMessage.msgType == MsgTypeEnum.custom && imMessage.attachment is HouseAttachment)) {
+            val array = if (imMessage.msgType == MsgTypeEnum.text && imMessage.direct == MsgDirectionEnum.Out) arrayOf("复制", "删除", "撤回")
+            else if (imMessage.msgType == MsgTypeEnum.text && imMessage.direct == MsgDirectionEnum.In) arrayOf("复制", "删除")
+            else if (imMessage.msgType == MsgTypeEnum.custom) arrayOf("删除")
+            else if (imMessage.direct == MsgDirectionEnum.Out) arrayOf("删除", "撤回")
+            else if (imMessage.direct == MsgDirectionEnum.In) arrayOf("删除")
+            else arrayOf()
             QPopuWindow.getInstance(view.context).builder
                     .bindView(view, choicePosition)
-                    .setPopupItemList(
-                            if (imMessage.msgType == MsgTypeEnum.text) arrayOf("复制", "删除", "撤回")
-                            else if (imMessage.msgType == MsgTypeEnum.custom && imMessage.attachment is HouseAttachment) arrayOf("删除")
-                            else arrayOf("删除", "撤回"))
+                    .setPopupItemList(array)
                     .setPointers(rawX, location[1] + BarUtils.getStatusBarHeight())
                     .setOnPopuListItemClickListener { _, _, position ->
-                        if (imMessage.msgType == MsgTypeEnum.text) {
-                            when(position) {
-                                0 -> conversationFragment?.copyIMMessage(imMessage)
-                                1 -> conversationFragment?.deleteIMMessage(imMessage)
-                                2 -> conversationFragment?.sendRevokeIMMessage(imMessage)
-                            }
-                        }
-                        else {
-                            when(position) {
-                                0 -> conversationFragment?.deleteIMMessage(imMessage)
-                                1 -> conversationFragment?.sendRevokeIMMessage(imMessage)
-                            }
+                        when(array[position]) {
+                            "复制" -> conversationFragment?.copyIMMessage(imMessage)
+                            "删除" -> conversationFragment?.deleteIMMessage(imMessage)
+                            "撤回" -> conversationFragment?.sendRevokeIMMessage(imMessage)
                         }
                     }.show()
         }

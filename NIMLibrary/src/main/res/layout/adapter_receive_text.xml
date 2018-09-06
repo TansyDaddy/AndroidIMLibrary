@@ -23,8 +23,7 @@
             bind:imMessage="@{imMessage}" />
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}">
+            android:layout_height="wrap_content">
             <include
                 android:id="@+id/aurora_iv_msgitem_avatar"
                 layout="@layout/view_msgitem_avatar"
@@ -49,7 +48,7 @@
                 android:layout_marginStart="10dip"
                 android:layout_toEndOf="@id/aurora_iv_msgitem_avatar"
                 android:background="@drawable/shape_message_receiver" >
-                <com.facebook.drawee.span.SimpleDraweeSpanTextView
+                <com.renyu.nimlibrary.ui.view.AutoLinkNewSimpleDraweeSpanTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:autoLink="all"
@@ -63,6 +62,7 @@
                     android:paddingEnd="10dip"
                     android:paddingTop="11dip"
                     android:paddingBottom="11dip"
+                    android:onLongClick="@{(view) -> eventImpl.onLongClick(view, imMessage)}"
                     app:emojiText="@{imMessage.getContent()}"/>
             </RelativeLayout>
         </RelativeLayout>

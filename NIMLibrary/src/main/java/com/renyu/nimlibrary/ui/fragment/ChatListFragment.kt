@@ -18,6 +18,7 @@ import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.bean.Resource
 import com.renyu.nimlibrary.bean.Status
 import com.renyu.nimlibrary.databinding.FragmentChatlistBinding
+import com.renyu.nimlibrary.manager.MessageManager
 import com.renyu.nimlibrary.util.OtherUtils
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.viewmodel.ChatListViewModel
@@ -68,14 +69,18 @@ class ChatListFragment : Fragment() {
                     }
                     Status.SUCESS -> {
                         if (t.data != null) {
+                            layout_chatlist_empty.visibility = View.GONE
                             vm?.notifyDataSetChanged(t.data)
+                        }
+                        else {
+                            layout_chatlist_empty.visibility = View.VISIBLE
                         }
                     }
                     Status.FAIL -> {
-
+                        layout_chatlist_empty.visibility = View.VISIBLE
                     }
                     Status.Exception -> {
-
+                        layout_chatlist_empty.visibility = View.VISIBLE
                     }
                 }
             })
@@ -117,6 +122,9 @@ class ChatListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+
+        // 需要通知显示
+        MessageManager.enableMsgNotification(true)
 
         if (isRefresh) {
             vm!!.adapter.notifyDataSetChanged()
@@ -166,6 +174,12 @@ class ChatListFragment : Fragment() {
      */
     fun deleteRecentContact(contactId: String) {
         vm!!.deleteRecentContact(contactId)
+        if (vm!!.adapter.itemCount == 0) {
+            layout_chatlist_empty.visibility = View.VISIBLE
+        }
+        else {
+            layout_chatlist_empty.visibility = View.GONE
+        }
     }
 
     /**

@@ -227,6 +227,9 @@ class ConversationFragment : Fragment(), EventImpl {
     // 用户主动发送一条信息后触发发送用户信息是否已经发送完成
     var hasFinishSendUserInfoAfterSend = false
 
+    // 是否正在获取历史消息
+    var isPullMessageHistory = false
+
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         conversationListener = context as ConversationListener
@@ -309,6 +312,10 @@ class ConversationFragment : Fragment(), EventImpl {
                 }
             })
             vm!!.messageListResponseRemote?.observe(this, Observer {
+
+                // 获取历史数据完成
+                isPullMessageHistory = false
+
                 when(it?.status) {
                     Status.SUCESS -> {
                         // 首次刷新数据
@@ -466,8 +473,8 @@ class ConversationFragment : Fragment(), EventImpl {
     override fun onPause() {
         super.onPause()
 
-        MessageManager.setChattingAccount("",
-                if (arguments!!.getBoolean(CommonParams.ISGROUP)) SessionTypeEnum.Team else SessionTypeEnum.P2P)
+        // 需要通知显示
+        MessageManager.enableMsgNotification(true)
 
         // 语音处理
         layout_record.onPause()
@@ -605,7 +612,8 @@ class ConversationFragment : Fragment(), EventImpl {
 
                 // 上拉加载更多
                 val canScrollDown = rv_conversation.canScrollVertically(-1)
-                if (!canScrollDown) {
+                if (!canScrollDown && !isPullMessageHistory) {
+                    isPullMessageHistory = true
                     vm!!.pullMessageHistory(false)
                 }
             }

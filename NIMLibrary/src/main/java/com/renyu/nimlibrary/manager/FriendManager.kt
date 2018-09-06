@@ -1,8 +1,6 @@
 package com.renyu.nimlibrary.manager
 
 import android.util.Log
-import android.widget.Toast
-import com.blankj.utilcode.util.Utils
 import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.friend.FriendService
@@ -93,15 +91,15 @@ object FriendManager {
         NIMClient.getService(FriendService::class.java).addFriend(AddFriendData(account, VerifyType.DIRECT_ADD, null))
                 .setCallback(object : RequestCallback<Void> {
                     override fun onSuccess(param: Void?) {
-                        Toast.makeText(Utils.getApp(), "添加好友成功", Toast.LENGTH_SHORT).show()
+
                     }
 
                     override fun onFailed(code: Int) {
-                        Toast.makeText(Utils.getApp(), "添加好友失败，错误编码$code", Toast.LENGTH_SHORT).show()
+
                     }
 
                     override fun onException(exception: Throwable?) {
-                        Toast.makeText(Utils.getApp(), "添加好友失败", Toast.LENGTH_SHORT).show()
+
                     }
                 })
     }
@@ -113,15 +111,15 @@ object FriendManager {
         NIMClient.getService(FriendService::class.java).addFriend(AddFriendData(account, VerifyType.VERIFY_REQUEST, msg))
                 .setCallback(object : RequestCallback<Void> {
                     override fun onSuccess(param: Void?) {
-                        Toast.makeText(Utils.getApp(), "添加好友请求发送成功", Toast.LENGTH_SHORT).show()
+
                     }
 
                     override fun onFailed(code: Int) {
-                        Toast.makeText(Utils.getApp(), "添加好友请求发送失败，错误编码$code", Toast.LENGTH_SHORT).show()
+
                     }
 
                     override fun onException(exception: Throwable?) {
-                        Toast.makeText(Utils.getApp(), "添加好友请求发送失败", Toast.LENGTH_SHORT).show()
+
                     }
                 })
     }

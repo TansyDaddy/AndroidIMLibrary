@@ -60,6 +60,7 @@ object UserManager {
     /**
      * 设置用户信息
      */
+    @JvmStatic
     fun setUserAccount(accid: String?, token: String?, userRole: UserRole = UserRole.UNSPECIFIED) {
         if (TextUtils.isEmpty(accid) || TextUtils.isEmpty(token)) {
             // 清除用户登录信息

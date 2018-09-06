@@ -39,7 +39,7 @@ public class InComingAVChatActivity extends BaseAVChatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(KEY_ACCOUNT, account);
         intent.putExtra(KEY_EXTEND_MESSAGE, extendMessage);
-        intent.putExtra("WebAppImplName", "android");
+        intent.putExtra("WebAppImplName", "house365js");
         intent.putExtra("WebAppImpl", new WebAppInterface());
         activity.startActivity(intent);
         activity.finish();

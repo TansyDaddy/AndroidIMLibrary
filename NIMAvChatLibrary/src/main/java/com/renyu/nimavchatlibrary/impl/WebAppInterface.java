@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import com.renyu.nimavchatlibrary.params.AVChatExitCode;
+import com.renyu.nimavchatlibrary.params.AVChatTypeEnum;
 import com.renyu.nimavchatlibrary.ui.BaseAVChatActivity;
 
 /**
@@ -84,6 +86,78 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
      */
     public void updateMuteStatues(String string) {
         webView.post(() -> webView.loadUrl("javascript:changeConThree('"+string+"')"));
+    }
+
+
+
+
+
+
+
+    /**
+     * 静音
+     */
+    @JavascriptInterface
+    public void mute() {
+        ((BaseAVChatActivity) context).toggleMute();
+    }
+
+    /**
+     * 非静音
+     */
+    @JavascriptInterface
+    public void unmute() {
+        ((BaseAVChatActivity) context).toggleMute();
+    }
+
+    /**
+     * 发送自定义消息
+     * @param string
+     */
+    @JavascriptInterface
+    public void sendData(String string) {
+        ((BaseAVChatActivity) context).sendCustomNotification(string);
+    }
+
+    /**
+     * 接收自定义消息
+     * @param string
+     */
+    public void onData(String string) {
+        webView.loadUrl("javascript:onData('"+string+"')");
+    }
+
+    /**
+     * 呼叫
+     */
+    @JavascriptInterface
+    public void call(String account, String extendMessage) {
+        ((BaseAVChatActivity) context).manager.call(account, extendMessage);
+    }
+
+    /**
+     * 挂断电话
+     */
+    @JavascriptInterface
+    public void hangup() {
+        ((BaseAVChatActivity) context).manager.hangUp(AVChatExitCode.HANGUP);
+        ((BaseAVChatActivity) context).finish();
+    }
+
+    /**
+     * 更新众趣页面状态
+     * @param avChatTypeEnum
+     */
+    public void showAcceptOrRefuse(AVChatTypeEnum avChatTypeEnum) {
+        //  C端正在呼叫       outGoing
+        //  C端主叫连接成功   outGoingSucess
+        //  B端被叫连接成功   inComingSucess
+        //  C端占线           outGoingBusy
+        //  C端60s超时        outGoingTimeout
+        //  C端被挂断         outGoingFinish
+        //  B端被挂断         inComingFinish
+        //  音频功能出错      error
+        webView.loadUrl("javascript:showAcceptOrRefuse ('"+""+"')");
     }
 
     @Override

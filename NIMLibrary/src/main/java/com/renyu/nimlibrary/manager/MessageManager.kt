@@ -46,6 +46,11 @@ object MessageManager {
                             it.fromAccount != null
                         }.forEach {
                             Log.d("NIM_APP", "收到新消息:${it.fromNick}")
+
+                            // B端收到消息直接添加好友
+                            if (UserManager.getUserAccount().third == UserManager.UserRole.AGENT) {
+                                FriendManager.addDirectFriend(it.fromAccount)
+                            }
                         }
                         RxBus.getDefault().post(ObserveResponse(it, ObserveResponseType.ReceiveMessage))
                     }
