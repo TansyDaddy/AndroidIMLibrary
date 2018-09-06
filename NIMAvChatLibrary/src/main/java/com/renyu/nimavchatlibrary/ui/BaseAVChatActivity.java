@@ -398,6 +398,12 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                     ((WebAppInterface) impl).updateVRStatus("正在通话，点击挂断");
                 }
                 break;
+            case CALLEE_ACK_REJECT:
+                if (impl != null) {
+                    ((WebAppInterface) impl).updateVRStatus("已被拒绝，点击关闭");
+                    Toast.makeText(this, "安家顾问（经纪人）暂时忙，请稍后呼叫", Toast.LENGTH_SHORT).show();
+                }
+                break;
             case CALLEE_ACK_BUSY:
                 if (impl != null) {
                     ((WebAppInterface) impl).updateVRStatus("正在呼叫，点击挂断");
@@ -450,6 +456,9 @@ public abstract class BaseAVChatActivity extends AppCompatActivity implements Ba
                 break;
             case CALLEE_ACK_AGREE:
                 manager.hangUp(AVChatExitCode.HANGUP);
+                finish();
+                break;
+            case CALLEE_ACK_REJECT:
                 finish();
                 break;
             case CALLEE_ACK_BUSY:

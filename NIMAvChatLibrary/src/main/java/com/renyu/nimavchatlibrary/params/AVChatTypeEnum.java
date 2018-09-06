@@ -6,13 +6,13 @@ public enum AVChatTypeEnum {
      */
     VALID,
     /**
-     * 失效
-     */
-    INVALID,
-    /**
      * 被叫方同意通话
      */
     CALLEE_ACK_AGREE,
+    /**
+     * 被叫方拒绝通话
+     */
+    CALLEE_ACK_REJECT,
     /**
      * 被叫方正在忙
      */

@@ -153,6 +153,7 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
         //  C端主叫连接成功   outGoingSucess
         //  B端被叫连接成功   inComingSucess
         //  C端占线           outGoingBusy
+        //  C端被拒接         outGoingReject
         //  C端60s超时        outGoingTimeout
         //  C端被挂断         outGoingFinish
         //  B端被挂断         inComingFinish

@@ -28,6 +28,9 @@ public class OutGoingAVManager extends BaseAVManager {
                 }
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_REJECT) {
                 Log.d("NIM_AV_APP", "被叫方拒绝通话");
+                if (avChatTypeListener != null) {
+                    avChatTypeListener.chatTypeChange(AVChatTypeEnum.CALLEE_ACK_REJECT);
+                }
             } else if (avChatCalleeAckEvent.getEvent() == AVChatEventType.CALLEE_ACK_AGREE) {
                 Log.d("NIM_AV_APP", "被叫方同意通话");
                 AVChatSoundPlayer.instance().stop();
