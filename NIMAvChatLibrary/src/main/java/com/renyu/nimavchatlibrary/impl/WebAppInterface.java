@@ -145,6 +145,15 @@ public class WebAppInterface implements Parcelable, WebAppImpl {
     }
 
     /**
+     * 打开IM并且发送楼盘卡片
+     * @param string
+     */
+    @JavascriptInterface
+    public void sendVRCard(String string) {
+
+    }
+
+    /**
      * 更新众趣页面状态
      * @param avChatTypeEnum
      */

@@ -25,10 +25,13 @@ import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimavchatlibrary.params.AVChatTypeEnum
+import com.renyu.nimlibrary.R
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.extension.*
+import com.renyu.nimlibrary.manager.FriendManager
 import com.renyu.nimlibrary.manager.UserManager
+import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.view.WrapContentLinearLayoutManager
 import com.renyu.nimlibrary.util.RxBus
 import com.renyu.nimlibrary.util.emoji.EmojiUtils
@@ -438,5 +441,18 @@ object BindingAdapters {
     fun loadChatListLocationTitle(textView: TextView, imMessage: IMMessage) {
         val attachment = imMessage.attachment as LocationAttachment
         textView.text = attachment.address
+    }
+
+    @JvmStatic
+    @BindingAdapter(value = ["contactStar"])
+    fun loadcontactStar(imageView: ImageView, nimUserInfo: NimUserInfo) {
+        if (FriendManager.getFriendByAccount(nimUserInfo.account).extension != null &&
+                FriendManager.getFriendByAccount(nimUserInfo.account).extension.containsKey(CommonParams.STAR) &&
+                FriendManager.getFriendByAccount(nimUserInfo.account).extension[CommonParams.STAR] == "1") {
+            imageView.setImageResource(R.mipmap.ic_contact_star_press)
+        }
+        else {
+            imageView.setImageResource(R.mipmap.ic_contact_star_normal)
+        }
     }
 }

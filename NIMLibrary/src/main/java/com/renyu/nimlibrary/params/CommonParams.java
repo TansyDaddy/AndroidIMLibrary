@@ -33,6 +33,8 @@ public class CommonParams {
     public static final String USERINFO = "userInfo";
     // 扩展功能
     public static final String CARD = "card";
+    // 星标用户
+    public static final String STAR = "star";
 
     // 发出"正在输入提示"指令
     public static final String COMMAND_INPUT = "command_input";

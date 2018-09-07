@@ -5,12 +5,14 @@ import com.netease.nimlib.sdk.NIMClient
 import com.netease.nimlib.sdk.RequestCallback
 import com.netease.nimlib.sdk.friend.FriendService
 import com.netease.nimlib.sdk.friend.FriendServiceObserve
+import com.netease.nimlib.sdk.friend.constant.FriendFieldEnum
 import com.netease.nimlib.sdk.friend.constant.VerifyType
 import com.netease.nimlib.sdk.friend.model.AddFriendData
 import com.netease.nimlib.sdk.friend.model.Friend
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.util.RxBus
+import java.util.HashMap
 
 
 object FriendManager {
@@ -207,5 +209,15 @@ object FriendManager {
     @JvmStatic
     fun isMyFriend(account: String): Boolean {
         return NIMClient.getService(FriendService::class.java).isMyFriend(account)
+    }
+
+    /**
+     * 更新好友关系
+     */
+    @JvmStatic
+    fun updateFriendFields(account: String, params: HashMap<String, String>, callback: RequestCallback<Void>) {
+        val map = HashMap<FriendFieldEnum, Any>()
+        map[FriendFieldEnum.EXTENSION] = params
+        NIMClient.getService(FriendService::class.java).updateFriendFields(account, map).setCallback(callback)
     }
 }

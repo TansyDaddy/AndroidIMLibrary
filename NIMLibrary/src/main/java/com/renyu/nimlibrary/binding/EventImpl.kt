@@ -41,4 +41,7 @@ interface EventImpl {
 
     // 点击联系人列表
     fun clickContact(view: View, nimUserInfo: NimUserInfo) {}
+
+    // 点击联系人上的星标
+    fun clickStar(view: View, nimUserInfo: NimUserInfo) {}
 }

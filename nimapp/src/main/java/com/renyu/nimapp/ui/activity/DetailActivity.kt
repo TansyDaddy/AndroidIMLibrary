@@ -11,6 +11,7 @@ class DetailActivity : BaseActivity() {
         setContentView(R.layout.activity_detail)
 
         if (!NimInitParams.isAgent) {
+            ConversationActivity.gotoConversationActivity(this, "r17171709")
             // 发送VR看房看片
             ConversationActivity.gotoConversationActivityWithVR(this,
                     "r17171709",

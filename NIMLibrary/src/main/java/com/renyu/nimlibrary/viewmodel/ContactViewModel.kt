@@ -11,9 +11,13 @@ import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.binding.EventImpl
 import com.renyu.nimlibrary.manager.FriendManager
 import com.renyu.nimlibrary.manager.UserManager
+import com.renyu.nimlibrary.params.CommonParams
 import com.renyu.nimlibrary.ui.adapter.ContactAdapter
 import com.renyu.nimlibrary.ui.fragment.ContactFragment
+import com.renyu.nimlibrary.util.PinyinComparator
 import com.renyu.nimlibrary.util.RxBus
+import java.util.*
+import kotlin.collections.HashMap
 
 class ContactViewModel : ViewModel(), EventImpl {
 
@@ -44,22 +48,25 @@ class ContactViewModel : ViewModel(), EventImpl {
      * 数据排序
      */
     private fun prepareData(nimUserInfos: List<NimUserInfo>) {
-        // 找到所有描述内容
-        val desp: ArrayList<String> = ArrayList()
-        nimUserInfos.forEach {
-            if (!desp.contains(it.account[0].toString())) {
-                desp.add(it.account[0].toString())
-            }
+        val star = ArrayList<NimUserInfo>()
+        // 查找出星标用户
+        nimUserInfos.filter {
+            FriendManager.getFriendByAccount(it.account).extension != null &&
+                    FriendManager.getFriendByAccount(it.account).extension.containsKey(CommonParams.STAR) &&
+                    FriendManager.getFriendByAccount(it.account).extension[CommonParams.STAR] == "1"
+        }.forEach {
+            star.add(it)
         }
-        // 排序
-        desp.forEach {
-            val de = it
-            userInfos.add(it)
-            nimUserInfos.filter {
-                it.account[0].toString() == de
-            }.forEach {
-                userInfos.add(it)
-            }
+        userInfos.clear()
+        if (star.size > 0) {
+            userInfos.add("星标联系人 (${star.size})")
+            Collections.sort(star, PinyinComparator())
+            userInfos.addAll(star)
+        }
+        if (nimUserInfos.isNotEmpty()) {
+            userInfos.add("全部联系人 (${nimUserInfos.size})")
+            Collections.sort(nimUserInfos, PinyinComparator())
+            userInfos.addAll(nimUserInfos)
         }
     }
 
@@ -76,7 +83,9 @@ class ContactViewModel : ViewModel(), EventImpl {
         userInfos.filter {
             it is NimUserInfo
         }.forEach {
-            temp.add(it as NimUserInfo)
+            if (!temp.contains(it)) {
+                temp.add(it as NimUserInfo)
+            }
         }
 
         // 删除不是好友的账号
@@ -212,5 +221,33 @@ class ContactViewModel : ViewModel(), EventImpl {
     override fun clickContact(view: View, nimUserInfo: NimUserInfo) {
         super.clickContact(view, nimUserInfo)
         (view.context as ContactFragment.ContactListener).clickContact(nimUserInfo)
+    }
+
+    override fun clickStar(view: View, nimUserInfo: NimUserInfo) {
+        super.clickStar(view, nimUserInfo)
+        // 已经是星标联系人
+        val star = if (FriendManager.getFriendByAccount(nimUserInfo.account).extension != null &&
+                FriendManager.getFriendByAccount(nimUserInfo.account).extension.containsKey(CommonParams.STAR) &&
+                FriendManager.getFriendByAccount(nimUserInfo.account).extension[CommonParams.STAR] == "1") {
+            "0"
+        }
+        else {
+            "1"
+        }
+        val map = HashMap<String, String>()
+        map[CommonParams.STAR] = star
+        FriendManager.updateFriendFields(nimUserInfo.account, map, object : RequestCallback<Void> {
+            override fun onSuccess(param: Void?) {
+
+            }
+
+            override fun onFailed(code: Int) {
+
+            }
+
+            override fun onException(exception: Throwable?) {
+
+            }
+        })
     }
 }
