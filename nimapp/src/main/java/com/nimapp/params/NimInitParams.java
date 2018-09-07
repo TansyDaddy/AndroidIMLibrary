@@ -1,4 +1,4 @@
-package com.renyu.nimapp.params;
+package com.nimapp.params;
 
 import android.os.Environment;
 

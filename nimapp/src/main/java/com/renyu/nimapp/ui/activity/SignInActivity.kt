@@ -11,7 +11,7 @@ import android.view.View
 import com.netease.nimlib.sdk.auth.LoginInfo
 import com.renyu.nimapp.R
 import com.renyu.nimapp.databinding.ActivitySigninBinding
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import com.renyu.nimapp.util.string.MD5
 import com.renyu.nimapp.viewmodel.SignInViewModel
 import com.renyu.nimlibrary.BR

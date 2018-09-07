@@ -12,7 +12,7 @@ import com.netease.nimlib.sdk.msg.constant.MsgDirectionEnum
 import com.netease.nimlib.sdk.msg.constant.MsgTypeEnum
 import com.netease.nimlib.sdk.msg.model.IMMessage
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import com.renyu.nimapp.ui.view.QPopuWindow
 import com.renyu.nimlibrary.bean.HouseItem
 import com.renyu.nimlibrary.bean.VRItem

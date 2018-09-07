@@ -77,7 +77,7 @@ object AuthManager {
     private fun loadStatusBarNotificationConfig(): StatusBarNotificationConfig {
         val config = StatusBarNotificationConfig()
 
-        val clazz = Class.forName("com.renyu.nimapp.params.NimInitParams")
+        val clazz = Class.forName("com.nimapp.params.NimInitParams")
         val notificationActivityName = clazz.getField("NotificationActivityName").get(clazz).toString()
         val notificationActivityClass = Class.forName(notificationActivityName)
 
@@ -102,7 +102,7 @@ object AuthManager {
      */
     private fun buildMixPushConfig(): MixPushConfig {
         // 通过反射获取
-        val clazz = Class.forName("com.renyu.nimapp.params.NimInitParams")
+        val clazz = Class.forName("com.nimapp.params.NimInitParams")
 
         val config = MixPushConfig()
 

@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.netease.nimlib.sdk.NimIntent
 import com.netease.nimlib.sdk.msg.model.IMMessage
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import java.util.*
 
 class NotificationActivity : AppCompatActivity() {

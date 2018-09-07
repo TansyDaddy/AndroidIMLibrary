@@ -4,8 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import com.netease.nimlib.sdk.msg.model.RecentContact
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.NimInitParams
-import com.renyu.nimlibrary.manager.AuthManager
+import com.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.ui.fragment.ChatListFragment
 import kotlinx.android.synthetic.main.view_nav.*
 

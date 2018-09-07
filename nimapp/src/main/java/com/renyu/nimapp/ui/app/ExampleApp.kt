@@ -6,7 +6,7 @@ import com.baidu.mapapi.SDKInitializer
 import com.blankj.utilcode.util.Utils
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.netease.nimlib.sdk.util.NIMUtil
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import com.renyu.nimavchatlibrary.manager.InComingAVManager
 import com.renyu.nimlibrary.manager.AuthManager
 

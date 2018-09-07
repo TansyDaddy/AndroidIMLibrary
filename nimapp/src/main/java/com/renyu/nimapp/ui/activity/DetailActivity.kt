@@ -2,8 +2,7 @@ package com.renyu.nimapp.ui.activity
 
 import android.os.Bundle
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.NimInitParams
-import com.renyu.nimlibrary.bean.HouseItem
+import com.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.bean.VRItem
 
 class DetailActivity : BaseActivity() {

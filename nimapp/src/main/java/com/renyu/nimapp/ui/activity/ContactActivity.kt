@@ -3,7 +3,7 @@ package com.renyu.nimapp.ui.activity
 import android.os.Bundle
 import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.ui.fragment.ContactFragment
 
 class ContactActivity : BaseActivity(), ContactFragment.ContactListener {

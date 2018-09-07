@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import com.renyu.nimapp.R
-import com.renyu.nimapp.params.NimInitParams
+import com.nimapp.params.NimInitParams
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.params.CommonParams
 
