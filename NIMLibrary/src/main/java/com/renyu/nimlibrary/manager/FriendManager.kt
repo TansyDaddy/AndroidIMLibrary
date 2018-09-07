@@ -18,6 +18,7 @@ object FriendManager {
     /**
      * 添加黑名单
      */
+    @JvmStatic
     fun addToBlackList(account: String) {
         NIMClient.getService(FriendService::class.java)
                 .addToBlackList(account)
@@ -39,6 +40,7 @@ object FriendManager {
     /**
      * 移除黑名单
      */
+    @JvmStatic
     fun removeFromBlackList(account: String) {
         NIMClient.getService(FriendService::class.java)
                 .removeFromBlackList(account)
@@ -60,6 +62,7 @@ object FriendManager {
     /**
      * 监听黑名单变更通知
      */
+    @JvmStatic
     fun observeBlackListChangedNotify() {
         NIMClient.getService(FriendServiceObserve::class.java).observeBlackListChangedNotify({ t ->
             val addedAccounts = t?.addedAccounts
@@ -73,6 +76,7 @@ object FriendManager {
     /**
      * 获取黑名单中的用户列表
      */
+    @JvmStatic
     fun getBlackList(): List<String> {
         return NIMClient.getService(FriendService::class.java).blackList
     }
@@ -80,6 +84,7 @@ object FriendManager {
     /**
      * 判断用户是否已被拉黑
      */
+    @JvmStatic
     fun isInBlackList(account: String): Boolean {
         return NIMClient.getService(FriendService::class.java).isInBlackList(account)
     }
@@ -87,6 +92,7 @@ object FriendManager {
     /**
      * 直接添加好友
      */
+    @JvmStatic
     fun addDirectFriend(account: String) {
         NIMClient.getService(FriendService::class.java).addFriend(AddFriendData(account, VerifyType.DIRECT_ADD, null))
                 .setCallback(object : RequestCallback<Void> {
@@ -107,6 +113,7 @@ object FriendManager {
     /**
      * 选择添加好友
      */
+    @JvmStatic
     fun addRequestFriend(account: String, msg: String) {
         NIMClient.getService(FriendService::class.java).addFriend(AddFriendData(account, VerifyType.VERIFY_REQUEST, msg))
                 .setCallback(object : RequestCallback<Void> {
@@ -127,6 +134,7 @@ object FriendManager {
     /**
      * 同意/拒绝好友请求
      */
+    @JvmStatic
     fun ackAddFriendRequest(account: String, agree: Boolean) {
         NIMClient.getService(FriendService::class.java).ackAddFriendRequest(account, agree)
                 .setCallback(object : RequestCallback<Void> {
@@ -147,6 +155,7 @@ object FriendManager {
     /**
      * 删除好友
      */
+    @JvmStatic
     fun deleteFriend(account: String) {
         NIMClient.getService(FriendService::class.java).deleteFriend(account)
                 .setCallback(object : RequestCallback<Void> {
@@ -167,6 +176,7 @@ object FriendManager {
     /**
      * 监听好友关系变化通知
      */
+    @JvmStatic
     fun observeFriendChangedNotify() {
         NIMClient.getService(FriendServiceObserve::class.java).observeFriendChangedNotify({ t ->
             if (t != null) {
@@ -178,6 +188,7 @@ object FriendManager {
     /**
      * 获取我所有的好友帐号
      */
+    @JvmStatic
     fun getFriendAccounts(): List<String> {
         return NIMClient.getService(FriendService::class.java).friendAccounts
     }
@@ -185,6 +196,7 @@ object FriendManager {
     /**
      * 根据用户账号获取好友关系
      */
+    @JvmStatic
     fun getFriendByAccount(account: String): Friend {
         return NIMClient.getService(FriendService::class.java).getFriendByAccount(account)
     }
@@ -192,6 +204,7 @@ object FriendManager {
     /**
      * 是否为我的好友
      */
+    @JvmStatic
     fun isMyFriend(account: String): Boolean {
         return NIMClient.getService(FriendService::class.java).isMyFriend(account)
     }

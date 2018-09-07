@@ -30,6 +30,7 @@ object EventSubscribeManager {
     /**
      * 订阅指定账号的在线状态事件
      */
+    @JvmStatic
     fun subscribeEvent(accounts: List<String>) {
         val eventSubscribeRequest = EventSubscribeRequest()
         eventSubscribeRequest.eventType = NimOnlineStateEvent.EVENT_TYPE
@@ -64,6 +65,7 @@ object EventSubscribeManager {
     /**
      * 发布自己在线状态
      */
+    @JvmStatic
     fun publishEvent() {
         val netState = when(NetworkUtils.getNetworkType()) {
             NetworkUtils.NetworkType.NETWORK_ETHERNET -> { 2 }

@@ -17,6 +17,7 @@ object UserManager {
     /**
      * 从本地数据库中批量获取用户资料
      */
+    @JvmStatic
     fun getUserInfoList(accounts: List<String>): List<NimUserInfo> {
         if (accounts.isEmpty()) {
             return ArrayList()
@@ -28,6 +29,7 @@ object UserManager {
     /**
      * 从本地数据库中获取用户资料
      */
+    @JvmStatic
     fun getUserInfo(account: String): NimUserInfo? {
         return NIMClient.getService(UserService::class.java).getUserInfo(account)
     }
@@ -35,6 +37,7 @@ object UserManager {
     /**
      * 获取本地数据库中所有用户资料
      */
+    @JvmStatic
     fun getAllUserInfo(): List<NimUserInfo> {
         return NIMClient.getService(UserService::class.java).allUserInfo
     }
@@ -42,6 +45,7 @@ object UserManager {
     /**
      * 监听用户资料变更
      */
+    @JvmStatic
     fun observeUserInfoUpdate() {
         NIMClient.getService(UserServiceObserve::class.java).observeUserInfoUpdate({
             it.forEach {
@@ -53,6 +57,7 @@ object UserManager {
     /**
      * 从服务器获取用户资料
      */
+    @JvmStatic
     fun fetchUserInfo(accounts: List<String>, callback: RequestCallback<List<NimUserInfo>>) {
         NIMClient.getService(UserService::class.java).fetchUserInfo(accounts).setCallback(callback)
     }
@@ -104,6 +109,7 @@ object UserManager {
     /**
      * 设置最后一次登录日期
      */
+    @JvmStatic
     fun setLastSignInTime() {
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
         SPUtils.getInstance().put(CommonParams.SP_LASTSIGNIN, simpleDateFormat.format(Date()))
@@ -112,6 +118,7 @@ object UserManager {
     /**
      * 判断今天是否登录过
      */
+    @JvmStatic
     fun isTodaySignIn(): Boolean {
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
         return simpleDateFormat.format(Date()) == SPUtils.getInstance().getString(CommonParams.SP_LASTSIGNIN)

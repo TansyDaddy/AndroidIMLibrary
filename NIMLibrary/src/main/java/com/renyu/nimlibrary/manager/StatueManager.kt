@@ -17,6 +17,7 @@ object StatueManager {
     /**
      * 监听多端登录状态
      */
+    @JvmStatic
     fun observeOtherClients() {
         NIMClient.getService(AuthServiceObserver::class.java)
                 .observeOtherClients(com.netease.nimlib.sdk.Observer<List<OnlineClient>> { t ->
@@ -50,6 +51,7 @@ object StatueManager {
     /**
      * 监听用户在线状态
      */
+    @JvmStatic
     fun observeOnlineStatus() {
         NIMClient.getService(AuthServiceObserver::class.java)
                 .observeOnlineStatus({
@@ -90,6 +92,7 @@ object StatueManager {
     /**
      * 监听数据同步状态
      */
+    @JvmStatic
     fun observeLoginSyncDataStatus() {
         NIMClient.getService(AuthServiceObserver::class.java)
                 .observeLoginSyncDataStatus({ t ->

@@ -9,7 +9,6 @@ import com.netease.nimlib.sdk.uinfo.model.NimUserInfo
 import com.renyu.nimlibrary.bean.ObserveResponse
 import com.renyu.nimlibrary.bean.ObserveResponseType
 import com.renyu.nimlibrary.binding.EventImpl
-import com.renyu.nimlibrary.manager.AuthManager
 import com.renyu.nimlibrary.manager.FriendManager
 import com.renyu.nimlibrary.manager.UserManager
 import com.renyu.nimlibrary.ui.adapter.ContactAdapter

@@ -14,6 +14,7 @@ import com.netease.nimlib.sdk.mixpush.MixPushConfig
 
 object AuthManager {
 
+    @JvmStatic
     fun init(sdkStorageRootPath: String, databaseEncryptKey: String, needAuto: Boolean): Boolean {
         val options = SDKOptions()
         // 配置 APP 保存图片/语音/文件/log等数据的目录
@@ -125,6 +126,7 @@ object AuthManager {
     /**
      * 假登录获取本地数据
      */
+    @JvmStatic
     fun fakeLogin() {
         val account = UserManager.getUserAccount().first
         if (!TextUtils.isEmpty(account)) {
@@ -135,6 +137,7 @@ object AuthManager {
     /**
      * 配置基础监听
      */
+    @JvmStatic
     fun initObserve() {
         // 监听用户在线状态
         StatueManager.observeOnlineStatus()
@@ -173,6 +176,7 @@ object AuthManager {
     /**
      * 首次登录
      */
+    @JvmStatic
     fun login(account: String, token: String, requestCallback: RequestCallback<LoginInfo>): AbortableFuture<out Any> {
         // 设置当前登录时间
         UserManager.setLastSignInTime()
@@ -186,6 +190,7 @@ object AuthManager {
     /**
      * 登录
      */
+    @JvmStatic
     fun login(account: String, token: String, needAuto: Boolean) {
         val temp = isAuto(needAuto)
         if (!temp) {
@@ -199,6 +204,7 @@ object AuthManager {
     /**
      * 获取当前用户状态
      */
+    @JvmStatic
     fun getStatus(): StatusCode {
         return NIMClient.getStatus()
     }
@@ -206,6 +212,7 @@ object AuthManager {
     /**
      * 判断是不是登录成功
      */
+    @JvmStatic
     fun isLogined(): Boolean {
         return getStatus() == StatusCode.LOGINED
     }
@@ -213,6 +220,7 @@ object AuthManager {
     /**
      * 登出
      */
+    @JvmStatic
     fun logout() {
         // 清除用户登录信息
         UserManager.setUserAccount(null, null)
